@@ -41,6 +41,39 @@ jobs:
           targetPlatform: StandaloneWindows64
           buildName: 'NanoVer iMD'
 
+  build2:
+    name: Build Android ✨
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+    concurrency:
+      group: needs-license
+    steps:
+      # Checkout
+      - name: Checkout repository ⬇️
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: true
+
+      # Cache
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-
+      
+      - name: Build Android 🔨🤖
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: Android
+          buildName: 'NanoVer iMD'
+
+
   artefact-build:
     name: Build my project with artefact ✨
     runs-on: ubuntu-latest
@@ -72,6 +105,16 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: StandaloneWindows64
+          buildName: 'NanoVer iMD'
+
+      - name: Build Android 🔨🤖
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: Android
           buildName: 'NanoVer iMD'
 
       # Output
