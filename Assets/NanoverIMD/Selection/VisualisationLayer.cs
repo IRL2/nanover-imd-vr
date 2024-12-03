@@ -42,11 +42,31 @@ namespace NanoverImd.Selection
             Scene = GetComponentInParent<VisualisationScene>();
         }
 
+        private float _prevAtomCount = 0;
+
+        private void Update()
+        {
+            // TODO: trigger this from frame topology change
+            if (_prevAtomCount != Scene.ParticleCount)
+            {
+                RefreshAllSelections();
+                _prevAtomCount = Scene.ParticleCount;
+            }
+        }
+
         private readonly List<VisualisationSelection> selections =
             new List<VisualisationSelection>();
 
         [SerializeField]
         private VisualisationSelection selectionPrefab;
+
+        /// <summary>
+        /// Refresh all selections in this layer. 
+        /// </summary>
+        public void RefreshAllSelections()
+        {
+            OnSelectionUpdated(selections[selections.Count - 1]);
+        }
 
         /// <summary>
         /// Add a selection to this visualisation, based upon a
