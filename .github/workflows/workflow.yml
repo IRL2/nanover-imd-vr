@@ -11,7 +11,6 @@ jobs:
   build:
     name: Build PC-VR ✨
     runs-on: ubuntu-latest
-    if: github.ref != 'refs/heads/main'
     concurrency:
       group: needs-license
     steps:
@@ -41,11 +40,18 @@ jobs:
           targetPlatform: StandaloneWindows64
           buildName: 'NanoVer iMD-VR'
           allowDirtyBuild: true
+
+      # Output
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          name: Build-PC-VR
+          path: build
 
   build-apk:
     name: Build APK ✨
     runs-on: ubuntu-latest
-    if: github.ref != 'refs/heads/main'
     concurrency:
       group: needs-license
     steps:
@@ -76,55 +82,12 @@ jobs:
           buildName: 'NanoVer iMD-VR'
           allowDirtyBuild: true
 
-  artefact-build:
-    name: Build my project with artefact ✨
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    concurrency:
-      group: needs-license
-    steps:
-      # Checkout
-      - name: Checkout repository ⬇️
-        uses: actions/checkout@v4
-        with:
-          lfs: true
-          submodules: true
-
-      # Cache
-      - uses: actions/cache@v4
-        with:
-          path: Library
-          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Library-
-
-      # Build
-      - name: Build PC-VR 🔨
-        uses: game-ci/unity-builder@v4
-        env:
-          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          targetPlatform: StandaloneWindows64
-          buildName: 'NanoVer iMD-VR'
-
-      # Build
-      - name: Build APK 🔨
-        uses: game-ci/unity-builder@v4
-        env:
-          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          targetPlatform: Android
-          buildName: 'NanoVer iMD-VR'
-
-
       # Output
-      - uses: actions/upload-artifact@v4
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main'
         with:
-          name: Build
+          name: Build-APK
           path: build
 
   tests:
@@ -169,10 +132,10 @@ jobs:
     needs: [artefact-build, tests]
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Download artifacts
+      - name: Download PC-VR artifact
         uses: actions/download-artifact@v4
         with:
-          name: Build
+          name: Build-PC-VR
           path: ./
       - name: Zip windows build
         run: |
