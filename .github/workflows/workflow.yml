@@ -54,6 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: needs-license
+    needs: [build-pcvr]
     steps:
       # Checkout
       - name: Checkout repository ⬇️
@@ -137,6 +138,11 @@ jobs:
         with:
           name: Build-PC-VR
           path: ./
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Build-APK
+          path: ./
       - name: Zip windows build
         run: |
           zip -r StandaloneWindows64.zip StandaloneWindows64
@@ -148,14 +154,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: nightly
-          name: 'Latest build from the main branch $$'
+          name: 'Latest builds from the main branch $$'
           draft: false
           prerelease: true
           body: |
-            This is the latest build from the main branch.
-            It is not an official release. *Use with caution!*
+            These are the latest builds from the main branch.
+            They are not an official release. *Use with caution!*
           files:
             ./*.zip
+            ./*.apk
 
   conda:
     name: Build the conda Packages
@@ -176,7 +183,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: Build
+          name: Build-PC-VR
           path: ./conda/artifacts
       - uses: conda-incubator/setup-miniconda@v3
         with:
