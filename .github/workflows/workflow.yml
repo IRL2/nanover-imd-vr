@@ -8,7 +8,7 @@ on:
       - "**"
 
 jobs:
-  build:
+  build-pcvr:
     name: Build PC-VR ✨
     runs-on: ubuntu-latest
     concurrency:
@@ -129,7 +129,7 @@ jobs:
   nightly:
     name: Publish the latest Build
     runs-on: ubuntu-latest
-    needs: [artefact-build, tests]
+    needs: [build-pcvr, build-apk, tests]
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Download PC-VR artifact
@@ -160,7 +160,7 @@ jobs:
   conda:
     name: Build the conda Packages
     runs-on: windows-latest
-    needs: [artefact-build, tests]
+    needs: [build-pcvr, build-apk, tests]
     if: github.ref == 'refs/heads/main'
     steps:
       # We need to download the source code to get the version number
