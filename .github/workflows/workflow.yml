@@ -31,7 +31,7 @@ jobs:
             Library-
 
       # Build
-      - name: Build project 🔨
+      - name: Build PC-VR 🔨
         uses: game-ci/unity-builder@v4
         env:
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
@@ -39,7 +39,18 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: StandaloneWindows64
-          buildName: 'NanoVer iMD'
+          buildName: 'NanoVer iMD-VR'
+
+      # Build
+      - name: Build APK 🔨
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: Android
+          buildName: 'NanoVer iMD-VR'
 
   artefact-build:
     name: Build my project with artefact ✨
@@ -64,7 +75,7 @@ jobs:
             Library-
 
       # Build
-      - name: Build project 🔨
+      - name: Build PC-VR 🔨
         uses: game-ci/unity-builder@v4
         env:
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
@@ -72,7 +83,19 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: StandaloneWindows64
-          buildName: 'NanoVer iMD'
+          buildName: 'NanoVer iMD-VR'
+
+      # Build
+      - name: Build APK 🔨
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: Android
+          buildName: 'NanoVer iMD-VR'
+
 
       # Output
       - uses: actions/upload-artifact@v4
@@ -177,13 +200,13 @@ jobs:
         run: |
           echo "build_number=$(git rev-list --count HEAD)" >> $env:GITHUB_ENV
           echo "frontend_version=0.1.$(git rev-list --count HEAD)" >> $env:GITHUB_ENV
-          echo "NARUPA_LICENSE_PATH=$env:GITHUB_WORKSPACE\LICENSE" >> $env:GITHUB_ENV
+          echo "NANOVER_LICENSE_PATH=$env:GITHUB_WORKSPACE\LICENSE" >> $env:GITHUB_ENV
       - name: Access version number
         id: get_version
         run: |
           echo "build_number: $env:build_number"
           echo "frontend_version: $env:frontend_version"
-          echo "NARUPA_LICENSE_PATH: $env:NARUPA_LICENSE_PATH"
+          echo "NANOVER_LICENSE_PATH: $env:NANOVER_LICENSE_PATH"
       - name: Install dependencies
         run: conda install -y conda-build conda-verify
       - name: Build conda package
@@ -195,7 +218,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: conda-bld
-          path: C:\Miniconda3\envs\test\conda-bld
+          path: ${CONDA_PREFIX}\conda-bld
 
   publish-conda:
     name: Publish the conda package on Anaconda cloud
