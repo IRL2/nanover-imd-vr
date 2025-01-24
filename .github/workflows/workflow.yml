@@ -40,6 +40,7 @@ jobs:
         with:
           targetPlatform: StandaloneWindows64
           buildName: 'NanoVer iMD-VR'
+          allowDirtyBuild: true
 
       # Build
       - name: Build APK 🔨
@@ -51,6 +52,7 @@ jobs:
         with:
           targetPlatform: Android
           buildName: 'NanoVer iMD-VR'
+          allowDirtyBuild: true
 
   artefact-build:
     name: Build my project with artefact ✨
