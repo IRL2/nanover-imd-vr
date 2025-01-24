@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build my project ✨
+    name: Build PC-VR ✨
     runs-on: ubuntu-latest
     if: github.ref != 'refs/heads/main'
     concurrency:
@@ -41,6 +41,28 @@ jobs:
           targetPlatform: StandaloneWindows64
           buildName: 'NanoVer iMD-VR'
           allowDirtyBuild: true
+
+  build-apk:
+    name: Build APK ✨
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+    concurrency:
+      group: needs-license
+    steps:
+      # Checkout
+      - name: Checkout repository ⬇️
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: true
+
+      # Cache
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-
 
       # Build
       - name: Build APK 🔨
