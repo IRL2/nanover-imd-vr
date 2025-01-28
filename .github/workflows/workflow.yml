@@ -209,10 +209,10 @@ jobs:
           ls -R conda
           echo "build_number: $env:build_number"
           echo "frontend_version: $env:frontend_version"
-          conda build --prefix-length=100 --build-only --quiet --output .\conda
+          conda build .\conda --prefix-length=100 --build-only --quiet --output-folder dist/conda
       - run: |
           mkdir artifacts
-          cp -r ${CONDA_PREFIX}/conda-bld ./artifacts
+          cp -r dist/conda ./artifacts
           ls ./artifacts
       - name: Save the artifacts
         uses: actions/upload-artifact@v4
