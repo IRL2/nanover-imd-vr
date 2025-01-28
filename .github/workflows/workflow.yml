@@ -208,11 +208,16 @@ jobs:
           ls -R conda
           echo "build_number: $env:build_number"
           echo "frontend_version: $env:frontend_version"
-          conda build --numpy 1.11 --no-anaconda-upload --no-test .\conda
-      - uses: actions/upload-artifact@v4
+          conda build --prefix-length=100 --build-only --quiet --output .\conda
+      - run: |
+          mkdir artifacts
+          cp -r ${CONDA_PREFIX}/conda-bld ./artifacts
+          ls ./artifacts
+      - name: Save the artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: conda-bld
-          path: ${CONDA_PREFIX}\conda-bld
+          name: conda-packages
+          path: ./artifacts
 
   publish-conda:
     name: Publish the conda package on Anaconda cloud
