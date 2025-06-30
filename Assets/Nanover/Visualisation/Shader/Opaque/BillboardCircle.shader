@@ -7,7 +7,10 @@ Shader "NanoverIMD/Opaque/Billboard Circle"
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" "PreviewType"="Plane" }
+        Tags { 
+            "RenderType"="Opaque"
+            "LightMode"="ForwardBase"
+        }
         LOD 100
         
         Cull Back

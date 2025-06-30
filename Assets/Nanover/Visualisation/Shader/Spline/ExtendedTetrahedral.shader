@@ -1,4 +1,4 @@
-﻿Shader "Nanover/Spline/ExtendedTetrahedral"
+Shader "Nanover/Spline/ExtendedTetrahedral"
 {
     Properties
     {
@@ -13,7 +13,11 @@
      */
     SubShader
     {
-        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
+        Tags { 
+            "Queue" = "Transparent" 
+            "RenderType" = "Transparent" 
+            "LightMode"="ForwardBase"
+        }
 
 
         LOD 100

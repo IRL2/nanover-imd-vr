@@ -1,4 +1,4 @@
-﻿Shader "Nanover/Offset"
+Shader "Nanover/Offset"
 {
     Properties
     {
@@ -8,7 +8,10 @@
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { 
+            "RenderType"="Opaque"
+            "LightMode"="ForwardBase"
+        }
         LOD 100
         
         CGINCLUDE

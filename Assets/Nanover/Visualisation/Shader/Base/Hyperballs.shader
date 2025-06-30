@@ -10,7 +10,10 @@ Shader "NanoverIMD/Opaque/Hyperballs"
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { 
+            "RenderType"="Opaque"
+            "LightMode"="ForwardBase"
+        }
         LOD 100
         
         Cull Front
