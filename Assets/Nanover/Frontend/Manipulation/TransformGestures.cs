@@ -53,6 +53,8 @@ namespace Nanover.Frontend.Manipulation
         private readonly OnePointTranslateRotateGesture onePointGesture =
             new OnePointTranslateRotateGesture();
 
+        private Quaternion? midRotation;
+
         /// <summary>
         /// Begin the gesture with an initial object transformation and initial
         /// transformations for the two control points. Throughout the gesture
@@ -63,6 +65,7 @@ namespace Nanover.Frontend.Manipulation
                                  UnitScaleTransformation controlTransformation1,
                                  UnitScaleTransformation controlTransformation2)
         {
+            midRotation = null;
             var midpointTransformation = ComputeMidpointTransformation(controlTransformation1,
                                                                        controlTransformation2);
             onePointGesture.BeginGesture(objectTransformation, midpointTransformation);
@@ -86,7 +89,7 @@ namespace Nanover.Frontend.Manipulation
         /// Compute a transformation that represents the "average" of two input
         /// transformations.
         /// </summary>
-        private static UniformScaleTransformation ComputeMidpointTransformation(
+        private UniformScaleTransformation ComputeMidpointTransformation(
             UnitScaleTransformation controlTransformation1,
             UnitScaleTransformation controlTransformation2)
         {
@@ -103,9 +106,21 @@ namespace Nanover.Frontend.Manipulation
             // two up vectors of the control points
             var rotation1 = controlTransformation1.rotation;
             var rotation2 = controlTransformation2.rotation;
-            var midRotation = Quaternion.SlerpUnclamped(rotation1, rotation2, 0.5f);
 
-            var up = midRotation * Vector3.forward;
+            // try to retain continuity between updates, by preferring a mid
+            // rotation towards the previous midrotation
+            if (midRotation.HasValue)
+            {
+                var a = Quaternion.SlerpUnclamped(rotation1, midRotation.Value, 0.5f);
+                var b = Quaternion.SlerpUnclamped(midRotation.Value, rotation2, 0.5f);
+                midRotation = Quaternion.SlerpUnclamped(a, b, 0.5f);
+            }
+            else
+            {
+                midRotation = Quaternion.SlerpUnclamped(rotation1, rotation2, 0.5f);
+            }
+
+            var up = midRotation.Value * Vector3.forward;
             var right = (position2 - position1).normalized;
 
             var rotation = Quaternion.LookRotation(right, up);
