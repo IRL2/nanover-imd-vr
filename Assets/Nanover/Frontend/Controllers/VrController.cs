@@ -19,6 +19,13 @@ namespace Nanover.Frontend.Controllers
 
         public NanoverRenderModel RenderModel => renderModel;
 
+        public enum ControllerAnchor
+        {
+            Cursor,
+            Grip,
+            Head,
+        }
+
         private ControllerPivot cursor;
         private ControllerPivot grip;
         private ControllerPivot head;
@@ -85,7 +92,7 @@ namespace Nanover.Frontend.Controllers
 
         private void OnHeadPoseChanged()
         {
-            headPose.SetPose(cursor.Pose);
+            headPose.SetPose(head.Pose);
         }
 
         /// <summary>
@@ -116,13 +123,20 @@ namespace Nanover.Frontend.Controllers
         /// Set the current gizmo at the end of the controller.
         /// </summary>
         /// <param name="interactionGizmo">A <see cref="GameObject"/> representing the gizmo at the end of the controller, or null if there should be no gizmo.</param>
-        public void InstantiateCursorGizmo(GameObject interactionGizmo)
+        public void InstantiateCursorGizmo(GameObject interactionGizmo, ControllerAnchor anchor)
         {
             if (cursorGizmo != null)
                 Destroy(cursorGizmo);
             if (cursor != null && interactionGizmo != null)
             {
-                cursorGizmo = Instantiate(interactionGizmo, cursor.transform);
+                var pivot =
+                    anchor == ControllerAnchor.Grip ? grip.transform :
+                    anchor == ControllerAnchor.Cursor ? cursor.transform :
+                    anchor == ControllerAnchor.Head ? head.transform : 
+                    cursor.transform;
+
+
+                cursorGizmo = Instantiate(interactionGizmo, pivot);
             }
         }
     }

@@ -27,9 +27,13 @@ namespace NanoverImd.UI
                 text.enabled = true;
                 strength -= Time.deltaTime * decaySpeed;
                 text.color = new Color(1, 1, 1, strength * strength * (3 - 2 * strength));
-                this.transform.rotation =
-                    Quaternion.LookRotation(-(Camera.main.transform.position - this.transform.position),
-                                            this.transform.parent.forward);
+
+                var forwards = -(Camera.main.transform.position - transform.position);
+                var horizontal = Vector3.Cross(forwards, Vector3.up);
+                var up = Vector3.Cross(horizontal, forwards);
+
+                transform.rotation =
+                    Quaternion.LookRotation(forwards, up);
             }
             else
             {

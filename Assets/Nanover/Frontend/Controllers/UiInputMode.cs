@@ -10,6 +10,9 @@ namespace Nanover.Frontend.Controllers
         private GameObject gizmo;
 
         [SerializeField]
+        private VrController.ControllerAnchor anchor;
+
+        [SerializeField]
         private int priority;
 
         [SerializeField]
@@ -45,9 +48,9 @@ namespace Nanover.Frontend.Controllers
             {
                 var dominant = (Controllers.DominantHand & inputSource) != InputDeviceCharacteristics.None || bothHands;
                 if (dominant)
-                    controller.InstantiateCursorGizmo(gizmo);
+                    controller.InstantiateCursorGizmo(gizmo, anchor);
                 else
-                    controller.InstantiateCursorGizmo(null);
+                    controller.InstantiateCursorGizmo(null, anchor);
                 if (dominant)
                     controller.RenderModel.SetColor(Color.white);
                 else

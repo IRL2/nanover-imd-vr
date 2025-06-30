@@ -87,7 +87,7 @@ namespace NanoverImd.Interaction
             if (!controller.IsControllerActive)
                 return;
 
-            var toolPoser = controller.CursorPose;
+            var toolPoser = controller.HeadPose;
             manipulator = new AttemptableManipulator(toolPoser, (pose) => AttemptGrabObjectUser(pose, label));
 
             button = characteristics.WrapUsageAsButton(CommonUsages.triggerButton, () => controllerManager.CurrentInputMode == targetMode);
