@@ -6142,6 +6142,7 @@ MonoBehaviour:
   solidLinePrefab: {fileID: 8473074644553670826, guid: 656c6966d64cc6b418a5325e4d32ccdd,
     type: 3}
   simulationParent: {fileID: 92531328}
+  simulation: {fileID: 431384315}
 --- !u!1001 &1520934828
 PrefabInstance:
   m_ObjectHideFlags: 0

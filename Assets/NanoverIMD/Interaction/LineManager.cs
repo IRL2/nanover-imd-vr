@@ -1,11 +1,17 @@
 using System.Collections.Generic;
+using System.Linq;
+using NanoverImd;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 public class LineManager : MonoBehaviour
 {
     [SerializeField] private GameObject dashLinePrefab;
     [SerializeField] private GameObject solidLinePrefab;
     [SerializeField] private Transform simulationParent;
+
+    [SerializeField] private NanoverImdSimulation simulation;
+
 
     // types of lines
     public const int SOLID_LINE = 0;
@@ -29,7 +35,12 @@ public class LineManager : MonoBehaviour
         linePoints[lineIndex].Add(point);
         lines[lineIndex].positionCount = linePoints[lineIndex].Count;
         lines[lineIndex].SetPositions(linePoints[lineIndex].ToArray());
+
+        var coords = Nanover.Core.Serialization.Serialization.ToDataStructure(linePoints[lineIndex]) ;
+
+        simulation.Multiplayer.SetSharedState("referenceLine." + lineIndex, coords);
     }
+
 
     public void DragLastPoint(int lineIndex, Vector3 point)
     {
@@ -56,15 +67,19 @@ public class LineManager : MonoBehaviour
         if (lines[lineIndex] != null && lines[lineIndex].gameObject != null)
         {
             Destroy(lines[lineIndex].gameObject);
+            lines.RemoveAt(lineIndex);
+            linePoints.RemoveAt(lineIndex);
         }
-        lines.RemoveAt(lineIndex);
-        linePoints.RemoveAt(lineIndex);
+
+        simulation.Multiplayer.RemoveSharedStateKey("referenceLine." + lineIndex);
     }
 
-    public void RemoveAllLinesxx()
+    public void RemoveAllLines()
     {
-        foreach (var line in lines)
-            Destroy(line.gameObject);
+        for (int i = lines.Count - 1; i >= 0; i--)
+        {
+            RemoveLine(i);
+        }
         lines.Clear();
         linePoints.Clear();
     }

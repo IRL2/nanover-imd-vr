@@ -89,7 +89,6 @@ namespace NanoverImd.Interaction
                     createdLineIndices.RemoveAt(createdLineIndices.Count - 1);
                     currentLineIndex = createdLineIndices.Count > 0 ? createdLineIndices.Count - 1 : -1;
                 }
-                //return;
             }
 
             referenceProp.position = userPointer.position;
