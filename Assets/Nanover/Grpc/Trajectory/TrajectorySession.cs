@@ -110,6 +110,8 @@ namespace Nanover.Grpc.Trajectory
             frameStream?.Dispose();
             frameStream = null;
 
+            trajectorySnapshot.Clear();
+
             await Task.CompletedTask;
         }
 
