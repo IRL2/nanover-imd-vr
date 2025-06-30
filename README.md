@@ -42,9 +42,13 @@ Once open in Unity, the main Unity scene can be found in `NanoverImd/Assets/Nano
 
 ## Citation, Credits and External Libraries
 
-If you find this project useful, please cite the following paper: 
+Any work that uses NanoVer should cite the following publications:
 
-M. O’Connor, S.J. Bennie, H.M. Deeks, A. Jamieson-Binnie, A.J. Jones, R.J. Shannon, R. Walters, T. Mitchell, A.J. Mulholland, D.R. Glowacki, [“Interactive molecular dynamics from quantum chemistry to drug binding: an open-source multi-person virtual reality framework”](https://aip.scitation.org/doi/10.1063/1.5092590), J. Chem Phys 150, 224703 (2019)
+> Stroud, H. J., Wonnacott, M. D., Barnoud, J., Roebuck Williams, R., Dhouioui, M., McSloy, A., Aisa, L., Toledo, L. E., Bates, P., Mulholland, A. J., & Glowacki, D. R. (2025). NanoVer Server: A Python Package for Serving Real-Time Multi-User Interactive Molecular Dynamics in Virtual Reality. *Journal of Open Source Software*, *10* (110), 8118. https://doi.org/10.21105/joss.08118
+
+> Jamieson-Binnie, A. D., O’Connor, M. B., Barnoud, J., Wonnacott, M. D., Bennie, S. J., & Glowacki, D. R. (2020, August 17). Narupa iMD: A VR-Enabled Multiplayer Framework for Streaming Interactive Molecular Simulations. ACM SIGGRAPH 2020 Immersive Pavilion. SIGGRAPH ’20: Special Interest Group on Computer Graphics and Interactive Techniques Conference. https://doi.org/10.1145/3388536.3407891
+
+> O’Connor, M., Bennie, S. J., Deeks, H. M., Jamieson-Binnie, A., Jones, A. J., Shannon, R. J., Walters, R., Mitchell, T., Mulholland, A. J., & Glowacki, D. R. (2019). Interactive molecular dynamics from quantum chemistry to drug binding: an open-source multi-person virtual reality framework, *The Journal of Chemical Physics*, *150* (22), 224703. https://doi.org/10.1021/acs.jcim.0c01030
 
 This project has been made possible by the following projects. We gratefully thank them for their efforts, and suggest that you use and cite them:
 
