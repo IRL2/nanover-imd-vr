@@ -17,6 +17,10 @@ namespace NanoverImd.Interaction
     /// </summary>
     public class ManipulableScenePose
     {
+        private const float MinScale = 0.01f;
+        private const float MaxScale = 10f;
+        private const float MaxOffset = 10f;
+
         private readonly Transform sceneTransform;
         private readonly ManipulableTransform manipulable;
         private readonly MultiplayerSession multiplayer;
@@ -125,7 +129,10 @@ namespace NanoverImd.Interaction
                 if (CurrentlyEditingScene && multiplayer.IsOpen)
                 {
                     var worldPose = Transformation.FromTransformRelativeToParent(sceneTransform);
-                    ClampToSensibleValues(worldPose);
+
+                    ClampToSensibleValues(ref worldPose);
+                    worldPose.CopyToTransformRelativeToParent(sceneTransform);
+
                     var calibPose = calibratedSpace.TransformPoseWorldToCalibrated(worldPose);
                     multiplayer.SimulationPose.UpdateValueWithLock(calibPose);
                 }
@@ -134,21 +141,20 @@ namespace NanoverImd.Interaction
             }
         }
 
-        private void ClampToSensibleValues(Transformation worldPose)
+        private void ClampToSensibleValues(ref Transformation worldPose)
         {
             if (float.IsNaN(worldPose.Position.x)
              || float.IsNaN(worldPose.Position.y)
              || float.IsNaN(worldPose.Position.z))
                 worldPose.Position = Vector3.zero;
-            worldPose.Position = Vector3.ClampMagnitude(worldPose.Position, 100f);
-            
-            if (float.IsNaN(worldPose.Scale.x)
-             || float.IsNaN(worldPose.Scale.y)
-             || float.IsNaN(worldPose.Scale.z))
-                worldPose.Scale = Vector3.one;
-            worldPose.Scale.x = Mathf.Clamp(worldPose.Scale.x, 0.001f, 1000f);
-            worldPose.Scale.y = Mathf.Clamp(worldPose.Scale.y, 0.001f, 1000f);
-            worldPose.Scale.z = Mathf.Clamp(worldPose.Scale.z, 0.001f, 1000f);
+            worldPose.Position = Vector3.ClampMagnitude(worldPose.Position, MaxOffset);
+
+            var scale = Mathf.Clamp(worldPose.Scale.x, MinScale, MaxScale);
+
+            if (float.IsNaN(scale))
+                scale = 1f;
+
+            worldPose.Scale = Vector3.one * scale;
         }
 
         private void EndAllManipulations()
