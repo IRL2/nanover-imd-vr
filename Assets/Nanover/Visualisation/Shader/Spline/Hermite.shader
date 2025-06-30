@@ -1,4 +1,4 @@
-﻿Shader "Nanover/Spline/Hermite"
+Shader "Nanover/Spline/Hermite"
 {
     Properties
     {
@@ -8,7 +8,10 @@
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { 
+            "RenderType"="Opaque"
+            "LightMode"="ForwardBase"
+        }
         LOD 100
 
         Pass
