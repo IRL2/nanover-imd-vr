@@ -10,7 +10,11 @@ Shader "NanoverIMD/Translucent/Raycast Cylinder"
     }
     SubShader
     {
-        Tags { "RenderType"="Transparent" "Queue"="AlphaTest" }
+        Tags { 
+            "RenderType"="Transparent" 
+            "Queue"="AlphaTest" 
+            "LightMode"="ForwardBase"
+        }
         LOD 200
         Blend SrcAlpha OneMinusSrcAlpha
         

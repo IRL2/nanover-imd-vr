@@ -7,7 +7,12 @@ Shader "NanoverXR/Translucent/Billboard Circle"
     }
     SubShader
     {
-        Tags { "RenderType"="Transparent" "Queue"="AlphaTest" "PreviewType"="Plane" }
+        Tags { 
+            "RenderType"="Transparent" 
+            "Queue"="AlphaTest" 
+            "PreviewType"="Plane" 
+            "LightMode"="ForwardBase"
+        }
         LOD 200
         Blend SrcAlpha OneMinusSrcAlpha
         

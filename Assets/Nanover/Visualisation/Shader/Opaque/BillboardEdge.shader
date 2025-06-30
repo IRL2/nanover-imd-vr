@@ -8,7 +8,10 @@ Shader "NanoverIMD/Opaque/Billboard Edge"
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { 
+            "RenderType"="Opaque"
+            "LightMode"="ForwardBase"
+        }
         LOD 100
         
         Cull Back
