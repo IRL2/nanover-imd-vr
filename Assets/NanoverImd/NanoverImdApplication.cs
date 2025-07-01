@@ -19,7 +19,6 @@ namespace NanoverImd
     public sealed class NanoverImdApplication : MonoBehaviour
     {
 #pragma warning disable 0649
-        
         [SerializeField]
         private NanoverImdSimulation simulation;
 
@@ -28,6 +27,9 @@ namespace NanoverImd
 
         [SerializeField]
         private GameObject boxVisualiser;
+
+        [SerializeField]
+        private NanoverImdMetaCalibrator metaCalibrator;
 
         [Header("Passthrough")]
         [SerializeField]
@@ -130,6 +132,7 @@ namespace NanoverImd
 
             if (simulation.Multiplayer.TimeSinceIndex > timeout)
             {
+                Debug.LogError($"{simulation.Multiplayer.TimeSinceIndex} / {simulation.Multiplayer.AwaitingIndex}");
                 Disconnect();
                 connectionLost.Invoke();
             }
@@ -249,7 +252,8 @@ namespace NanoverImd
                 point0.y = 0;
                 point1.y = 0;
 
-                CalibratedSpace.CalibrateFromTwoControlPoints(point0, point1);
+                //CalibratedSpace.CalibrateFromTwoControlPoints(point0, point1);
+                metaCalibrator.Setup(point0, point1);
             }
         }
 
