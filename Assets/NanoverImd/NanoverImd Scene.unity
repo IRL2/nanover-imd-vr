@@ -4682,6 +4682,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  connectionLost:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 313862644}
+        m_TargetAssemblyTypeName: NanoverImd.UI.UserInterfaceManager, NanoverImd
+        m_MethodName: GotoScene
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 1862273331}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &553159942
 GameObject:
   m_ObjectHideFlags: 0
@@ -13625,6 +13640,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1016063341}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1862273331 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1767984777653615906, guid: 5ce1f7023435bfe4994f657b9d8d9612, type: 3}
+  m_PrefabInstance: {fileID: 1757073662}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1865951357 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4991043161427722009, guid: 667cc4daec5d5a44cb6c3ec450d505ab, type: 3}
