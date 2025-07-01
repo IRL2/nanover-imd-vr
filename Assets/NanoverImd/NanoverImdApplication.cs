@@ -95,7 +95,6 @@ namespace NanoverImd
         /// Called from UI to quit the application.
         /// </summary>
         public void Quit() => Application.Quit();
-#pragma warning restore 4014
 
         private void Update()
         {
