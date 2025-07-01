@@ -40,6 +40,8 @@ namespace NanoverImd
         [Header("Events")]
         [SerializeField]
         private UnityEvent connectionEstablished;
+        [SerializeField]
+        private UnityEvent connectionLost;
 #pragma warning restore 0649
 
         public NanoverImdSimulation Simulation => simulation;
@@ -97,6 +99,8 @@ namespace NanoverImd
 
         private void Update()
         {
+            CheckDisconnect();
+
             if (ManualColocation)
             {
 
@@ -118,6 +122,18 @@ namespace NanoverImd
             var color = camera.backgroundColor;
             color.a = 1f - passthrough;
             camera.backgroundColor = color;
+            Debug.LogError($"MULTI {simulation.Multiplayer.TimeSinceIndex:0.0}s");
+        }
+
+        private void CheckDisconnect()
+        {
+            const float timeout = 10f;
+
+            if (simulation.Multiplayer.TimeSinceIndex > timeout)
+            {
+                Disconnect();
+                connectionLost.Invoke();
+            }
         }
 
         private void UpdateSuggestedParameters()
