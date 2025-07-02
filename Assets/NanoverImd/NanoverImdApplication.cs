@@ -123,7 +123,6 @@ namespace NanoverImd
             var color = camera.backgroundColor;
             color.a = 1f - passthrough;
             camera.backgroundColor = color;
-            Debug.LogError($"MULTI {simulation.Multiplayer.TimeSinceIndex:0.0}s");
         }
 
         private void CheckDisconnect()
