@@ -52,34 +52,47 @@
         unity_WorldToObject = mul(unity_WorldToObject, WorldToObject);
     }
     
+    // https://stackoverflow.com/a/43454629
+    float3 arbitrary_orthogonal(float3 vec)
+    {
+        bool b0 = (abs(vec.x) <  abs(vec.y)) && (abs(vec.x) <  abs(vec.z));
+        bool b1 = (abs(vec.y) <= abs(vec.x)) && (abs(vec.y) <  abs(vec.z));
+        bool b2 = (abs(vec.z) <= abs(vec.x)) && (abs(vec.z) <= abs(vec.y));
+    
+        return cross(vec, float3(b0, b1, b2));
+    }
+
     /// Set the transformation matrices for an object between two positions, but with no specific rotation relative
     /// to the axis between the points. Used for position cylinders.
     void setup_isotropic_edge_transformation(float3 startPosition, float3 endPosition, float scale) {
-
+        // translation should be the midpoint
         float4 p = float4(0.5 * (startPosition + endPosition), 1);
+    
+        // z-axis is the unit vector pointing along the edge
         float4 d = float4(normalize(endPosition - startPosition), 0);
 
+        // z-scale is the length of the edge
         float3 s = float3(scale, scale, length(endPosition - startPosition));
+        
+        // generate two axes orthogonal to d
+        float4 k1 = float4(normalize(arbitrary_orthogonal(d.xyz)), 0);
+        float4 k2 = float4(normalize(cross(d.xyz, k1.xyz)), 0);
 
-        float l1 = (d.y*d.y + d.x*d.x*d.z) / (1.0 - d.z*d.z);
-        float l2 = d.x * d.y * (d.z - 1) / (1.0 - d.z*d.z);
-        float l3 = (d.x*d.x + d.y*d.y*d.z) / (1.0 - d.z*d.z);
-
-        float4 k1 = float4(l1, l2, -d.x, 0);
-        float4 k2 = float4(l2, l3, -d.y, 0);
-
+        // transform matrix is the three axis vectors scaled, plus transformation
         unity_ObjectToWorld._11_21_31_41 = s.x * k1;
         unity_ObjectToWorld._12_22_32_42 = s.y * k2;
         unity_ObjectToWorld._13_23_33_43 = s.z * d;
         unity_ObjectToWorld._14_24_34_44 = p;
 
+        // inverse of transformation matrix
         unity_WorldToObject._11_12_13_14 = float4(k1.xyz, -dot(k1, p)) / s.x;
         unity_WorldToObject._21_22_23_24 = float4(k2.xyz, -dot(k2, p)) / s.y;
         unity_WorldToObject._31_32_33_34 = float4(d.xyz, -dot(d, p)) / s.z;
         unity_WorldToObject._41_42_43_44 = float4(0,0,0,1);
 
-    		unity_ObjectToWorld = mul(ObjectToWorld, unity_ObjectToWorld);
-    		unity_WorldToObject = mul(unity_WorldToObject, WorldToObject);
+        // apply to existing
+    	unity_ObjectToWorld = mul(ObjectToWorld, unity_ObjectToWorld);
+    	unity_WorldToObject = mul(unity_WorldToObject, WorldToObject);
     }
     
     void setup_billboard_edge_transformation_z(float3 startPosition, float3 endPosition, float2 scale) {
@@ -169,7 +182,5 @@
         m._14_24_34_44 = float4(0,0,0,1);
         return m;
     }
-
-
 
 #endif
