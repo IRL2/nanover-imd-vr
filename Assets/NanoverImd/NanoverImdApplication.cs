@@ -8,6 +8,7 @@ using Nanover.Core.Math;
 using UnityEngine.XR;
 using System.Collections.Generic;
 using Nanover.Grpc.Multiplayer;
+using Nanover.Frontend.Controllers;
 
 namespace NanoverImd
 {
@@ -19,7 +20,6 @@ namespace NanoverImd
     public sealed class NanoverImdApplication : MonoBehaviour
     {
 #pragma warning disable 0649
-        
         [SerializeField]
         private NanoverImdSimulation simulation;
 
@@ -28,6 +28,12 @@ namespace NanoverImd
 
         [SerializeField]
         private GameObject boxVisualiser;
+
+        [SerializeField]
+        private ControllerManager controllerManager;
+
+        [SerializeField]
+        private NanoverImdMetaCalibrator metaCalibrator;
 
         [Header("Passthrough")]
         [SerializeField]
@@ -129,6 +135,7 @@ namespace NanoverImd
 
             if (simulation.Multiplayer.TimeSinceIndex > timeout)
             {
+                Debug.LogError($"{simulation.Multiplayer.TimeSinceIndex} / {simulation.Multiplayer.AwaitingIndex}");
                 Disconnect();
                 connectionLost.Invoke();
             }
@@ -141,6 +148,7 @@ namespace NanoverImd
             const string passthroughKey = "suggested.passthrough";
             const string boxLockedKey = "suggested.box.locked";
             const string boxHiddenKey = "suggested.box.hidden";
+            const string debugColocationKey = "debug.colocation";
 
             if (simulation.Multiplayer.GetSharedState(scaleKey) is double scale)
             {
@@ -174,6 +182,15 @@ namespace NanoverImd
             {
                 boxVisualiser.SetActive(true);
             }
+
+            var colocationDebug = false;
+
+            if (simulation.Multiplayer.GetSharedState(debugColocationKey) is bool debug)
+                colocationDebug = debug;
+
+            metaCalibrator.referenceAnchor.gameObject.SetActive(colocationDebug);
+            metaCalibrator.referencePointA.gameObject.SetActive(colocationDebug);
+            metaCalibrator.referencePointB.gameObject.SetActive(colocationDebug);
         }
 
         private Vector3 playareaSize = Vector3.zero;
@@ -219,18 +236,32 @@ namespace NanoverImd
 
         public void RunCalibration()
         {
+            metaCalibrator.Clear();
             poses.Clear();
             ManualColocation = true;
 
+            controllerManager.RightController.PushNotification($"Place two points");
+
             var hand = InputDeviceCharacteristics.Right;
-            var button = hand.WrapUsageAsButton(UnityEngine.XR.CommonUsages.triggerButton);
+            var button = hand.WrapUsageAsButton(CommonUsages.triggerButton);
             button.Pressed += OnPressed;
 
             void OnPressed()
             {
-                if (hand.GetFirstDevice().GetSinglePose() is { } pose)
+                if (controllerManager.RightController.HeadPose.Pose is { } pose)
                 {
                     poses.Add(pose);
+
+                    if (poses.Count == 1)
+                    {
+                        metaCalibrator.referencePointA.position = pose.Position;
+                        controllerManager.RightController.PushNotification($"Place Colo-A");
+                    }
+                    else
+                    {
+                        metaCalibrator.referencePointB.position = pose.Position;
+                        controllerManager.RightController.PushNotification($"Placed Colo-B");
+                    }
 
                     if (poses.Count >= 2)
                         OnReady();
@@ -248,7 +279,8 @@ namespace NanoverImd
                 point0.y = 0;
                 point1.y = 0;
 
-                CalibratedSpace.CalibrateFromTwoControlPoints(point0, point1);
+                //CalibratedSpace.CalibrateFromTwoControlPoints(point0, point1);
+                metaCalibrator.Setup(point0, point1);
             }
         }
 

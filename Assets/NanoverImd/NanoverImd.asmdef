@@ -8,7 +8,9 @@
         "Nanover.Grpc",
         "Nanover.Frame",
         "Nanover.Core",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Meta.XR.BuildingBlocks",
+        "Oculus.VR"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
