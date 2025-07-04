@@ -1,5 +1,4 @@
 using UnityEngine;
-using Meta.XR.BuildingBlocks;
 
 namespace NanoverImd
 {
@@ -10,32 +9,38 @@ namespace NanoverImd
         [SerializeField]
         private NanoverImdApplication application;
         [SerializeField]
-        private SpatialAnchorCoreBuildingBlock spatialAnchors;
-        [SerializeField]
         private GameObject colocationAnchor;
 #pragma warning restore 0649
 
-        private GameObject anchor;
+        public Transform referenceAnchor;
+        public Transform referencePointA;
+        public Transform referencePointB;
+
+        private OVRSpatialAnchor anchor;
+
+        public void Clear()
+        {
+            colocationAnchor.SetActive(false);
+
+            if (anchor != null)
+                Destroy(anchor);
+        }
 
         public void Setup(Vector3 pointA, Vector3 pointB)
         {
+            Clear();
+
             var center = Vector3.LerpUnclamped(pointA, pointB, 0.5f);
             var normal = Vector3.Cross(Vector3.up, pointB - pointA).normalized;
             var rotation = Quaternion.LookRotation(normal, Vector3.up);
 
             colocationAnchor.transform.SetLocalPositionAndRotation(center, rotation);
-            spatialAnchors.InstantiateSpatialAnchor(colocationAnchor, center, rotation);
+            colocationAnchor.SetActive(true);
 
-            spatialAnchors.OnAnchorCreateCompleted.AddListener((anchor, result) =>
-            {
-                this.anchor = anchor.gameObject;
-                anchor.gameObject.SetActive(true);
+            anchor = colocationAnchor.AddComponent<OVRSpatialAnchor>();
 
-                if (result != OVRSpatialAnchor.OperationResult.Success)
-                {
-                    DebugPanel.Instance.AddText($"FAILED ANCHORS {result}");
-                }
-            });
+            referencePointA.SetParent(colocationAnchor.transform, worldPositionStays: true);
+            referencePointB.SetParent(colocationAnchor.transform, worldPositionStays: true);
         }
 
         private void Update()
@@ -43,8 +48,8 @@ namespace NanoverImd
             if (anchor == null)
                 return;
 
-            var center = anchor.transform.position;
-            var normal = anchor.transform.forward;
+            var center = colocationAnchor.transform.position;
+            var normal = colocationAnchor.transform.forward;
             application.CalibratedSpace.CalibrateFromTwoControlPoints(center, center + normal);
         }
     }
