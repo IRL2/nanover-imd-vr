@@ -286,6 +286,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   simulation: {fileID: 431384315}
   debugLine: {fileID: 13188940}
+  Type: spring
+  Scale: 300
+  Speed: 0.5
+  ErrorThreshold: 0.25
 --- !u!120 &13188940
 LineRenderer:
   serializedVersion: 2

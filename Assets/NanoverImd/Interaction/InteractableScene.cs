@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Nanover.Core.Math;
+using Nanover.Frame;
 using Nanover.Frontend.Controllers;
 using Nanover.Frontend.Manipulation;
 using Nanover.Visualisation;
@@ -129,7 +130,7 @@ namespace NanoverImd.Interaction
             return particleIndex;
         }
 
-        private IEnumerable<int> GetInteractionIndices(int particleIndex)
+        public static IEnumerable<int> GetInteractionIndices(Frame frame, int particleIndex, InteractionTarget interactionTarget)
         {
             switch (interactionTarget)
             {
@@ -137,7 +138,6 @@ namespace NanoverImd.Interaction
                     yield return particleIndex;
                     break;
                 case InteractionTarget.Residue:
-                    var frame = simulation.FrameSynchronizer.CurrentFrame;
                     if (frame.ParticleResidues == null || frame.ParticleResidues.Length == 0)
                     {
                         yield return particleIndex;
@@ -150,11 +150,16 @@ namespace NanoverImd.Interaction
                         yield return particleIndex;
                         break;
                     }
-                    for(var i = 0; i < frame.ParticleCount; i++)
+                    for (var i = 0; i < frame.ParticleCount; i++)
                         if (frame.ParticleResidues[i] == residue)
                             yield return i;
                     break;
             }
+        }
+
+        private IEnumerable<int> GetInteractionIndices(int particleIndex)
+        {
+            return GetInteractionIndices(simulation.FrameSynchronizer.CurrentFrame, particleIndex, interactionTarget);
         }
 
         /// <summary>
