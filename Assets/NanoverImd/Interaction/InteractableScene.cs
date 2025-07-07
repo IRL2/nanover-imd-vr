@@ -19,6 +19,8 @@ namespace NanoverImd.Interaction
     /// </summary>
     public class InteractableScene : MonoBehaviour, IInteractableParticles
     {
+        public float DistanceCutoff { get; set; } = 100f; //0.25f;
+
         [Header("The provider of the frames which can be grabbed.")]
         [SerializeField]
         private SynchronisedFrameSource frameSource;
@@ -120,7 +122,7 @@ namespace NanoverImd.Interaction
 
             var particleIndex = GetClosestParticleToWorldPosition(
                 grabberPose.Position,
-                cutoff: scale * .25f,
+                cutoff: scale * DistanceCutoff,
                 includeHydrogens: interactionTarget == InteractionTarget.Residue
             );
 
