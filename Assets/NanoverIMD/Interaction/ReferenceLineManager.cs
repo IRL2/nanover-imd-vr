@@ -70,6 +70,15 @@ namespace NanoverImd.Interaction
             TryToEnableHaptics();
         }
 
+        void FixedUpdate()
+        {
+            primaryButtonPrevPressed = primaryButton.IsPressed;
+            secondaryButtonPrevPressed = secondaryButton.IsPressed;
+            xButtonPrevPressed = xButton.IsPressed;
+            yButtonPrevPressed = yButton.IsPressed;
+            menuButtonPrevPressed = menuButton.IsPressed;
+        }
+
         void Update()
         {
             if (userPointer == null)
@@ -82,13 +91,15 @@ namespace NanoverImd.Interaction
             // Delete the last line
             if (secondaryButton.IsPressed && !secondaryButtonPrevPressed)
             {
-                if (createdLineIndices.Count > 0)
-                {
-                    UnityEngine.Debug.Log($"Removing reference line {currentLineIndex} out of #{createdLineIndices.Count}");
-                    lineManager.RemoveLine(currentLineIndex);
-                    createdLineIndices.RemoveAt(createdLineIndices.Count - 1);
-                    currentLineIndex = createdLineIndices.Count > 0 ? createdLineIndices.Count - 1 : -1;
-                }
+                lineManager.UndoLine(LineManager.DASH_LINE);
+                //return;
+                //if (createdLineIndices.Count > 0)
+                //{
+                //    UnityEngine.Debug.Log($"Removing reference line {currentLineIndex} out of #{createdLineIndices.Count}");
+                //    lineManager.RemoveLine(currentLineIndex);
+                //    createdLineIndices.RemoveAt(createdLineIndices.Count - 1);
+                //    currentLineIndex = createdLineIndices.Count > 0 ? createdLineIndices.Count - 1 : -1;
+                //}
             }
 
             referenceProp.position = userPointer.position;
@@ -163,11 +174,11 @@ namespace NanoverImd.Interaction
             }
 
             // save previous button states
-            primaryButtonPrevPressed = primaryButton.IsPressed;
-            secondaryButtonPrevPressed = secondaryButton.IsPressed;
-            xButtonPrevPressed = xButton.IsPressed;
-            yButtonPrevPressed = yButton.IsPressed;
-            menuButtonPrevPressed = menuButton.IsPressed;
+            //primaryButtonPrevPressed = primaryButton.IsPressed;
+            //secondaryButtonPrevPressed = secondaryButton.IsPressed;
+            //xButtonPrevPressed = xButton.IsPressed;
+            //yButtonPrevPressed = yButton.IsPressed;
+            //menuButtonPrevPressed = menuButton.IsPressed;
         }
 
         private void AddReferencePoint()

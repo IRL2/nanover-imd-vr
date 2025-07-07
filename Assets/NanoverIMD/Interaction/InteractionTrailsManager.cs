@@ -5,6 +5,7 @@ using NanoverImd;
 using NanoverImd.Interaction;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UIElements;
 using UnityEngine.XR;
 
 
@@ -62,20 +63,26 @@ public class InteractionTrailsManager : MonoBehaviour
 
         if (yButton.IsPressed && !yButtonPrevPressed)
         {
+            lineManager.UndoLine(LineManager.SOLID_LINE);
             // remove the last line
-            if (createdLineIndices.Count > 0)
-            {
-                Debug.Log($"Removing interaction trail line {currentLineIndex} out of #{createdLineIndices.Count}");
-                lineManager.RemoveLine(currentLineIndex);
-                createdLineIndices.RemoveAt(createdLineIndices.Count - 1);
-                currentLineIndex = createdLineIndices.Count > 0 ? createdLineIndices.Count - 1 : -1;
-            }
+            //if (createdLineIndices.Count > 0)
+            //{
+            //    Debug.Log($"Removing interaction trail line {currentLineIndex} out of #{createdLineIndices.Count}");
+            //    lineManager.RemoveLine(currentLineIndex);
+            //    createdLineIndices.RemoveAt(createdLineIndices.Count - 1);
+            //    currentLineIndex = createdLineIndices.Count > 0 ? createdLineIndices.Count - 1 : -1;
+            //}
             UpdateInfo();
         }
 
         if (simulation == null || frameSource == null) return;
         ProcessFrameData();
 
+        //yButtonPrevPressed = yButton.IsPressed;
+    }
+
+    void FixedUpdate()
+    {
         yButtonPrevPressed = yButton.IsPressed;
     }
 
