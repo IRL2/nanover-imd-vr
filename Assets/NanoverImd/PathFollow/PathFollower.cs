@@ -17,10 +17,14 @@ namespace NanoverImd.PathFollower
 
         [SerializeField]
         private LineRenderer debugLine;
+
+        [SerializeField]
+        private Transform targetSphere;
+        [SerializeField]
+        private Transform errorSphere;
 #pragma warning restore 0649
         private List<Vector3> path = new List<Vector3>();
 
-        private Transform targetSphere;
         private float targetDistance = 0;
 
         public string Id { get; } = Guid.NewGuid().ToString();
@@ -34,16 +38,6 @@ namespace NanoverImd.PathFollower
         public float Speed = 0.5f;
         [Range(0f, 1f)]
         public float ErrorThreshold = 0.1f;
-
-
-        private void Awake()
-        {
-            var visual = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
-            visual.gameObject.name = "Path Follower Target";
-            visual.localScale = Vector3.one * 0.05f;
-            visual.SetParent(transform);
-            targetSphere = visual;
-        }
 
         private void OnEnable()
         {
@@ -98,6 +92,7 @@ namespace NanoverImd.PathFollower
             }
 
             targetSphere.localPosition = local;
+            errorSphere.localScale = Vector3.one * ErrorThreshold * 2;
             Interaction.Position = local;
             simulation.Interactions.UpdateValue(Id, Interaction);
 
