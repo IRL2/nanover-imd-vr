@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NanoverImd.Interaction;
@@ -44,11 +43,6 @@ namespace NanoverImd.PathFollower
             visual.localScale = Vector3.one * 0.05f;
             visual.SetParent(transform);
             targetSphere = visual;
-        }
-
-        private Vector3 SimPointToWorldPoint(Vector3 sim)
-        {
-            return simulation.interactableScene.transform.TransformPoint(sim);
         }
 
         private void OnEnable()
@@ -103,9 +97,7 @@ namespace NanoverImd.PathFollower
                 }
             }
 
-            var world = SimPointToWorldPoint(local);
-
-            targetSphere.position = world;
+            targetSphere.localPosition = local;
             Interaction.Position = local;
             simulation.Interactions.UpdateValue(Id, Interaction);
 
@@ -133,9 +125,15 @@ namespace NanoverImd.PathFollower
             path.Clear();
             path.Add(origin);
 
+            var rotation = Random.rotationUniform;
+
             for (int i = 1; i < 50; ++i)
             {
-                path.Add(path[^1] + Random.insideUnitSphere);
+                var turn = Random.rotationUniform;
+                rotation = Quaternion.Slerp(rotation, turn, .25f).normalized;
+                var move = (rotation * Vector3.forward);
+
+                path.Add(path[^1] + move * Random.value * .5f);
             }
 
             debugLine.positionCount = path.Count;

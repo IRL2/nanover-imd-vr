@@ -36,7 +36,7 @@ namespace NanoverImd
         private Transform rightHandedSimulationSpace;
 
         [SerializeField]
-        public InteractableScene interactableScene;
+        private InteractableScene interactableScene;
 
         [SerializeField]
         private NanoverImdApplication application;
