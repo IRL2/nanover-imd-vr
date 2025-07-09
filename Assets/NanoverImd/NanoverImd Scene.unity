@@ -10108,6 +10108,18 @@ PrefabInstance:
       value: -76.60445
       objectReference: {fileID: 0}
     - target: {fileID: 3963654245958493611, guid: 11d9c1728005b9147a8e3a1b6856e431, type: 3}
+      propertyPath: offset.x
+      value: -0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 3963654245958493611, guid: 11d9c1728005b9147a8e3a1b6856e431, type: 3}
+      propertyPath: offset.y
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 3963654245958493611, guid: 11d9c1728005b9147a8e3a1b6856e431, type: 3}
+      propertyPath: offset.z
+      value: 0.03
+      objectReference: {fileID: 0}
+    - target: {fileID: 3963654245958493611, guid: 11d9c1728005b9147a8e3a1b6856e431, type: 3}
       propertyPath: controllers
       value: 
       objectReference: {fileID: 2074532958}
@@ -15417,6 +15429,18 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 431384315}
+    - target: {fileID: 783323445283192389, guid: 58cdccc6469da4f4b9db76cacd78c500, type: 3}
+      propertyPath: offset.x
+      value: -0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 783323445283192389, guid: 58cdccc6469da4f4b9db76cacd78c500, type: 3}
+      propertyPath: offset.y
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 783323445283192389, guid: 58cdccc6469da4f4b9db76cacd78c500, type: 3}
+      propertyPath: offset.z
+      value: 0.03
+      objectReference: {fileID: 0}
     - target: {fileID: 783323445283192389, guid: 58cdccc6469da4f4b9db76cacd78c500, type: 3}
       propertyPath: controllers
       value: 
