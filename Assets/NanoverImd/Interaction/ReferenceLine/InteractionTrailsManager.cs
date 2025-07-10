@@ -29,7 +29,7 @@ public class InteractionTrailsManager : MonoBehaviour
     private UnityEngine.XR.InputDevice rightHandDevice;
     private UnityEngine.XR.HapticCapabilities hapticCapabilities;
 
-    private Nanover.Frontend.Input.IButton yButton;
+    [SerializeField] private Nanover.Frontend.Input.IButton yButton;
     private bool yButtonPrevPressed = false;
 
     private float currentColorHue = 0.5f;
@@ -44,12 +44,12 @@ public class InteractionTrailsManager : MonoBehaviour
         rightHandDevice.TryGetHapticCapabilities(out hapticCapabilities);
         hasHaptics = hapticCapabilities.supportsImpulse;
 
-        yButton = InputDeviceCharacteristics.Left.WrapUsageAsButton(CommonUsages.secondaryButton);
-        yButtonPrevPressed = yButton.IsPressed;
+        yButton = InputDeviceCharacteristics.Left.WrapUsageAsButton(CommonUsages.primaryButton);
     }
 
     void Update()
     {
+        // this should go to the HapticController class
         if (!hasHaptics)
         {
             rightHandDevice = UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.RightHand);
@@ -61,16 +61,18 @@ public class InteractionTrailsManager : MonoBehaviour
                 return;
         }
 
-        if (yButton.IsPressed && !yButtonPrevPressed)
+        // delete last line
+        if (yButton. .IsPressed && !yButtonPrevPressed)
         {
             lineManager.UndoLine(LineManager.SOLID_LINE);
             UpdateInfo();
+            return;
         }
 
         if (simulation == null || frameSource == null) return;
         ProcessFrameData();
 
-        //yButtonPrevPressed = yButton.IsPressed;
+        yButtonPrevPressed = yButton.IsPressed;
     }
 
     void LateUpdate()
@@ -82,8 +84,6 @@ public class InteractionTrailsManager : MonoBehaviour
     {
         if (frameSource.CurrentFrame == null) return;
         var data = frameSource.CurrentFrame.Data;
-
-
 
 
         int? atomIndex = GetSelectedAtomIndex(data);

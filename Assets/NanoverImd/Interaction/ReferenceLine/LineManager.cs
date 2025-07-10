@@ -33,11 +33,11 @@ public class LineManager : MonoBehaviour
 
     private readonly List<LineData> lines = new(); // Stores LineData for each line
 
-    public int CreateNewLine(int? type = SOLID_LINE)
+    public int CreateNewLine(int type)
     {
         var lineObj = Instantiate(type == DASH_LINE ? dashLinePrefab : solidLinePrefab, gameObject.transform);
         var lineRenderer = lineObj.GetComponent<LineRenderer>();
-        lines.Add(new LineData(type ?? SOLID_LINE, lineRenderer));
+        lines.Add(new LineData(type, lineRenderer));
         return lines.Count - 1;
     }
 
@@ -77,13 +77,18 @@ public class LineManager : MonoBehaviour
 
     public void RemoveLine(int index)
     {
+        Debug.Log($"Attempting to remove line {index}");
+
         if (index < 0 || index >= lines.Count) return;
+
         var lineData = lines[index];
+
         if (lineData.Renderer == null)
         {
             Debug.LogWarning($"Line at index {index} is null, cannot remove.");
             return;
         }
+
         if (lineData.Renderer != null && lineData.Renderer.gameObject != null)
         {
             Destroy(lineData.Renderer.gameObject);
@@ -91,18 +96,23 @@ public class LineManager : MonoBehaviour
         }
 
         string key = "lines." + index + (lines[index].Type == DASH_LINE ? ".reference" : ".trail");
+        Debug.Log($"Attempting to remove key {key}");
+
         simulation.Multiplayer.RemoveSharedStateKey(key);
     }
 
     // search for the latest line of type 'type' and remove it from the array
     public void UndoLine(int type)
     {
+        Debug.Log($"Attempting to undo line of type {type}");
+
         for (int i = lines.Count - 1; i >= 0; i--)
         {
             if (lines[i].Type == type)
             {
                 RemoveLine(i);
-                break;
+                return;
+                //break;
             }
         }
     }

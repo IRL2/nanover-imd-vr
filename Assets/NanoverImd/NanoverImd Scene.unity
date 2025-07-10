@@ -796,15 +796,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5781014473931320840, guid: 9edfac87b33b5e44882697606476727d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.2171034
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5781014473931320840, guid: 9edfac87b33b5e44882697606476727d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.10193513
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5781014473931320840, guid: 9edfac87b33b5e44882697606476727d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.49999803
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5781014473931320840, guid: 9edfac87b33b5e44882697606476727d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -11845,7 +11845,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1267373717}
@@ -15201,29 +15201,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9f404e3d8d839c459ddcbd1d1df5b28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  referenceLineManager: {fileID: 1943808255}
-  interactionTrailsManager: {fileID: 1943808254}
-  userInterface: {fileID: 151472979}
+  ObjectsToActivate:
+  - {fileID: 151472979}
+  - {fileID: 1368554804}
+  - {fileID: 1501816046}
+  - {fileID: 2019827473}
+  ObjectsToDeactivate: []
+  ScriptsToEnable:
+  - {fileID: 1943808255}
+  - {fileID: 1943808254}
+  ScriptsToDisable: []
   isExtendedModeEnabled: 0
-  DRAWING_DISABLED: <b>Press [menu] to enable draw mode
-  DRAWING_INSTRUCTIONS: '<b>Hold [A]</b> to draw a line
-
-    <b>Press [A]</b> to
-    add points to the line
-
-    <b>Press [B]</b> to delete the line
-
-    
-
-    <b>Press
-    [Y]</b> to reset trail
-
-    <b>Press [X]</b> to position destiny
-
-    
-
-    <b>Press
-    [menu]</b> to disable drawing mode'
 --- !u!114 &1943808254
 MonoBehaviour:
   m_ObjectHideFlags: 0

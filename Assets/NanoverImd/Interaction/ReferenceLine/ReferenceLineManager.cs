@@ -29,7 +29,7 @@ namespace NanoverImd.Interaction
         [SerializeField] private TextMeshPro lineInfoLabel;
         [SerializeField] private float singlePointThreshold = 0.05f;
         [SerializeField] private float snapshotFrequency = 0.01f;
-        [SerializeField] private Transform userPointer; // The pointer that the user is using to draw lines, where the actual coordinates are taken from.
+        [SerializeField] private Transform userPointer; // The visual pointer 
 
         private List<int> createdLineIndices = new();
 
@@ -39,14 +39,9 @@ namespace NanoverImd.Interaction
         private double lineSmoothnessB = 0.0f;
         private float drawingElapsedTime = 0.0f;
         private Renderer pointerRenderer;
-        private bool modeActive = false;
+        //private bool modeActive = false;
         private Nanover.Frontend.Input.IButton primaryButton, secondaryButton, menuButton, xButton, yButton;
         private bool primaryButtonPrevPressed, secondaryButtonPrevPressed, menuButtonPrevPressed, xButtonPrevPressed, yButtonPrevPressed;
-        private InputDevice rightHandDevice;
-        private UnityEngine.XR.HapticCapabilities hapticCapabilities;
-
-        const string DRAWING_DISABLED = "<b>Press [menu] to enable draw mode";
-        const string DRAWING_INSTRUCTIONS = "<b>Hold [A]</b> to draw a line\r\n<b>Press [A]</b> to add points to the line\r\n<b>Press [B]</b> to delete the line\r\n\r\n<b>Press [Y]</b> to reset trail\r\n<b>Press [X]</b> to position destiny\r\n\r\n<b>Press [menu]</b> to disable drawing mode";
 
         void Start()
         {
@@ -59,12 +54,11 @@ namespace NanoverImd.Interaction
             lineInfoLabel.text = "";
             pointerRenderer = pointerMesh.gameObject.GetComponentInChildren<Renderer>();
             pointerRenderer.enabled = false;
-        }
 
-        private void Awake()
-        {
-            TryToGetPointer();
-            TryToEnableHaptics();
+            secondaryButton.Released += () =>
+            {
+                lineManager.UndoLine(LineManager.DASH_LINE);
+            };
         }
 
         void updateUIInfo(LineRenderer l)
@@ -83,20 +77,13 @@ namespace NanoverImd.Interaction
 
         void Update()
         {
-            if (userPointer == null)
-            {
-                TryToGetPointer();
-                //TryToEnableHaptics();
-                return;
-            }
-
             // Delete the last line
-            if (secondaryButton.IsPressed && !secondaryButtonPrevPressed)
-            {
-                lineManager.UndoLine(LineManager.DASH_LINE);
-                secondaryButtonPrevPressed = true;
-                return;
-            }
+            //if (secondaryButton.IsPressed && !secondaryButtonPrevPressed)
+            //{
+            //    lineManager.UndoLine(LineManager.DASH_LINE);
+            //    //secondaryButtonPrevPressed = true;
+            //    return;
+            //}
 
             pointerMesh.position = userPointer.position;
             pointerMesh.rotation = Quaternion.LookRotation(userPointer.transform.forward, userPointer.transform.up);
@@ -195,41 +182,6 @@ namespace NanoverImd.Interaction
             if (currentLineIndex < 0) return;
             Vector3 pos = pointerMesh.localPosition;
             lineManager.DragLastPoint(currentLineIndex, pos);
-        }
-
-        private void TryToGetPointer()
-        {
-            GameObject.FindObjectsByType<ControllerPivot>(FindObjectsSortMode.None)
-                .Where(x => x.gameObject.name == "Head Angle")
-                .Where(x => x.gameObject.transform.parent.transform.parent.transform.parent.name.Contains("Right"))
-                .ToList()
-                .LastOrDefault(x => userPointer = x.transform);
-
-            if (userPointer != null)
-            {
-                UnityEngine.Debug.Log("User pointer found");
-                pointerRenderer = pointerMesh.gameObject.GetComponentInChildren<Renderer>();
-                pointerRenderer.material.color = new UnityEngine.Color(1f, 1f, 1f, 0.1f);
-                pointerRenderer.enabled = false;
-            }
-            //else {
-            //    UnityEngine.Debug.Log("Cant find user pointer!");
-            //}
-        }
-
-        private void TryToEnableHaptics()
-        {
-            rightHandDevice = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-            rightHandDevice.TryGetHapticCapabilities(out hapticCapabilities);
-            if (!hapticCapabilities.supportsImpulse)
-            {
-                UnityEngine.Debug.LogWarning("Right hand device does not support haptic impulses.");
-            }
-            else
-            {
-                UnityEngine.Debug.Log("Right hand device supports haptic impulses.");
-                rightHandDevice.SendHapticImpulse(0, .5f, .1f); // Test haptic feedback
-            }
         }
     }
 }
