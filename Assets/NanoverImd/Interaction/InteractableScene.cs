@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Nanover.Core.Math;
+using Nanover.Frame;
 using Nanover.Frontend.Controllers;
 using Nanover.Frontend.Manipulation;
 using Nanover.Visualisation;
@@ -19,6 +20,8 @@ namespace NanoverImd.Interaction
     /// </summary>
     public class InteractableScene : MonoBehaviour, IInteractableParticles
     {
+        public float DistanceCutoff { get; set; } = 100f; //0.25f;
+
         [Header("The provider of the frames which can be grabbed.")]
         [SerializeField]
         private SynchronisedFrameSource frameSource;
@@ -120,14 +123,14 @@ namespace NanoverImd.Interaction
 
             var particleIndex = GetClosestParticleToWorldPosition(
                 grabberPose.Position,
-                cutoff: scale * .25f,
+                cutoff: scale * DistanceCutoff,
                 includeHydrogens: interactionTarget == InteractionTarget.Residue
             );
 
             return particleIndex;
         }
 
-        private IEnumerable<int> GetInteractionIndices(int particleIndex)
+        public static IEnumerable<int> GetInteractionIndices(Frame frame, int particleIndex, InteractionTarget interactionTarget)
         {
             switch (interactionTarget)
             {
@@ -135,7 +138,6 @@ namespace NanoverImd.Interaction
                     yield return particleIndex;
                     break;
                 case InteractionTarget.Residue:
-                    var frame = simulation.FrameSynchronizer.CurrentFrame;
                     if (frame.ParticleResidues == null || frame.ParticleResidues.Length == 0)
                     {
                         yield return particleIndex;
@@ -148,11 +150,16 @@ namespace NanoverImd.Interaction
                         yield return particleIndex;
                         break;
                     }
-                    for(var i = 0; i < frame.ParticleCount; i++)
+                    for (var i = 0; i < frame.ParticleCount; i++)
                         if (frame.ParticleResidues[i] == residue)
                             yield return i;
                     break;
             }
+        }
+
+        private IEnumerable<int> GetInteractionIndices(int particleIndex)
+        {
+            return GetInteractionIndices(simulation.FrameSynchronizer.CurrentFrame, particleIndex, interactionTarget);
         }
 
         /// <summary>
