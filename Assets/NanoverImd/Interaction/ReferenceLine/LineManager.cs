@@ -89,16 +89,15 @@ public class LineManager : MonoBehaviour
             return;
         }
 
+        string key = "lines." + index + (lines[index].Type == DASH_LINE ? ".reference" : ".trail");
+        Debug.Log($"Attempting to remove key {key}");
+        simulation.Multiplayer.RemoveSharedStateKey(key);
+
         if (lineData.Renderer != null && lineData.Renderer.gameObject != null)
         {
             Destroy(lineData.Renderer.gameObject);
             lines.RemoveAt(index);
         }
-
-        string key = "lines." + index + (lines[index].Type == DASH_LINE ? ".reference" : ".trail");
-        Debug.Log($"Attempting to remove key {key}");
-
-        simulation.Multiplayer.RemoveSharedStateKey(key);
     }
 
     // search for the latest line of type 'type' and remove it from the array
@@ -112,7 +111,6 @@ public class LineManager : MonoBehaviour
             {
                 RemoveLine(i);
                 return;
-                //break;
             }
         }
     }

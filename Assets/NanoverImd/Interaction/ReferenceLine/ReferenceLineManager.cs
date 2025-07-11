@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+//using System.Diagnostics;
 using System.Linq;
 using Nanover.Visualisation;
 using NanoverImd;
@@ -43,7 +43,7 @@ namespace NanoverImd.Interaction
         private Nanover.Frontend.Input.IButton primaryButton, secondaryButton, menuButton, xButton, yButton;
         private bool primaryButtonPrevPressed, secondaryButtonPrevPressed, menuButtonPrevPressed, xButtonPrevPressed, yButtonPrevPressed;
 
-        void Start()
+        void OnEnable()
         {
             primaryButton = InputDeviceCharacteristics.Right.WrapUsageAsButton(CommonUsages.primaryButton);
             secondaryButton = InputDeviceCharacteristics.Right.WrapUsageAsButton(CommonUsages.secondaryButton);
@@ -55,7 +55,7 @@ namespace NanoverImd.Interaction
             pointerRenderer = pointerMesh.gameObject.GetComponentInChildren<Renderer>();
             pointerRenderer.enabled = false;
 
-            secondaryButton.Released += () =>
+            secondaryButton.Pressed += () =>
             {
                 lineManager.UndoLine(LineManager.DASH_LINE);
             };
@@ -77,14 +77,6 @@ namespace NanoverImd.Interaction
 
         void Update()
         {
-            // Delete the last line
-            //if (secondaryButton.IsPressed && !secondaryButtonPrevPressed)
-            //{
-            //    lineManager.UndoLine(LineManager.DASH_LINE);
-            //    //secondaryButtonPrevPressed = true;
-            //    return;
-            //}
-
             pointerMesh.position = userPointer.position;
             pointerMesh.rotation = Quaternion.LookRotation(userPointer.transform.forward, userPointer.transform.up);
 

@@ -14,15 +14,7 @@ public class LineModeToggler : MonoBehaviour
     [SerializeField] MonoBehaviour[] ScriptsToEnable;
     [SerializeField] MonoBehaviour[] ScriptsToDisable;
 
-    //[SerializeField] ReferenceLineManager referenceLineManager;
-    //[SerializeField] InteractionTrailsManager interactionTrailsManager;
-    //[SerializeField] GameObject userInterface;
-
-    // readonly
     [SerializeField] bool isExtendedModeEnabled = false;
-
-    //[SerializeField] string DRAWING_DISABLED = "<b>Press [menu] to enable draw mode";
-    //[SerializeField] string DRAWING_INSTRUCTIONS = "<b>Hold [A]</b> to draw a line\r\n<b>Press [A]</b> to add points to the line\r\n<b>Press [B]</b> to delete the line\r\n\r\n<b>Press [Y]</b> to reset trail\r\n<b>Press [X]</b> to position destiny\r\n\r\n<b>Press [menu]</b> to disable drawing mode";
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -38,9 +30,6 @@ public class LineModeToggler : MonoBehaviour
         {
             isExtendedModeEnabled = !isExtendedModeEnabled;
             UpdateStates();
-            //userInterface.SetActive(isExtendedModeEnabled);
-            //referenceLineManager.enabled = isExtendedModeEnabled;
-            //interactionTrailsManager.enabled = isExtendedModeEnabled;
         }
         menuButtonPrevPressed = menuButton.IsPressed;
     }
