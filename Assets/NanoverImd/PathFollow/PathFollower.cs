@@ -35,7 +35,9 @@ namespace NanoverImd.PathFollower
         public ParticleInteraction Interaction { get; private set; } = new ParticleInteraction();
 
         [Header("Params")]
+        public int AtomId = 0;
         public string Type = "spring";
+        public InteractionTarget Target = InteractionTarget.Residue;
         [Range(0f, 500f)]
         public float Scale = 300f;
         [Range(0f, 1f)]
@@ -49,7 +51,7 @@ namespace NanoverImd.PathFollower
 
             Interaction = new ParticleInteraction()
             {
-                Particles = GetInteractionIndices(frame, 60, InteractionTarget.Single).ToList(),
+                Particles = GetInteractionIndices(frame, AtomId, Target).ToList(),
                 InteractionType = Type,
                 Scale = Scale,
                 MaxForce = 1000,
@@ -86,6 +88,8 @@ namespace NanoverImd.PathFollower
 
         private void Update()
         {
+            UpdateSuggestedParameters();
+
             var frame = simulation.FrameSynchronizer.CurrentFrame;
 
             Interaction.InteractionType = Type;
@@ -135,24 +139,44 @@ namespace NanoverImd.PathFollower
             }
         }
 
-        public void RandomisePath(Vector3 origin)
+        private void UpdateSuggestedParameters()
         {
-            path.Clear();
-            path.Add(origin);
+            const string atomKey = "suggested.follower.atom";
+            const string scaleKey = "suggested.follower.scale";
+            const string typeKey = "suggested.follower.type";
+            const string targetKey = "suggested.follower.target";
+            const string speedKey = "suggested.follower.speed";
+            const string thresholdKey = "suggested.follower.error";
 
-            var rotation = Random.rotationUniform;
-
-            for (int i = 1; i < 50; ++i)
+            if (simulation.Multiplayer.GetSharedState(atomKey) is double atom)
             {
-                var turn = Random.rotationUniform;
-                rotation = Quaternion.Slerp(rotation, turn, .25f).normalized;
-                var move = (rotation * Vector3.forward);
-
-                path.Add(path[^1] + move * Random.value * .5f);
+                AtomId = (int) atom;
             }
 
-            debugLine.positionCount = path.Count;
-            debugLine.SetPositions(path.ToArray());
+            if (simulation.Multiplayer.GetSharedState(scaleKey) is double scale)
+            {
+                Scale = (float) scale;
+            }
+
+            if (simulation.Multiplayer.GetSharedState(typeKey) is string type)
+            {
+                Type = type;
+            }
+
+            if (simulation.Multiplayer.GetSharedState(targetKey) is string target)
+            {
+                Target = target == "single" ? InteractionTarget.Single : InteractionTarget.Residue;
+            }
+
+            if (simulation.Multiplayer.GetSharedState(speedKey) is double speed)
+            {
+                Speed = (float) speed;
+            }
+
+            if (simulation.Multiplayer.GetSharedState(thresholdKey) is double threshold)
+            {
+                ErrorThreshold = (float) threshold;
+            }
         }
     }
 }
