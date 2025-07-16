@@ -41,6 +41,19 @@ namespace NanoverImd
                 }
             }
 
+            foreach (var key in simulation.Interactions.Keys)
+            {
+                object owner;
+                var interaction = simulation.Interactions.GetValue(key);
+                if (interaction.Other.TryGetValue("owner.id", out owner) && owner is string owner_)
+                {
+                    if (!userIdLastSeen.ContainsKey(owner_))
+                    {
+                        userIdLastSeen.Add(owner_, Time.realtimeSinceStartup);
+                    }
+                }
+            }
+
             foreach (var id in removes)
             {
                 userIdLastSeen.Remove(id);
@@ -52,6 +65,17 @@ namespace NanoverImd
             foreach (var prefix in prefixes)
             {
                 simulation.Multiplayer.RemoveSharedStateKey($"{prefix}.{id}");
+            }
+
+
+            foreach (var key in simulation.Interactions.Keys)
+            {
+                object owner;
+                var interaction = simulation.Interactions.GetValue(key);
+                if (interaction.Other.TryGetValue("owner.id", out owner) && (owner as string) == id)
+                {
+                    simulation.Interactions.RemoveValue(key);
+                }
             }
         }
 
