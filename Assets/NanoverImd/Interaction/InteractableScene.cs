@@ -39,6 +39,8 @@ namespace NanoverImd.Interaction
             Residue
         }
 
+        public float InteractionRange = 0.25f;
+
         [SerializeField]
         private InteractionTarget interactionTarget = InteractionTarget.Single;
 
@@ -86,6 +88,13 @@ namespace NanoverImd.Interaction
             hoveredParticles.Clear();
 
             interactedParticles.Value = pts.ToArray();
+
+            const string interactionRangeKey = "suggested.interaction.range";
+
+            if (simulation.Multiplayer.GetSharedState(interactionRangeKey) is double range)
+            {
+                InteractionRange = (float) range;
+            }
         }
 
         public void HoverParticleGrab(Transformation grabberPose)
@@ -120,8 +129,8 @@ namespace NanoverImd.Interaction
 
             var particleIndex = GetClosestParticleToWorldPosition(
                 grabberPose.Position,
-                cutoff: scale * .25f,
-                includeHydrogens: interactionTarget == InteractionTarget.Residue
+                cutoff: scale * InteractionRange,
+                includeHydrogens: false
             );
 
             return particleIndex;
