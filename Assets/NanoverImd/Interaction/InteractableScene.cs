@@ -197,14 +197,16 @@ namespace NanoverImd.Interaction
             var bestSqrDistance = cutoff * cutoff;
             int? bestParticleIndex = null;
 
+            var interactable = new bool[positions.Length];
+            visualisationScene.GetInteractable(interactable);
+
             for (var i = 0; i < positions.Length; ++i)
             {
                 var particlePosition = positions[i];
                 var sqrDistance = Vector3.SqrMagnitude(position - particlePosition);
 
-                var selection = visualisationScene.GetSelectionForParticle(i);
                 var isHydrogen = (elements[i] == Nanover.Core.Science.Element.Hydrogen);
-                var isInteractable = (selection.Selection.InteractionMethod != ParticleSelection.InteractionMethodNone) && (includeHydrogens || !isHydrogen);
+                var isInteractable = interactable[i] && (includeHydrogens || !isHydrogen);
 
                 if (isInteractable && sqrDistance < bestSqrDistance)
                 {

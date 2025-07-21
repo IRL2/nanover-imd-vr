@@ -157,5 +157,7 @@ namespace NanoverImd.Selection
         {
             return BaseLayer.GetSelectionForParticle(particleIndex);
         }
+
+        public bool GetInteractable(bool[] lookup) => BaseLayer.GetInteractable(lookup);
     }
 }

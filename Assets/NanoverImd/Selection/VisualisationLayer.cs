@@ -44,6 +44,30 @@ namespace NanoverImd.Selection
 
         private float _prevAtomCount = 0;
 
+        public bool GetInteractable(bool[] lookup)
+        {
+            try
+            {
+                for (int i = 0; i < selections.Count; i++)
+                {
+                    var selection = selections[i];
+                    var ignored = selection.Selection.InteractionMethod == ParticleSelection.InteractionMethodNone;
+                    var hidden = selection.Selection.HideRenderer;
+
+                    foreach (int id in selection.FilteredIndices)
+                    {
+                        lookup[id] = !ignored && !hidden;
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+                return false;
+            }
+        }
+
         private void Update()
         {
             // TODO: trigger this from frame topology change
