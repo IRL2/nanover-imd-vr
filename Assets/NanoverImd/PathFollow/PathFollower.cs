@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NanoverImd.Interaction;
 using UnityEngine;
+using UnityEngine.Rendering.VirtualTexturing;
 using UnityEngine.SocialPlatforms;
 using static NanoverImd.Interaction.InteractableScene;
 using Random = UnityEngine.Random;
@@ -65,10 +66,13 @@ namespace NanoverImd.PathFollower
             var positions = new Vector3[testLine.positionCount];
             testLine.GetPositions(positions);
             path = positions.ToList();
+            debugLine.enabled = true;
             debugLine.positionCount = path.Count;
             debugLine.SetPositions(path.ToArray());
 
             Update();
+
+            targetSphere.gameObject.SetActive(true);
         }
 
         public void SetPath(List<Vector3> path)
@@ -83,7 +87,11 @@ namespace NanoverImd.PathFollower
 
         private void OnDisable()
         {
+            Debug.Log($"PathFollower: Disabling follower for interaction {Id}.");
             simulation.Interactions.RemoveValue(Id);
+            debugLine.enabled = false;
+
+            targetSphere.gameObject.SetActive(false);
         }
 
         private void Update()
@@ -97,6 +105,7 @@ namespace NanoverImd.PathFollower
 
             var remaining = targetDistance;
             var local = Vector3.zero;
+            var success = false;
 
             for (int i = 1; i < path.Count; ++i)
             {
@@ -107,12 +116,19 @@ namespace NanoverImd.PathFollower
                 if (remaining < length)
                 {
                     local = path[i - 1] + direction * remaining;
+                    success = true;
                     break;
                 }
                 else
                 {
                     remaining -= length;
                 }
+            }
+
+            if (!success)
+            {
+                enabled = false;
+                return;
             }
 
             targetSphere.localPosition = local;

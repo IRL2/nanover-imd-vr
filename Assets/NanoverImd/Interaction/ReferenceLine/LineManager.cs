@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using NanoverImd;
 using UnityEngine;
@@ -55,6 +56,7 @@ public class LineManager : MonoBehaviour
 
         lines[index] = lineData; // Structs are value types, so re-assign
     }
+
 
     public void DragLastPoint(int index, Vector3 point)
     {
@@ -204,4 +206,55 @@ public class LineManager : MonoBehaviour
         //lines[index].Renderer.positionCount = simplifiedPoints.Count;
         //lines[index].Renderer.SetPositions(simplifiedPoints.ToArray());
     }
+
+
+    void OnEnable()
+    {
+        //Restore();
+    }
+
+    public void Restore()
+    {
+        Dictionary<string, object> stateDictionary = simulation.Multiplayer.SharedStateDictionary;
+        // sort by alphabetical order, so that lines are restored in the correct order
+        stateDictionary = stateDictionary.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+
+        foreach (var kvp in stateDictionary)
+        {
+            if (kvp.Key.StartsWith("lines."))
+            {
+                string[] parts = kvp.Key.Split('.');
+                if (parts.Length < 3) continue;
+                int index = int.Parse(parts[1]);
+                int type = parts[2] == "reference" ? DASH_LINE : SOLID_LINE;
+
+                int id;
+                if (index >= lines.Count)
+                {
+                    id = CreateNewLine(type);
+                }
+
+                Debug.Log($"Restoring line {index} of type {type} with key {kvp.Key}");
+
+                var lineData = lines[index];
+                lineData.Type = type;
+                lineData.Renderer.positionCount = 0; // Reset position count
+                lineData.Points.Clear(); // Clear existing points
+                List<Vector3> pointsList = Nanover.Core.Serialization.Serialization.FromDataStructure(kvp.Value) as List<Vector3>;
+
+                Debug.Log($"Restoring line {index} with value {pointsList}");
+
+                if (pointsList is List<Vector3> points)
+                {
+                    lineData.Points.AddRange(points);
+                    lineData.Renderer.positionCount = points.Count;
+                    lineData.Renderer.SetPositions(points.ToArray());
+                }
+
+                lines[index] = lineData; // Update the line data
+            }
+        }
+    }
+
 }
