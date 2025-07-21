@@ -190,21 +190,20 @@ namespace NanoverImd.Interaction
         {
             var position = transform.InverseTransformPoint(worldPosition);
 
-            var frame = frameSource.CurrentFrame;
-
-            if (frame?.ParticlePositions == null)
+            if (frameSource.CurrentFrame?.ParticlePositions is not { } positions
+             || frameSource.CurrentFrame?.ParticleElements is not { } elements)
                 return null;
 
             var bestSqrDistance = cutoff * cutoff;
             int? bestParticleIndex = null;
 
-            for (var i = 0; i < frame.ParticlePositions.Length; ++i)
+            for (var i = 0; i < positions.Length; ++i)
             {
-                var particlePosition = frame.ParticlePositions[i];
+                var particlePosition = positions[i];
                 var sqrDistance = Vector3.SqrMagnitude(position - particlePosition);
 
                 var selection = visualisationScene.GetSelectionForParticle(i);
-                var isHydrogen = (frame.ParticleElements[i] == Nanover.Core.Science.Element.Hydrogen);
+                var isHydrogen = (elements[i] == Nanover.Core.Science.Element.Hydrogen);
                 var isInteractable = (selection.Selection.InteractionMethod != ParticleSelection.InteractionMethodNone) && (includeHydrogens || !isHydrogen);
 
                 if (isInteractable && sqrDistance < bestSqrDistance)
