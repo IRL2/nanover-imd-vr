@@ -64,6 +64,9 @@ namespace NanoverImd.UI
             openMenu.Released += CloseMenu;
         }
 
+        [SerializeField]
+        private Vector3 offset;
+
         private void ShowMenu()
         {
             if (!controllers.WouldBecomeCurrentMode(mode))
@@ -72,7 +75,7 @@ namespace NanoverImd.UI
             GotoScene(menuPrefab);
             
             SceneUI.transform.position = SceneUI.GetComponent<PhysicalCanvasInput>()
-                                                .Controller.transform.position;
+                                                .Controller.transform.position + offset;
             SceneUI.transform.rotation =
                 Quaternion.LookRotation(SceneUI.transform.position - Camera.main.transform.position,
                                         Vector3.up);
