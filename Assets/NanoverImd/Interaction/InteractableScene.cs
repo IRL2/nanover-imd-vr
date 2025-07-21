@@ -42,6 +42,8 @@ namespace NanoverImd.Interaction
             Residue
         }
 
+        public float InteractionRange = 0.25f;
+
         [SerializeField]
         private InteractionTarget interactionTarget = InteractionTarget.Single;
 
@@ -89,6 +91,13 @@ namespace NanoverImd.Interaction
             hoveredParticles.Clear();
 
             interactedParticles.Value = pts.ToArray();
+
+            const string interactionRangeKey = "suggested.interaction.range";
+
+            if (simulation.Multiplayer.GetSharedState(interactionRangeKey) is double range)
+            {
+                InteractionRange = (float) range;
+            }
         }
 
         public void HoverParticleGrab(Transformation grabberPose)
@@ -123,8 +132,8 @@ namespace NanoverImd.Interaction
 
             var particleIndex = GetClosestParticleToWorldPosition(
                 grabberPose.Position,
-                cutoff: scale * DistanceCutoff,
-                includeHydrogens: interactionTarget == InteractionTarget.Residue
+                cutoff: scale * InteractionRange,
+                includeHydrogens: false
             );
 
             return particleIndex;
@@ -188,21 +197,20 @@ namespace NanoverImd.Interaction
         {
             var position = transform.InverseTransformPoint(worldPosition);
 
-            var frame = frameSource.CurrentFrame;
-
-            if (frame?.ParticlePositions == null)
+            if (frameSource.CurrentFrame?.ParticlePositions is not { } positions
+             || frameSource.CurrentFrame?.ParticleElements is not { } elements)
                 return null;
 
             var bestSqrDistance = cutoff * cutoff;
             int? bestParticleIndex = null;
 
-            for (var i = 0; i < frame.ParticlePositions.Length; ++i)
+            for (var i = 0; i < positions.Length; ++i)
             {
-                var particlePosition = frame.ParticlePositions[i];
+                var particlePosition = positions[i];
                 var sqrDistance = Vector3.SqrMagnitude(position - particlePosition);
 
                 var selection = visualisationScene.GetSelectionForParticle(i);
-                var isHydrogen = (frame.ParticleElements[i] == Nanover.Core.Science.Element.Hydrogen);
+                var isHydrogen = (elements[i] == Nanover.Core.Science.Element.Hydrogen);
                 var isInteractable = (selection.Selection.InteractionMethod != ParticleSelection.InteractionMethodNone) && (includeHydrogens || !isHydrogen);
 
                 if (isInteractable && sqrDistance < bestSqrDistance)
