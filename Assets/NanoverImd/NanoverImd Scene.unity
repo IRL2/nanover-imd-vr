@@ -511,6 +511,7 @@ MonoBehaviour:
   visualisationScene: {fileID: 496324176}
   simulation: {fileID: 431384315}
   controller: {fileID: 1083629888}
+  InteractionRange: 0.25
   interactionTarget: 0
 --- !u!4 &54429686
 Transform:
@@ -1170,6 +1171,50 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4678676913250523710, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
   m_PrefabInstance: {fileID: 177063506}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &181432562
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 181432564}
+  - component: {fileID: 181432563}
+  m_Layer: 0
+  m_Name: MessagePackTest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &181432563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 181432562}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2988f73498410084ba67cb86dc2cbb55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &181432564
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 181432562}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.05928, y: 0.59826, z: -0.49403}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &185265281
 GameObject:
   m_ObjectHideFlags: 0
@@ -4753,6 +4798,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  test: []
 --- !u!114 &544060995
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16976,3 +17022,4 @@ SceneRoots:
   - {fileID: 1757073662}
   - {fileID: 2024823375}
   - {fileID: 1243136383}
+  - {fileID: 181432564}

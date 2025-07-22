@@ -10,7 +10,8 @@
         "Nanover.Core",
         "Unity.InputSystem",
         "Meta.XR.BuildingBlocks",
-        "Oculus.VR"
+        "Oculus.VR",
+        "MessagePack.Unity"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -18,7 +19,9 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "Essd.dll",
-        "Newtonsoft.Json.dll"
+        "Newtonsoft.Json.dll",
+        "MessagePack.dll",
+        "MessagePack.Annotations.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

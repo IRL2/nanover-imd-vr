@@ -7,6 +7,20 @@
       "dependencies": {},
       "hash": "0eede4bf5bbbf7d6eb9cb63739c05bd69a6beaba"
     },
+    "com.github-glitchenzo.nugetforunity": {
+      "version": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "a7c6b49a0141a5bff9b1983e38137522ef61977d"
+    },
+    "com.github.messagepack-csharp": {
+      "version": "https://github.com/MessagePack-CSharp/MessagePack-CSharp.git?path=src/MessagePack.UnityClient/Assets/Scripts/MessagePack",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "44aa149acce1de32881e007f53fad0f3db7dfdab"
+    },
     "com.meta.xr.sdk.core": {
       "version": "77.0.0",
       "depth": 0,
