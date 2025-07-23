@@ -43,6 +43,8 @@ namespace Nanover.Visualisation.Node.Color
 
         public void Refresh()
         {
+            var white = UnityEngine.Color.white;
+
             var isFilterNonZero = false;
             var isOutputValid = false;
             if (IsInputDirty)
@@ -62,8 +64,10 @@ namespace Nanover.Visualisation.Node.Color
                 else if (count.HasNonNullValue())
                 {
                     Array.Resize(ref cachedArray, count.Value);
-                    for (var i = 0; i < count.Value; i++)
-                        cachedArray[i] = UnityEngine.Color.white;
+
+                    var count_ = count.Value;
+                    for (var i = 0; i < count_; i++)
+                        cachedArray[i] = white;
                     
                     outputColors.Resize(cachedArray.Length);
                     Array.Copy(cachedArray, outputColors.Value, cachedArray.Length);
@@ -88,16 +92,17 @@ namespace Nanover.Visualisation.Node.Color
                                            (0.5f + 0.5f * Mathf.Sin(speed * Time.time)));
 
                 outputColors.Resize(cachedArray.Length);
+                var colors = outputColors.Value;
 
                 for (var i = 0; i < cachedArray.Length; i++)
-                    outputColors.Value[i] = cachedArray[i];
+                    colors[i] = cachedArray[i];
 
                 if (isFilterNonZero)
                 {
                     var filter = highlightFilter.Value;
                     foreach (var i in filter)
                     {
-                        outputColors.Value[i] += intensity * UnityEngine.Color.white;
+                        colors[i] += intensity * white;
                     }
                 }
 
