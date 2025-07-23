@@ -294,9 +294,9 @@ MonoBehaviour:
   AtomId: 0
   Type: spring
   Target: 1
-  Scale: 100
-  Speed: 0.5
-  ErrorThreshold: 0.25
+  Scale: 281
+  Speed: 0.555
+  ErrorThreshold: 0.555
 --- !u!120 &13188940
 LineRenderer:
   serializedVersion: 2
@@ -674,6 +674,7 @@ MonoBehaviour:
   visualisationScene: {fileID: 496324176}
   simulation: {fileID: 431384315}
   controller: {fileID: 1083629888}
+  InteractionRange: 0.25
   interactionTarget: 0
 --- !u!4 &54429686
 Transform:

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NanoverImd.Interaction;
 using UnityEngine;
-using UnityEngine.Rendering.VirtualTexturing;
+//using UnityEngine.Rendering.VirtualTexturing;
 using UnityEngine.SocialPlatforms;
 using static NanoverImd.Interaction.InteractableScene;
 using Random = UnityEngine.Random;
