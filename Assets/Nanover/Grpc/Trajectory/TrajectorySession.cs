@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using MessagePackTesting;
 using Nanover.Core.Async;
 using Nanover.Frame;
 using Nanover.Frame.Event;
 using Nanover.Grpc.Frame;
 using Nanover.Grpc.Stream;
 using Nanover.Protocol.Trajectory;
+using NativeWebSocket;
+using Nerdbank.MessagePack;
 
 namespace Nanover.Grpc.Trajectory
 {
@@ -38,9 +42,39 @@ namespace Nanover.Grpc.Trajectory
 
         private IncomingStream<GetFrameResponse> frameStream;
 
+        private WebSocket websocket;
+
         public TrajectorySession()
         {
             trajectorySnapshot.FrameChanged += (sender, args) => FrameChanged?.Invoke(sender, args);
+        }
+
+        public async Task OpenClient(WebSocket websocket)
+        {
+            this.websocket = websocket;
+            websocket.OnMessage += (bytes) =>
+            {
+                MessagePackSerializer serializer = new();
+                var frame = serializer.Deserialize<MessagePackTesting.Frame>(bytes, Witness.ShapeProvider)!;
+                ReceiveFrame(frame);
+            };
+
+            void ReceiveFrame(MessagePackTesting.Frame nextFrame)
+            {
+                CurrentFrameIndex = CurrentFrameIndex + 1;
+
+                var clear = false;
+                var prevFrame = clear ? null : CurrentFrame;
+
+                var (frame, changes) = FrameConverter.ConvertFrame(nextFrame, prevFrame);
+
+                if (clear)
+                    changes = FrameChanges.All;
+
+                trajectorySnapshot.SetCurrentFrame(frame, changes);
+            }
+
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -171,6 +205,6 @@ namespace Nanover.Grpc.Trajectory
             trajectoryClient?.RunCommandAsync(name, commands);
         }
 
-        public TrajectoryClient Client => trajectoryClient;
+        public bool Connected => trajectoryClient != null || websocket?.State == WebSocketState.Open;
     }
 }

@@ -1,4 +1,5 @@
 using Essd;
+using MessagePackTesting;
 using Nanover.Core.Async;
 using Nanover.Core.Math;
 using Nanover.Frontend.Manipulation;
@@ -7,12 +8,16 @@ using Nanover.Grpc.Multiplayer;
 using Nanover.Grpc.Trajectory;
 using Nanover.Visualisation;
 using NanoverImd.Interaction;
+using NativeWebSocket;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
+using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace NanoverImd
 {
@@ -48,6 +53,8 @@ namespace NanoverImd
 
         private Dictionary<string, GrpcConnection> channels
             = new Dictionary<string, GrpcConnection>();
+
+        private NativeWebSocket.WebSocket websocket;
 
         /// <summary>
         /// The route through which simulation space can be manipulated with
@@ -91,6 +98,26 @@ namespace NanoverImd
             ConnectionEstablished?.Invoke();
         }
 
+        public async Task ConnectWebSocket(string address)
+        {
+            if (websocket != null)
+                await websocket.Close();
+
+            Task trajectory = Task.CompletedTask;
+            Task multiplayer = Task.CompletedTask;
+
+            websocket = new NativeWebSocket.WebSocket(address);
+            trajectory = Trajectory.OpenClient(websocket);
+            //multiplayer = Multiplayer.OpenClient(GetChannel(address, multiplayerPort.Value));
+
+            await Task.WhenAll(trajectory, multiplayer);
+            await websocket.Connect();
+
+            gameObject.SetActive(true);
+
+            ConnectionEstablished?.Invoke();
+        }
+
         private void Awake()
         {
             Interactions = new ParticleInteractionCollection(Multiplayer);
@@ -125,6 +152,20 @@ namespace NanoverImd
             {
                 return services.ContainsKey(name) ? services[name].ToObject<int>() : null;
             }
+        }
+
+        public async Task AutoConnectWebSocket()
+        {
+            var request = UnityWebRequest.Get("https://irl-discovery.onrender.com/list");
+            await request.SendWebRequest();
+
+            var json = request.downloadHandler.text;
+            json = "{\"list\":" + json + "}";
+
+            var listing = JsonUtility.FromJson<DiscoveryListing>(json);
+            var address = listing.list[0].info.ws;
+
+            await ConnectWebSocket(address);
         }
 
         /// <summary>
@@ -174,9 +215,17 @@ namespace NanoverImd
             return channel;
         }
 
-
+        void Update()
+        {
+#if !UNITY_WEBGL || UNITY_EDITOR
+            websocket?.DispatchMessageQueue();
+#endif
+        }
         private async void OnDestroy()
         {
+            if (websocket != null)
+                await websocket.Close();
+
             await CloseAsync();
         }
         
