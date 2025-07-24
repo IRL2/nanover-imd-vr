@@ -136,6 +136,13 @@ public class TopologyData
     public BondPair[] Bonds;
 }
 
+[MessagePackObject]
+public class Test
+{
+    [Key("elements")]
+    [MessagePackFormatter(typeof(ElementArray))]
+    public Element[] Elements;
+}
 
 public class MessagePackTest : MonoBehaviour
 {
@@ -153,6 +160,27 @@ public class MessagePackTest : MonoBehaviour
             bytes = www.downloadHandler.data;
         }
 
+        try
+        {
+            var obj1 = new Test
+            {
+                Elements = new Element[] { Element.Cadmium, Element.Cobalt }
+            };
+
+            var bytes2 = MessagePackSerializer.Serialize(obj1);
+            var obj2 = MessagePackSerializer.Deserialize<Test>(bytes2);
+
+            DebugPanel.Instance.AddText($"\n");
+            DebugPanel.Instance.AddText($"{string.Join(", ", obj1.Elements)}\n");
+            DebugPanel.Instance.AddText($"{string.Join(", ", obj2.Elements)}\n");
+        }
+        catch (Exception e)
+        {
+            DebugPanel.Instance.AddText($"\n{e.Message}\n{e.InnerException}\n{e.StackTrace}\n{e.ToString()}");
+        }
+
+        yield break;
+        
         try
         {
             var obj = MessagePackSerializer.Deserialize<Dictionary<string, object>>(bytes);
