@@ -46,6 +46,10 @@ namespace NanoverImd.Selection
 
         public bool GetInteractable(bool[] lookup)
         {
+            // default to interactable
+            for (int i = 0; i < lookup.Length; ++i)
+                lookup[i] = true;
+
             try
             {
                 for (int i = 0; i < selections.Count; i++)
@@ -53,6 +57,9 @@ namespace NanoverImd.Selection
                     var selection = selections[i];
                     var ignored = selection.Selection.InteractionMethod == ParticleSelection.InteractionMethodNone;
                     var hidden = selection.Selection.HideRenderer;
+
+                    if (!selection.FilteredIndices.HasValue)
+                        continue;
 
                     foreach (int id in selection.FilteredIndices)
                     {
