@@ -129,7 +129,7 @@ namespace Nanover.Grpc.Multiplayer
 
                 if (state.ContainsKey(UpdateIndexKey))
                 {
-                    lastReceivedIndex = (int) state[UpdateIndexKey];
+                    lastReceivedIndex = Convert.ToInt32(state[UpdateIndexKey]);
                     lastReceivedIndexTime = Time.realtimeSinceStartup;
                 }
 
@@ -148,6 +148,10 @@ namespace Nanover.Grpc.Multiplayer
                 }
             }
 
+            AccessToken = Guid.NewGuid().ToString();
+
+            RunFlushingTask();
+
             MultiplayerJoined?.Invoke();
 
             await Task.CompletedTask;
@@ -165,6 +169,24 @@ namespace Nanover.Grpc.Multiplayer
             client = new MultiplayerClient(connection);
             AccessToken = Guid.NewGuid().ToString();
 
+            RunFlushingTask();
+
+            IncomingValueUpdates = client.SubscribeStateUpdates();
+            BackgroundIncomingStreamReceiver<StateUpdate>.Start(IncomingValueUpdates,
+                                                                OnResourceValuesUpdateReceived,
+                                                                MergeResourceUpdates);
+
+            void MergeResourceUpdates(StateUpdate dest, StateUpdate src)
+            {
+                foreach (var (key, value) in src.ChangedKeys.Fields)
+                    dest.ChangedKeys.Fields[key] = value;
+            }
+
+            MultiplayerJoined?.Invoke();
+        }
+
+        private void RunFlushingTask()
+        {
             if (valueFlushingTask == null)
             {
                 valueFlushingTask = FlushValuesInterval(ValuePublishInterval);
@@ -187,19 +209,6 @@ namespace Nanover.Grpc.Multiplayer
                     }
                 }
             }
-            
-            IncomingValueUpdates = client.SubscribeStateUpdates();
-            BackgroundIncomingStreamReceiver<StateUpdate>.Start(IncomingValueUpdates,
-                                                                OnResourceValuesUpdateReceived,
-                                                                MergeResourceUpdates);
-
-            void MergeResourceUpdates(StateUpdate dest, StateUpdate src)
-            {
-                foreach (var (key, value) in src.ChangedKeys.Fields)
-                    dest.ChangedKeys.Fields[key] = value;
-            }
-
-            MultiplayerJoined?.Invoke();
         }
 
         /// <summary>
@@ -213,12 +222,12 @@ namespace Nanover.Grpc.Multiplayer
             lastSentIndex = -1;
             lastReceivedIndexTime = -1;
 
-            if (client == null)
+            if (!IsOpen)
                 return;
 
             closing = true;
 
-            IncomingValueUpdates.CloseAsync().AwaitInBackgroundIgnoreCancellation();
+            IncomingValueUpdates?.CloseAsync().AwaitInBackgroundIgnoreCancellation();
             IncomingValueUpdates = null;
 
             // Remove our personal avatar/playarea/origin
@@ -230,8 +239,8 @@ namespace Nanover.Grpc.Multiplayer
 
             await Task.WhenAny(FlushValuesAsync(), Task.Delay(1000));
 
-            client.CloseAndCancelAllSubscriptions();
-            client.Dispose();
+            client?.CloseAndCancelAllSubscriptions();
+            client?.Dispose();
             client = null;
 
             AccessToken = null;
@@ -244,7 +253,7 @@ namespace Nanover.Grpc.Multiplayer
         /// </summary>
         public void SetSharedState(string key, object value)
         {
-            pendingValues[key] = value.ToProtobufValue();
+            pendingValues[key] = value;
             pendingRemovals.Remove(key);
         }
         
@@ -273,6 +282,9 @@ namespace Nanover.Grpc.Multiplayer
         /// </summary>
         public async Task<bool> LockResource(string id)
         {
+            if (websocket != null)
+                return true;
+
             return await client.UpdateLocks(AccessToken, new Dictionary<string, float>
                                             {
                                                 [id] = 1f
@@ -285,6 +297,9 @@ namespace Nanover.Grpc.Multiplayer
         /// </summary>
         public async Task<bool> ReleaseResource(string id)
         {
+            if (websocket != null)
+                return true;
+
             return await client.UpdateLocks(AccessToken, new Dictionary<string, float>(), new string[]
             {
                 id
@@ -365,7 +380,7 @@ namespace Nanover.Grpc.Multiplayer
             if (!pendingValues.Any() && !pendingRemovals.Any())
                 return true;
 
-            if (client == null)
+            if (!IsOpen)
                 return false;
 
             if (!pendingRemovals.Contains(UpdateIndexKey))
@@ -373,7 +388,28 @@ namespace Nanover.Grpc.Multiplayer
                 Heartbeat();
             }
 
-            var update = client.UpdateState(AccessToken, pendingValues, pendingRemovals);
+            var update = Task.FromResult(true);
+
+            if (client != null)
+            {
+                foreach (var (key, value) in pendingValues)
+                    pendingValues[key] = value.ToProtobufValue();
+
+                update = client.UpdateState(AccessToken, pendingValues, pendingRemovals);
+            }
+            else if (websocket != null)
+            {
+                var change = new Update();
+                foreach (var (key, value) in pendingValues)
+                    change.Updates[key] = value;
+                change.Removals.UnionWith(pendingRemovals);
+
+                MessagePackSerializer serializer = new();
+                serializer = serializer.WithObjectConverter();
+                var bytes = serializer.Serialize(change, Witness.ShapeProvider)!;
+
+                update = websocket.Send(bytes).ContinueWith((_) => true);
+            }
 
             pendingValues.Clear();
             pendingRemovals.Clear();
@@ -396,7 +432,7 @@ namespace Nanover.Grpc.Multiplayer
 
         private static Transformation PoseFromObject(object @object)
         {
-            if (@object is List<object> list)
+            if (@object is IReadOnlyList<object> list)
             {
                 var values = list.Select(value => Convert.ToSingle(value)).ToList();
                 var position = list.GetVector3(0);

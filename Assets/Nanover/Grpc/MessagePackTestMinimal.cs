@@ -175,6 +175,15 @@ namespace MessagePackTesting
         public Vector3[][] Positions;
     }
 
+    public class Update
+    {
+        [PropertyShape(Name = "updates")]
+        public Dictionary<string, object> Updates = new Dictionary<string, object>();
+
+        [PropertyShape(Name = "removals")]
+        public HashSet<string> Removals = new HashSet<string>();
+    }
+
     public class Frame
     {
         [PropertyShape(Name = "topology")]
@@ -201,7 +210,11 @@ namespace MessagePackTesting
 
     [GenerateShapeFor(typeof(byte[]))]
     [GenerateShapeFor(typeof(byte[][]))]
+    [GenerateShapeFor(typeof(object[]))]
+    [GenerateShapeFor(typeof(HashSet<string>))]
+    [GenerateShapeFor(typeof(List<object>))]
     [GenerateShapeFor(typeof(Frame))]
+    [GenerateShapeFor(typeof(Update))]
     [GenerateShapeFor(typeof(Trajectory))]
     partial class Witness { }
 
