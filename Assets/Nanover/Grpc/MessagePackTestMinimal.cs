@@ -183,6 +183,9 @@ namespace MessagePackTesting
         [PropertyShape(Name = "positions")]
         [MessagePackConverter(typeof(Vector3Array))]
         public Vector3[]? Positions;
+
+        [PropertyShape(Name = "state")]
+        public Dictionary<string, object> State;
     }
 
     public class Topology

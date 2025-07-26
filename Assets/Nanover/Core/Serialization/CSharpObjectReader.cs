@@ -25,6 +25,16 @@ namespace Nanover.Core.Serialization
         {
             switch (obj)
             {
+                case IReadOnlyDictionary<object, object> dictAnnoying:
+                    yield return (JsonToken.StartObject, null);
+                    foreach (var (key, value) in dictAnnoying)
+                    {
+                        yield return (JsonToken.PropertyName, key);
+                        foreach (var v in Iterate(value))
+                            yield return v;
+                    }
+                    yield return (JsonToken.EndObject, null);
+                    break;
                 case IReadOnlyDictionary<string, object> dict:
                     yield return (JsonToken.StartObject, null);
                     foreach (var (key, value) in dict)

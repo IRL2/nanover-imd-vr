@@ -98,6 +98,8 @@ namespace NanoverImd
             ConnectionEstablished?.Invoke();
         }
 
+        private double prevTime = 0;
+
         public async Task ConnectWebSocket(string address)
         {
             if (websocket != null)
@@ -108,7 +110,18 @@ namespace NanoverImd
 
             websocket = new NativeWebSocket.WebSocket(address);
             trajectory = Trajectory.OpenClient(websocket);
-            //multiplayer = Multiplayer.OpenClient(GetChannel(address, multiplayerPort.Value));
+            multiplayer = Multiplayer.OpenClient(websocket);
+
+            //void MeasureTime()
+            //{
+            //    var nextTime = Time.realtimeSinceStartupAsDouble;
+            //    var delta = nextTime - prevTime;
+            //    prevTime = nextTime;
+
+            //    Debug.LogError($"{delta}s -- {1/delta}fps");
+            //}
+
+            //websocket.OnMessage += (bytes) => MeasureTime();
 
             await Task.WhenAll(trajectory, multiplayer);
             await websocket.Connect();

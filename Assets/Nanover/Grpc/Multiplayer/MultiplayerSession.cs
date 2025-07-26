@@ -8,6 +8,9 @@ using Nanover.Grpc.Stream;
 using Nanover.Grpc.Trajectory;
 using Nanover.Protocol.State;
 using UnityEngine;
+using NativeWebSocket;
+using Nerdbank.MessagePack;
+using MessagePackTesting;
 
 namespace Nanover.Grpc.Multiplayer
 {
@@ -51,7 +54,7 @@ namespace Nanover.Grpc.Multiplayer
         /// <summary>
         /// Is there an open client on this session?
         /// </summary>
-        public bool IsOpen => client != null && !closing;
+        public bool IsOpen => (client != null || websocket != null) && !closing;
 
         private bool closing = false;
 
@@ -104,6 +107,51 @@ namespace Nanover.Grpc.Multiplayer
         private float lastReceivedIndexTime = -1;
 
         private string UpdateIndexKey => $"update.index.{AccessToken}";
+
+        private WebSocket websocket;
+
+        public async Task OpenClient(WebSocket websocket)
+        {
+            this.websocket = websocket;
+            websocket.OnMessage += (bytes) =>
+            {
+                MessagePackSerializer serializer = new();
+                serializer = serializer.WithObjectConverter();
+                var frame = serializer.Deserialize<MessagePackTesting.Frame>(bytes, Witness.ShapeProvider)!;
+                    
+                if (frame.State is { } state)
+                    ReceiveState(state);
+            };
+
+            void ReceiveState(Dictionary<string, object> state)
+            {
+                ReceiveUpdate?.Invoke();
+
+                if (state.ContainsKey(UpdateIndexKey))
+                {
+                    lastReceivedIndex = (int) state[UpdateIndexKey];
+                    lastReceivedIndexTime = Time.realtimeSinceStartup;
+                }
+
+                foreach (var (key, value) in state)
+                {
+                    if (value == null)
+                    {
+                        SharedStateDictionary.Remove(key);
+                        SharedStateDictionaryKeyRemoved?.Invoke(key);
+                    }
+                    else
+                    {
+                        SharedStateDictionary[key] = value;
+                        SharedStateDictionaryKeyUpdated?.Invoke(key, value);
+                    }
+                }
+            }
+
+            MultiplayerJoined?.Invoke();
+
+            await Task.CompletedTask;
+        }
 
         /// <summary>
         /// Connect to a Multiplayer service over the given connection. 
@@ -165,7 +213,7 @@ namespace Nanover.Grpc.Multiplayer
             lastSentIndex = -1;
             lastReceivedIndexTime = -1;
 
-            if (!IsOpen)
+            if (client == null)
                 return;
 
             closing = true;
