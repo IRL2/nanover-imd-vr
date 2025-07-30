@@ -185,18 +185,26 @@ namespace Nanover.Visualisation.Node.Protein
             residueSecondaryStructure.MarkValueAsChanged();
         }
 
+        private BondPair[] hydrogrenBondsArray = new BondPair[0];
+
         private void CalculateHydrogenBonds()
         {
-            var bonds = new List<BondPair>();
+            int count = 0;
             foreach (var sequence in sequenceResidueData)
-            {
                 foreach (var data in sequence)
                     if (data.DonorHydrogenBondResidue != null)
-                        bonds.Add(new BondPair(data.OxygenIndex,
-                                               data.DonorHydrogenBondResidue.NitrogenIndex));
-            }
+                        count += 1;
 
-            hydrogenBonds.Value = bonds.ToArray();
+            if (count != hydrogrenBondsArray.Length)
+                hydrogrenBondsArray = new BondPair[count];
+
+            int next = 0;
+            foreach (var sequence in sequenceResidueData)
+                foreach (var data in sequence)
+                    if (data.DonorHydrogenBondResidue != null)
+                        hydrogrenBondsArray[next++] = new BondPair(data.OxygenIndex, data.DonorHydrogenBondResidue.NitrogenIndex);
+
+            hydrogenBonds.Value = hydrogrenBondsArray;
         }
 
         private void UpdatePositions()

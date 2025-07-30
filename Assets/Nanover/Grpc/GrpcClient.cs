@@ -49,15 +49,26 @@ namespace Nanover.Grpc
         /// <param name="arguments">Name/value arguments to provide to the command.</param>
         /// <returns>Dictionary of results produced by the command.</returns>
         public async Task<Dictionary<string, object>> RunCommandAsync(string command,
-                                                                         Dictionary<string, object>
-                                                                             arguments = null)
+                                                                      Dictionary<string, object> arguments = null)
         {
             var message = new CommandMessage
             {
                 Name = command,
-                Arguments = arguments?.ToProtobufStruct()
+                Arguments = arguments?.ToProtobufStruct(),
             };
             return (await CommandClient.RunCommandAsync(message)).Result.ToDictionary();
+        }
+
+        /// <summary>
+        /// Run a command on a gRPC service that uses the command service.
+        /// </summary>
+        /// <param name="command">The name of the command to run, which must be registered on the server.</param>
+        /// <param name="arguments">Name/value arguments to provide to the command.</param>
+        /// <returns>Dictionary of results produced by the command.</returns>
+        public async Task<IReadOnlyList<CommandMessage>> GetCommandsAsync()
+        {
+            var message = new GetCommandsRequest();
+            return (await CommandClient.GetCommandsAsync(message)).Commands;
         }
 
         /// <summary>
