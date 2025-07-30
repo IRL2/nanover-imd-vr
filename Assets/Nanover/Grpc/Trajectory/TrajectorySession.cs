@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Nanover.Core.Async;
@@ -6,6 +7,7 @@ using Nanover.Frame;
 using Nanover.Frame.Event;
 using Nanover.Grpc.Frame;
 using Nanover.Grpc.Stream;
+using Nanover.Protocol.Command;
 using Nanover.Protocol.Trajectory;
 
 namespace Nanover.Grpc.Trajectory
@@ -21,6 +23,8 @@ namespace Nanover.Grpc.Trajectory
         public Nanover.Frame.Frame CurrentFrame => trajectorySnapshot.CurrentFrame;
         
         public int CurrentFrameIndex { get; private set; }
+
+        public Dictionary<string, CommandDefinition> CommandDefinitions { get; private set; } = new Dictionary<string, CommandDefinition>();
 
         /// <inheritdoc cref="ITrajectorySnapshot.FrameChanged" />
         public event FrameChanged FrameChanged;
@@ -166,9 +170,33 @@ namespace Nanover.Grpc.Trajectory
             trajectoryClient?.RunCommandAsync(TrajectoryClient.CommandSetSimulationIndex, new Dictionary<string, object> { { "index", index } });
         }
 
-        public void RunCommand(string name, Dictionary<string, object> commands)
+        public void RunCommand(string name, Dictionary<string, object> arguments = null)
         {
-            trajectoryClient?.RunCommandAsync(name, commands);
+            trajectoryClient?.RunCommandAsync(name, arguments);
+        }
+
+        public Task<Dictionary<string, object>> RunCommandAsync(string name, Dictionary<string, object> arguments = null) => trajectoryClient?.RunCommandAsync(name, arguments);
+
+        public async Task<Dictionary<string, CommandDefinition>> UpdateCommands()
+        {
+            var commands = await trajectoryClient?.GetCommandsAsync();
+            CommandDefinitions = commands.ToDictionary(command => command.Name, CommandDefinition.FromCommandMessage);
+            return CommandDefinitions;
+        }
+
+        public class CommandDefinition
+        {
+            public string Name { get; set; }
+            public Dictionary<string, object> Arguments { get; set; }
+
+            public static CommandDefinition FromCommandMessage(CommandMessage message)
+            {
+                return new CommandDefinition()
+                {
+                    Name = message.Name,
+                    Arguments = message.Arguments.ToDictionary(),
+                };
+            }
         }
 
         public TrajectoryClient Client => trajectoryClient;
