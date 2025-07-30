@@ -245,8 +245,8 @@ namespace Nanover.Visualisation.Node.Protein
             {
                 if (residue.SecondaryStructure != SecondaryStructureAssignment.None)
                     continue;
-                if (residue.Pattern.HasFlag(SecondaryStructurePattern.AntiparallelBridge) ||
-                    residue.Pattern.HasFlag(SecondaryStructurePattern.ParallelBridge))
+                if (PatternHasFlag(residue.Pattern, SecondaryStructurePattern.AntiparallelBridge) 
+                 || PatternHasFlag(residue.Pattern, SecondaryStructurePattern.ParallelBridge))
                     residue.SecondaryStructure = SecondaryStructureAssignment.Sheet;
             }
         }
@@ -412,14 +412,22 @@ namespace Nanover.Visualisation.Node.Protein
             {
                 var res1 = residues[i];
 
-                if (res1.Pattern.HasFlag(pattern) && residues[i + 1].Pattern.HasFlag(pattern))
+                if (PatternHasFlag(res1.Pattern, pattern) && PatternHasFlag(residues[i + 1].Pattern, pattern))
+                {
                     for (var slot = 1; slot <= length; slot++)
                     {
                         var res2 = residues[i + slot];
                         if (res2.SecondaryStructure != SecondaryStructureAssignment.None) continue;
                         res2.SecondaryStructure = assignment;
                     }
+                }
             }
+        }
+
+        // This exists because the C# built-in allocates memory every call
+        public static bool PatternHasFlag(SecondaryStructurePattern value, SecondaryStructurePattern flag)
+        {
+            return ((int)value & (int)flag) != 0;
         }
 
         private static void CheckSingleTurn(IReadOnlyList<SecondaryStructureResidueData> residues,
@@ -430,14 +438,12 @@ namespace Nanover.Visualisation.Node.Protein
             for (var i = 0; i < residues.Count; i++)
             {
                 var res1 = residues[i];
-                if (res1.Pattern.HasFlag(SecondaryStructurePattern.FiveTurn))
+                if (PatternHasFlag(res1.Pattern, SecondaryStructurePattern.FiveTurn))
                 {
-                    if (i > 0 && residues[i - 1]
-                                 .Pattern.HasFlag(SecondaryStructurePattern.FiveTurn))
+                    if (i > 0 && PatternHasFlag(residues[i - 1]
+                                 .Pattern, SecondaryStructurePattern.FiveTurn))
                         continue;
-                    if (i < residues.Count - 1 && residues[i + 1]
-                                                  .Pattern.HasFlag(
-                                                      SecondaryStructurePattern.FiveTurn))
+                    if (i < residues.Count - 1 && PatternHasFlag(residues[i + 1].Pattern, SecondaryStructurePattern.FiveTurn))
                         continue;
 
                     for (var slot = 1; slot <= 5; slot++)

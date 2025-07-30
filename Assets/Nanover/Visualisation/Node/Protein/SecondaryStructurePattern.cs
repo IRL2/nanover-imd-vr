@@ -17,5 +17,4 @@ namespace Nanover.Visualisation.Node.Protein
         Bridge = ParallelBridge | AntiparallelBridge,
         Turn = ThreeTurn | FourTurn | FiveTurn
     }
-
 }
