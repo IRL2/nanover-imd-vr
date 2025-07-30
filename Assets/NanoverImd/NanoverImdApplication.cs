@@ -94,6 +94,8 @@ namespace NanoverImd
         /// </summary>
         public void AutoConnect() => simulation.AutoConnect();
 
+        public void AutoConnectWebSocket() => simulation.AutoConnectWebSocket();
+
         /// <summary>
         /// Disconnect from all Nanover services.
         /// </summary>

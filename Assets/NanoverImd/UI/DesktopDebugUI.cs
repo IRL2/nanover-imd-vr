@@ -39,8 +39,8 @@ namespace NanoverImd
             GUILayout.Box("Nanover iMD");
 
             GUILayout.Box("Connect");
-            //if (GUILayout.Button("Autoconnect"))
-            //    _ = simulation.AutoConnect();
+            if (GUILayout.Button("Autoconnect WebSocket"))
+                simulation.AutoConnectWebSocket().AwaitInBackgroundIgnoreCancellation();
 
             if (GUILayout.Button("Manual"))
             {
