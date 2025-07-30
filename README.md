@@ -37,6 +37,7 @@ See [the list of contributors](CONTRIBUTORS.md) for the individual authors of th
 *  In Unity Hub, navigate to the **Projects** tab and click **Add** in the top right of Unity Hub.
 *  Select the folder which you downloaded the repository to.
 *  Install the version of Unity that Unity Hub tells you is required for this project.
+*  Open the project in Unity and click "Restore Packages" in the NuGet menu.
 
 Once open in Unity, the main Unity scene can be found in `NanoverImd/Assets/NanoverImd Scene`.
 

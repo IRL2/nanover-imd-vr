@@ -195,6 +195,9 @@ namespace MessagePackTesting
 
         [PropertyShape(Name = "state")]
         public Dictionary<string, object> State;
+
+        [PropertyShape]
+        public UnusedDataPacket? UnusedData { get; set; }
     }
 
     public class Topology

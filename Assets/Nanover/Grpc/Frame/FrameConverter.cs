@@ -7,6 +7,7 @@ using Nanover.Frame;
 using Nanover.Frame.Event;
 using Nanover.Protocol;
 using Nanover.Protocol.Trajectory;
+using UnityEngine;
 
 namespace Nanover.Grpc.Frame
 {
@@ -40,6 +41,8 @@ namespace Nanover.Grpc.Frame
                 frame.ParticlePositions = positions;
                 changes.MarkAsChanged(FrameData.ParticlePositionArrayKey);
             }
+
+            //Debug.LogError((data.UnusedData as IDictionary<object, object>).Keys);
 
             return (frame, changes);
         }
