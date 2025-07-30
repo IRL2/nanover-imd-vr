@@ -9,6 +9,8 @@ using UnityEngine.XR;
 using System.Collections.Generic;
 using Nanover.Grpc.Multiplayer;
 using Nanover.Frontend.Controllers;
+using System.Linq;
+using static Nanover.Grpc.Trajectory.TrajectorySession;
 
 namespace NanoverImd
 {
@@ -101,6 +103,19 @@ namespace NanoverImd
         /// Called from UI to quit the application.
         /// </summary>
         public void Quit() => Application.Quit();
+
+        [ContextMenu("TEST")]
+        private async void Test()
+        {
+            var commands = await GetUserCommands();
+            Debug.LogError(string.Join(", ", commands.Select(c => c.Name)));
+        }
+
+        public async Task<IEnumerable<CommandDefinition>> GetUserCommands()
+        {
+            var commands = await simulation.Trajectory.UpdateCommands();
+            return commands.Values.Where(command => command.Name.StartsWith("user/"));
+        }
 
         private void Update()
         {

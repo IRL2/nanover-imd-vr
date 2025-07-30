@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NanoverImd;
 using UnityEngine;
+using Nanover.Core.Async;
 
 namespace NanoverImd
 {
@@ -106,6 +107,16 @@ namespace NanoverImd
                     application.PlayAreaRadialDisplacementFactor = GUILayout.HorizontalSlider(application.PlayAreaRadialDisplacementFactor, 0f, 1f);
                     GUILayout.Label("Rotation Correction");
                     application.PlayAreaRotationCorrection = GUILayout.HorizontalSlider(application.PlayAreaRotationCorrection, -180f, 180f);
+                }
+
+                GUILayout.Box("User Commands");
+                if (GUILayout.Button("Refresh List"))
+                    simulation.Trajectory.UpdateCommands().AwaitInBackgroundIgnoreCancellation();
+
+                foreach (var command in simulation.Trajectory.CommandDefinitions.Values.Where(command => command.Name.StartsWith("user/")))
+                {
+                    if (GUILayout.Button(command.Name))
+                        simulation.Trajectory.RunCommand(command.Name, new Dictionary<string, object>());
                 }
             }
             
