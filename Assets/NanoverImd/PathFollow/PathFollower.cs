@@ -38,8 +38,8 @@ namespace NanoverImd.PathFollower
         public InteractionTarget Target = InteractionTarget.Residue;
         [Range(0f, 500f)]
         public float Scale = 300f;
-        [Range(0f, 1f)]
-        public float Speed = 0.5f;
+        [Range(0f, .1f)]
+        public float Speed = 0.1f;
         [Range(0f, 1f)]
         public float ErrorThreshold = 0.1f;
 
@@ -57,7 +57,6 @@ namespace NanoverImd.PathFollower
                 Other = { { "label", "automated" }, { "owner.id", simulation.Multiplayer.AccessToken } },
             };
 
-            //RandomisePath(frame.ParticlePositions[0]);
             targetDistance = 0;
 
             var positions = new Vector3[testLine.positionCount];
@@ -136,9 +135,9 @@ namespace NanoverImd.PathFollower
             var centroid = computeParticleCentroid(Interaction.Particles);
             var error = Vector3.Distance(local, centroid);
 
-            if (error < ErrorThreshold)
+            if (error < ErrorThreshold || ErrorThreshold == 0)
             {
-                targetDistance += Time.deltaTime * 0.5f;
+                targetDistance += Time.deltaTime * Speed;
             }
 
             Vector3 computeParticleCentroid(IReadOnlyList<int> particleIds)
