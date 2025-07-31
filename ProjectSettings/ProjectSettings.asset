@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: Intangible Realities Laboratory
-  productName: NanoVer iMD
+  productName: NanoVer Path
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -165,7 +165,7 @@ PlayerSettings:
   androidMaxAspectRatio: 2.4
   androidMinAspectRatio: 1
   applicationIdentifier:
-    Android: com.IntangibleRealitiesLaboratory.NanoVeriMD
+    Android: com.IntangibleRealitiesLaboratory.NanoVerPath
     Standalone: com.Unity-Technologies.com.unity.template.urp-blank
     iPhone: com.Unity-Technologies.com.unity.template.urp-blank
   buildNumber:
@@ -294,7 +294,7 @@ PlayerSettings:
   - m_BuildTarget: 
     m_Icons:
     - serializedVersion: 2
-      m_Icon: {fileID: 2800000, guid: c652caa7b1865ba429c6cec0576eff8b, type: 3}
+      m_Icon: {fileID: 2800000, guid: b696eeb946362c34184ea7cc83dba9b4, type: 3}
       m_Width: 128
       m_Height: 128
       m_Kind: 0
