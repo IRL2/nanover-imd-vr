@@ -3,7 +3,6 @@ using System.Drawing;
 using System.Linq;
 using NanoverImd;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
 
 public class LineManager : MonoBehaviour
 {
@@ -33,6 +32,7 @@ public class LineManager : MonoBehaviour
     }
 
     private readonly List<LineData> lines = new(); // Stores LineData for each line
+    private readonly HashSet<int> dirtyLines = new HashSet<int>();
 
     public int CreateNewLine(int type)
     {
@@ -47,16 +47,28 @@ public class LineManager : MonoBehaviour
         if (index < 0 || index >= lines.Count) return;
         var lineData = lines[index];
         lineData.Points.Add(point);
-        lineData.Renderer.positionCount = lineData.Points.Count;
-        lineData.Renderer.SetPositions(lineData.Points.ToArray());
+        dirtyLines.Add(index);
 
+        lineData.Renderer.positionCount = lineData.Points.Count;
+        for (var i = 0; i < lineData.Points.Count; i++)
+            lineData.Renderer.SetPosition(i, lineData.Points[i]);
+    }
+
+    public void SendDirtyLines()
+    {
+        foreach (var index in dirtyLines)
+            SendLine(index);
+        dirtyLines.Clear();
+    }
+
+    public void SendLine(int index)
+    {
+        if (index < 0 || index >= lines.Count) return;
+        var lineData = lines[index];
         var coords = Nanover.Core.Serialization.Serialization.ToDataStructure(lineData.Points);
         string key = "lines." + index + (lines[index].Type == DASH_LINE ? ".reference" : ".trail");
         simulation.Multiplayer.SetSharedState(key, coords);
-
-        lines[index] = lineData; // Structs are value types, so re-assign
     }
-
 
     public void DragLastPoint(int index, Vector3 point)
     {

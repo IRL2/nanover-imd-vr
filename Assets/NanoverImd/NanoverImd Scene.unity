@@ -295,7 +295,7 @@ MonoBehaviour:
   Type: spring
   Target: 1
   Scale: 1000
-  Speed: 0.555
+  Speed: 0.1
   ErrorThreshold: 0
 --- !u!120 &13188940
 LineRenderer:
