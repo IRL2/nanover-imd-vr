@@ -36,12 +36,12 @@ namespace NanoverImd.PathFollower
         public int AtomId = 0;
         public string Type = "spring";
         public InteractionTarget Target = InteractionTarget.Residue;
-        [Range(0f, 500f)]
-        public float Scale = 300f;
+        [Range(100f, 5000f)]
+        public float Scale = 1000f;
         [Range(0f, .1f)]
         public float Speed = 0.1f;
         [Range(0f, 1f)]
-        public float ErrorThreshold = 0.1f;
+        public float ErrorThreshold = 0f;
 
         private void OnEnable()
         {

@@ -294,9 +294,9 @@ MonoBehaviour:
   AtomId: 0
   Type: spring
   Target: 1
-  Scale: 281
+  Scale: 1000
   Speed: 0.555
-  ErrorThreshold: 0.555
+  ErrorThreshold: 0
 --- !u!120 &13188940
 LineRenderer:
   serializedVersion: 2
