@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nanover.Frame;
+using Nanover.Frame.Event;
 using NanoverImd.Interaction;
 using UnityEngine;
 using static NanoverImd.Interaction.InteractableScene;
@@ -43,8 +45,17 @@ namespace NanoverImd.PathFollower
         [Range(0f, 1f)]
         public float ErrorThreshold = 0f;
 
+        private bool frameUpdated = false;
+
+        private void OnFrameUpdated(IFrame frame, FrameChanges changes)
+        {
+            frameUpdated = changes.HasChanged("particle.positions");
+        }
+
         private void OnEnable()
         {
+            simulation.FrameSynchronizer.FrameChanged += OnFrameUpdated;
+
             var frame = simulation.FrameSynchronizer.CurrentFrame;
 
             Interaction = new ParticleInteraction()
@@ -83,6 +94,8 @@ namespace NanoverImd.PathFollower
 
         private void OnDisable()
         {
+            simulation.FrameSynchronizer.FrameChanged -= OnFrameUpdated;
+
             Debug.Log($"PathFollower: Disabling follower for interaction {Id}.");
             simulation.Interactions.RemoveValue(Id);
             debugLine.enabled = false;
@@ -134,11 +147,13 @@ namespace NanoverImd.PathFollower
 
             var centroid = computeParticleCentroid(Interaction.Particles);
             var error = Vector3.Distance(local, centroid);
+            var inRange = (error < ErrorThreshold || ErrorThreshold == 0);
 
-            if (error < ErrorThreshold || ErrorThreshold == 0)
+            if (inRange && frameUpdated)
             {
                 targetDistance += Time.deltaTime * Speed;
             }
+            frameUpdated = false;
 
             Vector3 computeParticleCentroid(IReadOnlyList<int> particleIds)
             {
@@ -149,6 +164,7 @@ namespace NanoverImd.PathFollower
 
                 return centroid / particleIds.Count;
             }
+
         }
 
         private void UpdateSuggestedParameters()

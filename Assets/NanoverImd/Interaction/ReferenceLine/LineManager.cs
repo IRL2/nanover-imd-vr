@@ -48,22 +48,23 @@ public class LineManager : MonoBehaviour
         var lineData = lines[index];
         lineData.Points.Add(point);
         dirtyLines.Add(index);
+
+        lineData.Renderer.positionCount = lineData.Points.Count;
+        for (var i = 0; i < lineData.Points.Count; i++)
+            lineData.Renderer.SetPosition(i, lineData.Points[i]);
     }
 
-    public void RefreshDirtyLines()
+    public void SendDirtyLines()
     {
         foreach (var index in dirtyLines)
-            RefreshLine(index);
+            SendLine(index);
         dirtyLines.Clear();
     }
 
-    public void RefreshLine(int index)
+    public void SendLine(int index)
     {
         if (index < 0 || index >= lines.Count) return;
         var lineData = lines[index];
-        lineData.Renderer.positionCount = lineData.Points.Count;
-        lineData.Renderer.SetPositions(lineData.Points.ToArray());
-
         var coords = Nanover.Core.Serialization.Serialization.ToDataStructure(lineData.Points);
         string key = "lines." + index + (lines[index].Type == DASH_LINE ? ".reference" : ".trail");
         simulation.Multiplayer.SetSharedState(key, coords);

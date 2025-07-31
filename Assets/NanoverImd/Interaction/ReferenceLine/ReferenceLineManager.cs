@@ -56,9 +56,9 @@ namespace NanoverImd.Interaction
         {
             while (true)
             {
-                yield return new WaitForSeconds(1 / 15f);
+                yield return new WaitForSeconds(1f);
 
-                lineManager.RefreshDirtyLines();
+                lineManager.SendDirtyLines();
             }
         }
 
