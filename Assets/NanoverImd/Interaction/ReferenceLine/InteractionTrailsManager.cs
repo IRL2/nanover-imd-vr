@@ -15,7 +15,8 @@ public class InteractionTrailsManager : MonoBehaviour
     [SerializeField] private NanoverImdSimulation simulation;
     [SerializeField] private SynchronisedFrameSource frameSource;
     //[SerializeField] private Transform simulationParent;
-    [SerializeField] private TextMeshPro infoLabel;
+    //[SerializeField] private TextMeshPro infoLabel;
+    [SerializeField] private SimulationInformationDisplay simulationInformationDisplay;
 
     private int currentLineIndex = -1;
     private int? lastAtomIndex;
@@ -89,7 +90,10 @@ public class InteractionTrailsManager : MonoBehaviour
 
 
         float? currentWork = GetCurrentWork(data);
-        if (currentWork != null) lastWork = currentWork;
+        if (currentWork != null)
+        {
+            lastWork = currentWork;
+        }
 
         if (newPosition.HasValue && newPosition.Value.magnitude > 0)
         {
@@ -97,6 +101,7 @@ public class InteractionTrailsManager : MonoBehaviour
 
             float? frameIndex = GetFrameTimestamp(data);
             if (frameIndex == null) return;
+
 
             // Start a new line if needed (e.g., on new interaction)
             if (currentLineIndex == -1 || frameIndex - lastFrameIndex > 0.3f)
@@ -124,26 +129,21 @@ public class InteractionTrailsManager : MonoBehaviour
 
     private void UpdateInfo()
     {
-        if (infoLabel == null) return;
         var line = lineManager.GetLineRenderer(currentLineIndex);
         if (line == null) return;
         float length = lineManager.GetLineLength(currentLineIndex);
         int numPoints = line.positionCount;
         float lineSmoothnessA = LineManager.CalculateAngularSmoothness(line) / Mathf.PI;
         float lineSmoothnessB = LineManager.CalculateSmoothness(line);
+
+        // HAPTIC
         float f = Mathf.Abs(deltaWork / 50);
         rightHandDevice.SendHapticImpulse(0, f, 0.01f);
 
-        string info = $"<u>trajectory trail line</u>\n" +
-                        $"lenght is {length:F2} nm\n" +
-                        $"having {numPoints} points\n" +
-                        $"from {line.GetPosition(0):F2}\n" +
-                        $"to {line.GetPosition(line.positionCount - 1):F2}\n" +
-                        $"angular triplets {(lineSmoothnessA * 100):F1}%\n" +
-                        $"path jagger is {lineSmoothnessB:F2}\n\n" +
-                        $"<u>system information</u>\nrelative work:{deltaWork} \n" +
-                        $"last interaction atom is #{lastAtomIndex} \n";
-        infoLabel.text = info;
+        //simulationInformationDisplay.UpdateData("rightAtom", lastAtomIndex.HasValue ? lastAtomIndex.Value.ToString() : "N/A");
+        //simulationInformationDisplay.UpdateData("accumulatedWork", lastWork.HasValue ? lastWork.Value.ToString("F2") : "N/A");
+        //simulationInformationDisplay.UpdateData("simulationTime", lastFrameIndex.HasValue ? lastFrameIndex.Value.ToString("F2") : "N/A");
+        simulationInformationDisplay.RefreshDisplay();
     }
 
     private int? GetSelectedAtomIndex(IDictionary<string, object> data)
