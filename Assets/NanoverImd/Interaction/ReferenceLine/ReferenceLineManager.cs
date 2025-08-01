@@ -1,22 +1,11 @@
-using System;
 using System.Collections.Generic;
-//using System.Diagnostics;
-using System.Linq;
-using Nanover.Visualisation;
-using NanoverImd;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.XR;
-//using UnityEngine.XR.Interaction.Toolkit;
 
-using Nanover.Frontend.Input;
 using Nanover.Frontend.XR;
 
 using TMPro;
-using Nanover.Frontend.Controllers;
-using System.Drawing;
-using UnityEngine.UIElements;
-using System.Reflection.Emit;
+using System.Collections;
 
 namespace NanoverImd.Interaction
 {
@@ -59,6 +48,18 @@ namespace NanoverImd.Interaction
             {
                 lineManager.UndoLine(LineManager.DASH_LINE);
             };
+
+            StartCoroutine(RefreshLines());
+        }
+
+        private IEnumerator RefreshLines()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(1f);
+
+                lineManager.SendDirtyLines();
+            }
         }
 
         void updateUIInfo(LineRenderer l)
@@ -66,13 +67,15 @@ namespace NanoverImd.Interaction
             lineLength = lineManager.GetLineLength(currentLineIndex);
             lineSmoothnessA = LineManager.CalculateAngularSmoothness(l) / Mathf.PI;
             lineSmoothnessB = LineManager.CalculateSmoothness(l);
-            lineInfoLabel.text += $"\n<u>trajectory reference line</u>{(primaryButton.IsPressed ? " [drawing] " : "")}";
-            lineInfoLabel.text += $"\n   lenght is {lineLength:F2} nm";
-            lineInfoLabel.text += $"\n   from {l.GetPosition(0):F2}";
-            lineInfoLabel.text += $"\n   to {l.GetPosition(l.positionCount - 1):F2}";
-            lineInfoLabel.text += $"\n   having {l.positionCount} points";
-            lineInfoLabel.text += $"\n   angular triplets {(lineSmoothnessA * 100):F1}%";
-            lineInfoLabel.text += $"\n   path jagger {lineSmoothnessB:F2}\n";
+            var label = ""
+                + $"\n<u>trajectory reference line</u>{(primaryButton.IsPressed ? " [drawing] " : "")}"
+                + $"\n   lenght is {lineLength:F2} nm"
+                + $"\n   from {l.GetPosition(0):F2}"
+                + $"\n   to {l.GetPosition(l.positionCount - 1):F2}"
+                + $"\n   having {l.positionCount} points"
+                + $"\n   angular triplets {(lineSmoothnessA * 100):F1}%"
+                + $"\n   path jagger {lineSmoothnessB:F2}\n";
+            lineInfoLabel.text = label;
         }
 
         void Update()
