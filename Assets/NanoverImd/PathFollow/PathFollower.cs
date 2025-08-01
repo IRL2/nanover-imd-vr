@@ -14,6 +14,8 @@ namespace NanoverImd.PathFollower
 #pragma warning disable 0649
         [SerializeField]
         private NanoverImdSimulation simulation;
+        [SerializeField]
+        private ParticleRelativeSpace pathSpace;
 
         [SerializeField]
         private LineRenderer debugLine;
@@ -113,7 +115,7 @@ namespace NanoverImd.PathFollower
             Interaction.Scale = Scale;
 
             var remaining = targetDistance;
-            var local = Vector3.zero;
+            var positionInPath = Vector3.zero;
             var success = false;
 
             for (int i = 1; i < path.Count; ++i)
@@ -124,7 +126,7 @@ namespace NanoverImd.PathFollower
 
                 if (remaining < length)
                 {
-                    local = path[i - 1] + direction * remaining;
+                    positionInPath = path[i - 1] + direction * remaining;
                     success = true;
                     break;
                 }
@@ -140,13 +142,13 @@ namespace NanoverImd.PathFollower
                 return;
             }
 
-            targetSphere.localPosition = local;
+            targetSphere.localPosition = positionInPath;
             errorSphere.localScale = Vector3.one * ErrorThreshold * 2;
-            Interaction.Position = local;
+            Interaction.Position = pathSpace.PositionFromPathToSimulation(positionInPath);
             simulation.Interactions.UpdateValue(Id, Interaction);
 
-            var centroid = computeParticleCentroid(Interaction.Particles);
-            var error = Vector3.Distance(local, centroid);
+            var centroid = pathSpace.PositionFromSimulationToPath(computeParticleCentroid(Interaction.Particles));
+            var error = Vector3.Distance(positionInPath, centroid);
             var inRange = (error < ErrorThreshold || ErrorThreshold == 0);
 
             if (inRange && frameUpdated)
