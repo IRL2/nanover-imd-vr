@@ -88,9 +88,13 @@ namespace NanoverImd.PathFollower
         {
             const string particlesKey = "suggested.reference.particles";
 
-            if (simulation.Multiplayer.GetSharedState(particlesKey) is double[] ids)
+            if (simulation.Multiplayer.GetSharedState(particlesKey) is IList<object> ids)
             {
-                particleIds = ids.Cast<int>().ToList();
+                particleIds = ids.Select(id => (int)(double)id).ToList();
+            }
+            else
+            {
+                particleIds = new List<int>();
             }
         }
 
