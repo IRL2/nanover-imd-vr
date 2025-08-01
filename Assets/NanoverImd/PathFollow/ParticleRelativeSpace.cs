@@ -36,8 +36,7 @@ namespace NanoverImd.PathFollower
 
         private void OnDisable()
         {
-            transform.localPosition = Vector3.zero;
-            transform.localRotation = Quaternion.identity;
+            ResetPose();
 
             foreach (var sphere in referenceSpheres)
             {
@@ -53,11 +52,21 @@ namespace NanoverImd.PathFollower
             UpdateReferenceSpheres();
         }
 
+        private void ResetPose()
+        {
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
+        }
+
         private void UpdatePose()
         {
             var frame = simulation.FrameSynchronizer.CurrentFrame;
 
-            if (particleIds.Count < 3 || frame == null) return;
+            if (particleIds.Count < 3 || frame == null)
+            {
+                ResetPose();
+                return;
+            }
 
             var A = frame.ParticlePositions[particleIds[0]];
             var B = frame.ParticlePositions[particleIds[1]];
