@@ -3,6 +3,7 @@ using Nanover.Frontend.XR;
 using Nanover.Visualisation;
 using NanoverImd;
 using NanoverImd.Interaction;
+using NanoverImd.PathFollower;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -14,6 +15,7 @@ public class InteractionTrailsManager : MonoBehaviour
     [SerializeField] private LineManager lineManager;
     [SerializeField] private NanoverImdSimulation simulation;
     [SerializeField] private SynchronisedFrameSource frameSource;
+    [SerializeField] private ParticleRelativeSpace pathSpace;
     //[SerializeField] private Transform simulationParent;
     [SerializeField] private TextMeshPro infoLabel;
 
@@ -116,7 +118,7 @@ public class InteractionTrailsManager : MonoBehaviour
 
             lastFrameIndex = frameIndex;
 
-            lineManager.AddPointToLine(currentLineIndex, newPosition.Value);
+            lineManager.AddPointToLine(currentLineIndex, pathSpace.PositionFromSimulationToPath(newPosition.Value));
             UpdateInfo();
         }
     }
