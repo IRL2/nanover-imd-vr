@@ -143,7 +143,7 @@ public class InteractionTrailsManager : MonoBehaviour
         //simulationInformationDisplay.UpdateData("rightAtom", lastAtomIndex.HasValue ? lastAtomIndex.Value.ToString() : "N/A");
         //simulationInformationDisplay.UpdateData("accumulatedWork", lastWork.HasValue ? lastWork.Value.ToString("F2") : "N/A");
         //simulationInformationDisplay.UpdateData("simulationTime", lastFrameIndex.HasValue ? lastFrameIndex.Value.ToString("F2") : "N/A");
-        simulationInformationDisplay.RefreshDisplay();
+        //simulationInformationDisplay.RefreshDisplay();
     }
 
     private int? GetSelectedAtomIndex(IDictionary<string, object> data)
