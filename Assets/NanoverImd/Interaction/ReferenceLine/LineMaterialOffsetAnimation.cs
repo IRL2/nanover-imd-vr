@@ -3,7 +3,7 @@ using UnityEngine;
 public class ReferenceLineAnimator : MonoBehaviour
 {
     [SerializeField]
-    Material material;
+    private Material material;
     
     string textureName = "_MainTex";
 

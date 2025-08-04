@@ -80,5 +80,13 @@ namespace Nanover.Visualisation
         {
             box = transformation;
         }
+
+        /// <summary>
+        /// Get the box transform to be visualised.
+        /// </summary>
+        public AffineTransformation GetBox()
+        {
+            return box;
+        }
     }
 }

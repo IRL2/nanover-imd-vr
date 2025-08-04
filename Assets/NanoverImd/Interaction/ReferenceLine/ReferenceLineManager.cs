@@ -15,7 +15,8 @@ namespace NanoverImd.Interaction
         [SerializeField] private Transform pointerMesh; // 
         [SerializeField] private Transform RHSSimulationSpaceTransform;
         [SerializeField] private Transform propsManagerTransform;
-        [SerializeField] private TextMeshPro lineInfoLabel;
+        //[SerializeField] private TextMeshPro lineInfoLabel;
+        [SerializeField] private SimulationInformationDisplay simulationInformationDisplay;
         [SerializeField] private float singlePointThreshold = 0.05f;
         [SerializeField] private float snapshotFrequency = 0.01f;
         [SerializeField] private Transform userPointer; // The visual pointer 
@@ -40,7 +41,7 @@ namespace NanoverImd.Interaction
             xButton = InputDeviceCharacteristics.Left.WrapUsageAsButton(CommonUsages.primaryButton);
             yButton = InputDeviceCharacteristics.Left.WrapUsageAsButton(CommonUsages.secondaryButton);
 
-            lineInfoLabel.text = "";
+            //lineInfoLabel.text = "";
             pointerRenderer = pointerMesh.gameObject.GetComponentInChildren<Renderer>();
             pointerRenderer.enabled = false;
 
@@ -67,15 +68,14 @@ namespace NanoverImd.Interaction
             lineLength = lineManager.GetLineLength(currentLineIndex);
             lineSmoothnessA = LineManager.CalculateAngularSmoothness(l) / Mathf.PI;
             lineSmoothnessB = LineManager.CalculateSmoothness(l);
-            var label = ""
-                + $"\n<u>trajectory reference line</u>{(primaryButton.IsPressed ? " [drawing] " : "")}"
-                + $"\n   lenght is {lineLength:F2} nm"
-                + $"\n   from {l.GetPosition(0):F2}"
-                + $"\n   to {l.GetPosition(l.positionCount - 1):F2}"
-                + $"\n   having {l.positionCount} points"
-                + $"\n   angular triplets {(lineSmoothnessA * 100):F1}%"
-                + $"\n   path jagger {lineSmoothnessB:F2}\n";
-            lineInfoLabel.text = label;
+
+            simulationInformationDisplay.UpdateData("refLength", lineLength.ToString("F2"));
+            simulationInformationDisplay.UpdateData("refJagger", (lineSmoothnessA * 100).ToString("F1"));
+            simulationInformationDisplay.UpdateData("refTriplet", lineSmoothnessB.ToString("F2"));
+            simulationInformationDisplay.UpdateData("refPoints", l.positionCount.ToString());
+            simulationInformationDisplay.UpdateData("refOrigin", l.GetPosition(0).ToString("F2"));
+            simulationInformationDisplay.UpdateData("refEnd", l.GetPosition(l.positionCount - 1).ToString("F2"));
+            simulationInformationDisplay.RefreshDisplay();
         }
 
         void Update()
@@ -83,7 +83,8 @@ namespace NanoverImd.Interaction
             pointerMesh.position = userPointer.position;
             pointerMesh.rotation = Quaternion.LookRotation(userPointer.transform.forward, userPointer.transform.up);
 
-            lineInfoLabel.text = "\npointer at " + pointerMesh.localPosition.ToString() + " \n";
+            //lineInfoLabel.text = "\npointer at " + pointerMesh.localPosition.ToString() + " \n";
+            simulationInformationDisplay.UpdateData("pointerPosition", pointerMesh.localPosition.ToString("F2"));
 
             if (currentLineIndex >= 0)
             {
