@@ -296,7 +296,7 @@ MonoBehaviour:
   Type: spring
   Target: 1
   Scale: 1000
-  Speed: 0.1
+  Speed: 0.5
   ErrorThreshold: 0
 --- !u!120 &13188940
 LineRenderer:
@@ -19535,6 +19535,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   frame: {fileID: 431384314}
   display: {fileID: 6323259627634837814}
+  follower: {fileID: 13188939}
 --- !u!114 &6373908678917004096
 MonoBehaviour:
   m_ObjectHideFlags: 0

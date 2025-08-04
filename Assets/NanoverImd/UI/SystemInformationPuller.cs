@@ -1,4 +1,5 @@
 using Nanover.Visualisation;
+using NanoverImd.PathFollower;
 using UnityEngine;
 
 public class SystemInformationPuller : MonoBehaviour
@@ -6,6 +7,8 @@ public class SystemInformationPuller : MonoBehaviour
     [SerializeField] private SynchronisedFrameSource frame;
 
     [SerializeField] private SimulationInformationDisplay display;
+
+    [SerializeField] private PathFollower follower;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -35,7 +38,9 @@ public class SystemInformationPuller : MonoBehaviour
                 display.UpdateData("simulationTime", ((float)(double)simTime).ToString("F2") + " ps");
             }
         }
+
+        display.UpdateData("advance", $"{follower.LengthFollowed.ToString("F2")}nm");
+        display.UpdateData("speed", $"{follower.Speed}nm/ps");
+        display.UpdateData("forceScale", $"{follower.Scale}x");
     }
-
-
 }

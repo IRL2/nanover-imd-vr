@@ -42,16 +42,23 @@ namespace NanoverImd.PathFollower
         public InteractionTarget Target = InteractionTarget.Residue;
         [Range(100f, 5000f)]
         public float Scale = 1000f;
-        [Range(0f, .1f)]
-        public float Speed = 0.1f;
+        [Range(0f, 1f)]
+        public float Speed = .5f;
         [Range(0f, 1f)]
         public float ErrorThreshold = 0f;
 
         private bool frameUpdated = false;
+        private float frameDeltaTime = 0;
+        private float prevFrameTime = -1f;
+
+        public float LengthFollowed => targetDistance;
 
         private void OnFrameUpdated(IFrame frame, FrameChanges changes)
         {
             frameUpdated = changes.HasChanged("particle.positions");
+            var nextFrameTime = (float)(double) simulation.FrameSynchronizer.CurrentFrame.Data["system.simulation.time"];
+            frameDeltaTime = prevFrameTime > 0 ? nextFrameTime - prevFrameTime : 0f;
+            prevFrameTime = nextFrameTime;
         }
 
         private void OnEnable()
@@ -153,9 +160,10 @@ namespace NanoverImd.PathFollower
 
             if (inRange && frameUpdated)
             {
-                targetDistance += Time.deltaTime * Speed;
+                targetDistance += frameDeltaTime * Speed;
             }
             frameUpdated = false;
+            frameDeltaTime = 0;
 
             Vector3 computeParticleCentroid(IReadOnlyList<int> particleIds)
             {
