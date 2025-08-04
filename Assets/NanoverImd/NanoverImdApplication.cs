@@ -11,6 +11,7 @@ using Nanover.Grpc.Multiplayer;
 using Nanover.Frontend.Controllers;
 using System.Linq;
 using static Nanover.Grpc.Trajectory.TrajectorySession;
+using MessagePackTesting;
 
 namespace NanoverImd
 {
@@ -88,6 +89,8 @@ namespace NanoverImd
         /// Connect to the Nanover services described in a given ServiceHub.
         /// </summary>
         public void Connect(ServiceHub hub) => simulation.Connect(hub);
+
+        public void Connect(DiscoveryEntry entry) => simulation.Connect(entry);
 
         /// <summary>
         /// Connect to the first set of Nanover services found via ESSD.

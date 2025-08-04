@@ -2,10 +2,12 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Essd;
+using MessagePackTesting;
 using Nanover.Core.Async;
 using Nanover.Frontend.UI;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SocialPlatforms;
 
 namespace NanoverImd.UI.Scene
 {
@@ -13,6 +15,7 @@ namespace NanoverImd.UI.Scene
     {
         private Client client;
         private List<ServiceHub> hubs = new List<ServiceHub>();
+        private List<DiscoveryEntry> websockets = new List<DiscoveryEntry>();
 
         [SerializeField]
         private Sprite localServerIcon;
@@ -60,6 +63,9 @@ namespace NanoverImd.UI.Scene
 
         public async Task SearchAsync()
         {
+            websockets = await WebsocketDiscovery.DiscoverWebsocketServers();
+            RefreshHubs();
+
             currentSearchTask = client.StartSearch();
             startSearch?.Invoke();
             await Task.WhenAny(Task.Delay(500), currentSearchTask);
@@ -96,6 +102,10 @@ namespace NanoverImd.UI.Scene
                 var local = hub.Address.Equals("127.0.0.1") || hub.Address.Equals("localhost");
                 menu.AddItem(hub.Name, local ? localServerIcon : remoteServerIcon,
                              () => application.Connect(hub), hub.Address);
+            }
+            foreach (var entry in websockets)
+            {
+                menu.AddItem(entry.info.name, remoteServerIcon, () => application.Connect(entry), entry.info.ws);
             }
         }
     }

@@ -167,6 +167,12 @@ namespace NanoverImd
             }
         }
 
+        public async Task Connect(DiscoveryEntry entry)
+        {
+            Debug.Log($"Connecting to {entry.info.name} ({entry.info.ws})");
+            await ConnectWebSocket(entry.info.ws);
+        }
+
         public async Task AutoConnectWebSocket()
         {
             var request = UnityWebRequest.Get("https://irl-discovery.onrender.com/list");

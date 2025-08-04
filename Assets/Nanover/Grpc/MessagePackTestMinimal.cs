@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using NativeWebSocket;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MessagePackTesting
 {
@@ -240,6 +241,23 @@ namespace MessagePackTesting
     public class DiscoveryListing
     {
         public List<DiscoveryEntry> list;
+    }
+
+    public static class WebsocketDiscovery
+    {
+        public static readonly string Endpoint = "https://irl-discovery.onrender.com/list";
+
+        public static async Task<List<DiscoveryEntry>> DiscoverWebsocketServers()
+        {
+            var request = UnityWebRequest.Get(Endpoint);
+            await request.SendWebRequest();
+
+            var json = request.downloadHandler.text;
+            json = "{\"list\":" + json + "}";
+
+            var listing = JsonUtility.FromJson<DiscoveryListing>(json);
+            return listing.list;
+        }
     }
 
     public class MessagePackTestMinimal : MonoBehaviour
