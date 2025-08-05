@@ -106,7 +106,7 @@ namespace Nanover.Grpc
         /// <inheritdoc cref="IAsyncClosable.CloseAsync" />
         public Task CloseAsync()
         {
-            Cancel();
+            //Cancel();
 
             return Task.CompletedTask;
         }

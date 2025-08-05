@@ -123,7 +123,7 @@ namespace Nanover.Grpc.Stream
         /// <inheritdoc cref="IAsyncClosable.CloseAsync" />
         public Task CloseAsync()
         {
-            Cancel();
+            //Cancel();
             return Task.CompletedTask;
         }
     }
