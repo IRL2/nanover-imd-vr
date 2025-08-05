@@ -3,7 +3,7 @@ using Nanover.Frontend.Controllers;
 using Nanover.Frontend.Input;
 using Nanover.Frontend.UI;
 using Nanover.Frontend.XR;
-using System.Threading.Tasks;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.XR;
@@ -34,12 +34,14 @@ namespace NanoverImd.UI
         {
             Assert.IsNotNull(menuPrefab, "Missing menu prefab");
 
-            var openMenu = new DirectButton();
+            CoroutineHost.Instance.StartCoroutine(UpdatePressedInBackgroundCO());
 
-            UpdatePressedInBackground().AwaitInBackground();
-
-            async Task UpdatePressedInBackground()
+            IEnumerator UpdatePressedInBackgroundCO()
             {
+                var openMenu = new DirectButton();
+                openMenu.Pressed += ShowMenu;
+                openMenu.Released += CloseMenu;
+
                 while (true)
                 {
                     try
@@ -51,17 +53,15 @@ namespace NanoverImd.UI
                             openMenu.Press();
                         else if (!pressed && openMenu.IsPressed)
                             openMenu.Release();
-                    } catch (System.Exception e)
+                    }
+                    catch (System.Exception e)
                     {
                         Debug.LogException(e);
                     }
 
-                    await Task.Delay(1);
+                    yield return null;
                 }
             }
-
-            openMenu.Pressed += ShowMenu;
-            openMenu.Released += CloseMenu;
         }
 
         [SerializeField]

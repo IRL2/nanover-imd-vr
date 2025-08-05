@@ -25,6 +25,27 @@ namespace Nanover.Grpc.Stream
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 callback.Invoke(enumerator.Current);
+                await Task.Delay(50);
+            }
+        }
+
+        public static async Task ForEachAsyncDebug<T>(this IAsyncStreamReader<T> enumerator,
+                                                      Action<T> callback,
+                                                      CancellationToken cancellationToken,
+                                                      IncomingStream<T> test)
+        {
+            test.WaitingItem = true;
+            while (await enumerator.MoveNext(cancellationToken))
+            {
+                test.WaitingItem = false;
+                cancellationToken.ThrowIfCancellationRequested();
+                test.WaitingCall = true;
+                callback.Invoke(enumerator.Current);
+                test.WaitingCall = false;
+                test.WaitingDelay = true;
+                await Task.Delay(50);
+                test.WaitingDelay = false;
+                test.WaitingItem = true;
             }
         }
     }

@@ -21,6 +21,13 @@ namespace Nanover.Grpc.Stream
     /// </summary>
     public sealed class IncomingStream<TIncoming> : Cancellable, IAsyncClosable
     {
+        public string Waiting => $"{(WaitingItem ? "ITEM" : ".")}/{(WaitingCall ? "CALL" : ".")}/{(WaitingDelay ? "DELAY" : ".")}";
+
+        public int ReceivedCount { get; private set; } = 0;
+        public bool WaitingItem { get; set; } = false;
+        public bool WaitingCall { get; set; } = false;
+        public bool WaitingDelay { get; set; } = false;
+
         /// <summary>
         /// Callback for when a new item is received from the stream.
         /// </summary>
@@ -67,15 +74,15 @@ namespace Nanover.Grpc.Stream
             var enumerator =
                 new GrpcAsyncEnumeratorWrapper<TIncoming>(streamingCall.ResponseStream);
 
-            iterationTask = enumerator.ForEachAsync(OnMessageReceived,
-                                                    GetCancellationToken());
+            iterationTask = enumerator.ForEachAsyncDebug(OnMessageReceived, GetCancellationToken(), this);
 
             return iterationTask;
-        }
 
-        private void OnMessageReceived(TIncoming message)
-        {
-            MessageReceived?.Invoke(message);
+            void OnMessageReceived(TIncoming message)
+            {
+                ReceivedCount += 1;
+                MessageReceived?.Invoke(message);
+            }
         }
 
         /// <summary>

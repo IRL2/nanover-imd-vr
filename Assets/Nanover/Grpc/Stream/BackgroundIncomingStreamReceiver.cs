@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf;
@@ -33,7 +34,25 @@ namespace Nanover.Grpc.Trajectory
             this.merger = merger;
             stream.MessageReceived += ReceiveOnBackgroundThread;
             BackgroundThreadTask().AwaitInBackgroundIgnoreCancellation();
-            MainThreadTask().AwaitInBackgroundIgnoreCancellation();
+            CoroutineHost.Instance.StartCoroutine(MainThreadCO());
+
+            IEnumerator MainThreadCO()
+            {
+                while (true)
+                {
+                    if (stream.IsCancelled)
+                        break;
+
+                    // Atomically swap so that there is never a conflict with the merge into the same buffer
+                    var newReceivedData = Interlocked.Exchange(ref receivedDataBuffer, null);
+                    if (newReceivedData != null)
+                    {
+                        messageHandler.Invoke(newReceivedData);
+                    }
+
+                    yield return null;
+                }
+            }
         }
 
 
@@ -85,24 +104,6 @@ namespace Nanover.Grpc.Trajectory
         private async Task BackgroundThreadTask()
         {
             await Task.Run(stream.StartReceiving, stream.GetCancellationToken());
-        }
-
-        private async Task MainThreadTask()
-        {
-            while (true)
-            {
-                if (stream.IsCancelled)
-                    return;
-
-                // Atomically swap so that there is never a conflict with the merge into the same buffer
-                var newReceivedData = Interlocked.Exchange(ref receivedDataBuffer, null);
-                if (newReceivedData != null)
-                {
-                    messageHandler.Invoke(newReceivedData);
-                }
-
-                await Task.Delay(1, stream.GetCancellationToken());
-            }
         }
     }
 }

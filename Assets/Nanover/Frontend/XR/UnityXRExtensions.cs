@@ -7,6 +7,7 @@ using Nanover.Core.Async;
 using Nanover.Core.Math;
 using UnityEngine;
 using UnityEngine.XR;
+using System.Collections;
 
 namespace Nanover.Frontend.XR
 {
@@ -43,14 +44,14 @@ namespace Nanover.Frontend.XR
             var devices = new List<InputDevice>();
             var wrapper = new DirectPosedObject();
 
-            UpdatePoseInBackground().AwaitInBackground();
+            CoroutineHost.Instance.StartCoroutine(UpdatePoseInBackground());
 
-            async Task UpdatePoseInBackground()
+            IEnumerator UpdatePoseInBackground()
             {
                 while (true)
                 {
                     wrapper.SetPose(GetDevice().GetSinglePose());
-                    await Task.Delay(1);
+                    yield return null;
                 }
             }
 
@@ -85,9 +86,9 @@ namespace Nanover.Frontend.XR
         {
             var wrapper = new DirectButton();
 
-            UpdatePressedInBackground().AwaitInBackground();
+            CoroutineHost.Instance.StartCoroutine(UpdatePressedInBackground());
 
-            async Task UpdatePressedInBackground()
+            IEnumerator UpdatePressedInBackground()
             {
                 while (true)
                 {
@@ -99,7 +100,7 @@ namespace Nanover.Frontend.XR
                     else if (!pressed && wrapper.IsPressed)
                         wrapper.Release();
 
-                    await Task.Delay(1);
+                    yield return null;
                 }
             }
 

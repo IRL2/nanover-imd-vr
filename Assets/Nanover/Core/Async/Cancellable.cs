@@ -38,7 +38,8 @@ namespace Nanover.Core.Async
         /// <inheritdoc cref="IDisposable.Dispose" />
         public virtual void Dispose()
         {
-            cancellationSource?.Dispose();
+            // TODO: causing a crash?
+            //cancellationSource?.Dispose();
         }
     }
 }

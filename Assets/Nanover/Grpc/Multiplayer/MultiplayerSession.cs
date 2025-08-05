@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -63,6 +64,8 @@ namespace Nanover.Grpc.Multiplayer
 
         private MultiplayerClient client;
 
+        public int ReceivedCount => IncomingValueUpdates?.ReceivedCount ?? -1;
+        public string Waiting => IncomingValueUpdates?.Waiting ?? "";
         private IncomingStream<StateUpdate> IncomingValueUpdates { get; set; }
 
         private Dictionary<string, object> pendingValues
@@ -71,7 +74,7 @@ namespace Nanover.Grpc.Multiplayer
         private List<string> pendingRemovals
             = new List<string>();
 
-        private Task valueFlushingTask;
+        private Coroutine valueFlushingTask;
 
         public event Action<string, object> SharedStateDictionaryKeyUpdated;
 
@@ -119,18 +122,16 @@ namespace Nanover.Grpc.Multiplayer
 
             if (valueFlushingTask == null)
             {
-                valueFlushingTask = FlushValuesInterval(ValuePublishInterval);
-                valueFlushingTask.AwaitInBackground();
+                valueFlushingTask = CoroutineHost.Instance.StartCoroutine(FlushValuesInterval(ValuePublishInterval));
 
-                async Task FlushValuesInterval(int interval)
+                IEnumerator FlushValuesInterval(int interval)
                 {
                     try
                     {
                         while (true)
                         {
-                            await Task.WhenAll(
-                                FlushValuesAsync(),
-                                Task.Delay(interval));
+                            FlushValuesAsync().AwaitInBackground();
+                            yield return new WaitForSeconds(interval * 0.001f);
                         }
                     }
                     finally

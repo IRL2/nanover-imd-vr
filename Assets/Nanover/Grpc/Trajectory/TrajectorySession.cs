@@ -40,6 +40,8 @@ namespace Nanover.Grpc.Trajectory
         /// </summary>
         private TrajectoryClient trajectoryClient;
 
+        public int ReceivedCount => frameStream?.ReceivedCount ?? -1;
+        public string Waiting => frameStream?.Waiting ?? "";
         private IncomingStream<GetFrameResponse> frameStream;
 
         public TrajectorySession()

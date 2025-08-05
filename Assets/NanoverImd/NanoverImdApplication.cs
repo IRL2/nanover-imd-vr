@@ -11,6 +11,7 @@ using Nanover.Grpc.Multiplayer;
 using Nanover.Frontend.Controllers;
 using System.Linq;
 using static Nanover.Grpc.Trajectory.TrajectorySession;
+using NanoverImd.UI;
 
 namespace NanoverImd
 {
@@ -119,6 +120,10 @@ namespace NanoverImd
 
         private void Update()
         {
+            DebugPanel.Instance.ClearText();
+            DebugPanel.Instance.AddText($"TRAJ: {simulation.Trajectory.ReceivedCount} ({simulation.Trajectory.Waiting})\n");
+            DebugPanel.Instance.AddText($"STATE: {simulation.Multiplayer.ReceivedCount} ({simulation.Multiplayer.Waiting})\n");
+
             CheckDisconnect();
 
             if (ManualColocation)
