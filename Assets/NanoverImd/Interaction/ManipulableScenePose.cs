@@ -1,8 +1,10 @@
+using Cysharp.Threading.Tasks;
 using Nanover.Core.Async;
 using Nanover.Core.Math;
 using Nanover.Frontend.Manipulation;
 using Nanover.Frontend.XR;
 using Nanover.Grpc.Multiplayer;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,7 +47,26 @@ namespace NanoverImd.Interaction
 
             calibratedSpace.CalibrationChanged += RemoteSimulationPoseChanged;
 
-            Update().AwaitInBackground();
+            Update().Forget();
+
+            async UniTask Update()
+            {
+                while (true)
+                {
+                    if (CurrentlyEditingScene && multiplayer.IsOpen)
+                    {
+                        var worldPose = Transformation.FromTransformRelativeToParent(sceneTransform);
+
+                        ClampToSensibleValues(ref worldPose);
+                        worldPose.CopyToTransformRelativeToParent(sceneTransform);
+
+                        var calibPose = calibratedSpace.TransformPoseWorldToCalibrated(worldPose);
+                        multiplayer.SimulationPose.UpdateValueWithLock(calibPose);
+                    }
+
+                    await UniTask.DelayFrame(1);
+                }
+            }
         }
 
         /// <summary>
@@ -119,25 +140,6 @@ namespace NanoverImd.Interaction
             {
                 multiplayer.SimulationPose.ReleaseLock();
                 CopyMultiplayerPoseToLocal();
-            }
-        }
-
-        private async Task Update()
-        {
-            while (true)
-            {
-                if (CurrentlyEditingScene && multiplayer.IsOpen)
-                {
-                    var worldPose = Transformation.FromTransformRelativeToParent(sceneTransform);
-
-                    ClampToSensibleValues(ref worldPose);
-                    worldPose.CopyToTransformRelativeToParent(sceneTransform);
-
-                    var calibPose = calibratedSpace.TransformPoseWorldToCalibrated(worldPose);
-                    multiplayer.SimulationPose.UpdateValueWithLock(calibPose);
-                }
-
-                await Task.Delay(10);
             }
         }
 

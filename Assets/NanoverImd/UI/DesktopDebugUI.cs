@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using NanoverImd;
 using UnityEngine;
-using Nanover.Core.Async;
 using MessagePackTesting;
+using Cysharp.Threading.Tasks;
 
 namespace NanoverImd
 {
@@ -42,7 +42,7 @@ namespace NanoverImd
 
             GUILayout.Box("Connect");
             if (GUILayout.Button("Autoconnect WebSocket"))
-                simulation.AutoConnectWebSocket().AwaitInBackgroundIgnoreCancellation();
+                simulation.AutoConnectWebSocket().Forget();
 
             if (GUILayout.Button("Manual"))
             {
@@ -55,7 +55,7 @@ namespace NanoverImd
 
                 if (discovery)
                 {
-                    WebsocketDiscovery.DiscoverWebsocketServers().ContinueWith(task => knownWebSockets = task.Result);
+                    WebsocketDiscovery.DiscoverWebsocketServers().ContinueWith(result => knownWebSockets = result);
 
                     var client = new Client();
                     knownServiceHubs = client
@@ -115,7 +115,7 @@ namespace NanoverImd
 
                 GUILayout.Box("User Commands");
                 if (GUILayout.Button("Refresh List"))
-                    simulation.Trajectory.UpdateCommands().AwaitInBackgroundIgnoreCancellation();
+                    simulation.Trajectory.UpdateCommands().Forget();
 
                 foreach (var command in simulation.Trajectory.CommandDefinitions.Values.Where(command => command.Name.StartsWith("user/")))
                 {
@@ -173,7 +173,7 @@ namespace NanoverImd
 
             if (GUILayout.Button("Search"))
             {
-                WebsocketDiscovery.DiscoverWebsocketServers().ContinueWith(task => knownWebSockets = task.Result);
+                WebsocketDiscovery.DiscoverWebsocketServers().ContinueWith(result => knownWebSockets = result);
 
                 var client = new Client();
                 knownServiceHubs = client

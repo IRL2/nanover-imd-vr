@@ -9,6 +9,7 @@ using UnityEngine.Networking;
 using NativeWebSocket;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 namespace MessagePackTesting
 {
@@ -247,7 +248,7 @@ namespace MessagePackTesting
     {
         public static readonly string Endpoint = "https://irl-discovery.onrender.com/list";
 
-        public static async Task<List<DiscoveryEntry>> DiscoverWebsocketServers()
+        public static async UniTask<List<DiscoveryEntry>> DiscoverWebsocketServers()
         {
             var request = UnityWebRequest.Get(Endpoint);
             await request.SendWebRequest();

@@ -1,6 +1,6 @@
+using Cysharp.Threading.Tasks;
 using Essd;
 using MessagePackTesting;
-using Nanover.Core.Async;
 using Nanover.Core.Math;
 using Nanover.Frontend.Manipulation;
 using Nanover.Grpc;
@@ -13,8 +13,6 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.WebSockets;
-using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -76,22 +74,17 @@ namespace NanoverImd
         /// Connect to the host address and attempt to open clients for the
         /// trajectory and multiplayer services.
         /// </summary>
-        public async Task Connect(string address,
-                                  int? trajectoryPort,
-                                  int? multiplayerPort = null)
+        public async UniTask Connect(string address,
+                                     int? trajectoryPort,
+                                     int? multiplayerPort = null)
         {
             await CloseAsync();
 
-            Task trajectory = Task.CompletedTask;
-            Task multiplayer = Task.CompletedTask;
-
             if (trajectoryPort.HasValue)
-                trajectory = Trajectory.OpenClient(GetChannel(address, trajectoryPort.Value));
+                Trajectory.OpenClient(GetChannel(address, trajectoryPort.Value));
             
             if (multiplayerPort.HasValue)
-                multiplayer = Multiplayer.OpenClient(GetChannel(address, multiplayerPort.Value));
-
-            await Task.WhenAll(trajectory, multiplayer);
+                await Multiplayer.OpenClient(GetChannel(address, multiplayerPort.Value));
 
             gameObject.SetActive(true);
 
@@ -100,7 +93,7 @@ namespace NanoverImd
 
         private double prevTime = 0;
 
-        public async Task ConnectWebSocket(string address)
+        public async UniTask ConnectWebSocket(string address)
         {
             if (websocket != null)
                 await websocket.Close();
@@ -109,8 +102,8 @@ namespace NanoverImd
             Task multiplayer = Task.CompletedTask;
 
             websocket = new NativeWebSocket.WebSocket(address);
-            trajectory = Trajectory.OpenClient(websocket);
-            multiplayer = Multiplayer.OpenClient(websocket);
+            Trajectory.OpenClient(websocket);
+            Multiplayer.OpenClient(websocket);
 
             //void MeasureTime()
             //{
@@ -123,7 +116,6 @@ namespace NanoverImd
 
             //websocket.OnMessage += (bytes) => MeasureTime();
 
-            await Task.WhenAll(trajectory, multiplayer);
             await websocket.Connect();
 
             gameObject.SetActive(true);
@@ -152,7 +144,7 @@ namespace NanoverImd
         /// <summary>
         /// Connect to services as advertised by an ESSD service hub.
         /// </summary>
-        public async Task Connect(ServiceHub hub)
+        public async UniTask Connect(ServiceHub hub)
         {
             Debug.Log($"Connecting to {hub.Name} ({hub.Id})");
 
@@ -167,13 +159,13 @@ namespace NanoverImd
             }
         }
 
-        public async Task Connect(DiscoveryEntry entry)
+        public async UniTask Connect(DiscoveryEntry entry)
         {
             Debug.Log($"Connecting to {entry.info.name} ({entry.info.ws})");
             await ConnectWebSocket(entry.info.ws);
         }
 
-        public async Task AutoConnectWebSocket()
+        public async UniTask AutoConnectWebSocket()
         {
             var request = UnityWebRequest.Get("https://irl-discovery.onrender.com/list");
             await request.SendWebRequest();
@@ -191,7 +183,7 @@ namespace NanoverImd
         /// Run an ESSD search and connect to the first service found, or none
         /// if the timeout elapses without finding a service.
         /// </summary>
-        public async Task AutoConnect(int millisecondsTimeout = 1000)
+        public async UniTask AutoConnect(int millisecondsTimeout = 1000)
         {
             var client = new Client();
             var services = await Task.Run(() => client.SearchForServices(millisecondsTimeout));
@@ -202,17 +194,16 @@ namespace NanoverImd
         /// <summary>
         /// Close all sessions.
         /// </summary>
-        public async Task CloseAsync()
+        public async UniTask CloseAsync()
         {
             ManipulableParticles.ClearAllGrabs();
 
-            await Task.WhenAll(
-                Trajectory.CloseClient(), 
-                Multiplayer.CloseClient());
+            Trajectory.CloseClient();
+            await Multiplayer.CloseClient();
 
             foreach (var channel in channels.Values)
             {
-                await channel.CloseAsync();
+                channel.Close();
             }
 
             channels.Clear();

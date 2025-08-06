@@ -11,6 +11,7 @@
         "Unity.InputSystem",
         "Meta.XR.BuildingBlocks",
         "Oculus.VR",
+        "UniTask",
         "endel.nativewebsocket"
     ],
     "includePlatforms": [],

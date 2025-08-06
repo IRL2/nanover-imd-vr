@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Essd;
 using MessagePackTesting;
-using Nanover.Core.Async;
 using Nanover.Frontend.UI;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.SocialPlatforms;
 
 namespace NanoverImd.UI.Scene
 {
@@ -53,7 +51,7 @@ namespace NanoverImd.UI.Scene
             return hub.Address.Equals("127.0.0.1") || hub.Address.Equals("localhost");
         }
 
-        private Task currentSearchTask = null;
+        private UniTask? currentSearchTask = null;
 
         [SerializeField]
         private UnityEvent startSearch;
@@ -61,14 +59,14 @@ namespace NanoverImd.UI.Scene
         [SerializeField]
         private UnityEvent endSearch;
 
-        public async Task SearchAsync()
+        public async UniTask SearchAsync()
         {
             websockets = await WebsocketDiscovery.DiscoverWebsocketServers();
             RefreshHubs();
 
-            currentSearchTask = client.StartSearch();
+            currentSearchTask = client.StartSearch().AsUniTask();
             startSearch?.Invoke();
-            await Task.WhenAny(Task.Delay(500), currentSearchTask);
+            await UniTask.WhenAny(UniTask.Delay(500), currentSearchTask.Value);
             await client.StopSearch();
             currentSearchTask = null;
             endSearch?.Invoke();
@@ -79,7 +77,7 @@ namespace NanoverImd.UI.Scene
         {
             if (currentSearchTask != null)
             {
-                client.StopSearch().AwaitInBackground();
+                client.StopSearch().AsUniTask().Forget();
                 currentSearchTask = null;
                 endSearch?.Invoke();
             }
@@ -87,7 +85,7 @@ namespace NanoverImd.UI.Scene
             client = new Client();
             hubs.Clear();
             client.ServiceFound += (obj, args) => hubs.Add(args);
-            SearchAsync().AwaitInBackground();
+            SearchAsync().Forget();
         }
 
         public void RefreshHubs()
