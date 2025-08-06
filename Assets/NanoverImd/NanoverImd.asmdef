@@ -10,7 +10,8 @@
         "Nanover.Core",
         "Unity.InputSystem",
         "Meta.XR.BuildingBlocks",
-        "Oculus.VR"
+        "Oculus.VR",
+        "UniTask"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

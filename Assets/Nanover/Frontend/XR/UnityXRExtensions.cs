@@ -2,12 +2,10 @@ using Nanover.Frontend.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Nanover.Core.Async;
 using Nanover.Core.Math;
 using UnityEngine;
 using UnityEngine.XR;
-using System.Collections;
+using Cysharp.Threading.Tasks;
 
 namespace Nanover.Frontend.XR
 {
@@ -44,14 +42,14 @@ namespace Nanover.Frontend.XR
             var devices = new List<InputDevice>();
             var wrapper = new DirectPosedObject();
 
-            CoroutineHost.Instance.StartCoroutine(UpdatePoseInBackground());
+            UpdatePoseInBackground().Forget();
 
-            IEnumerator UpdatePoseInBackground()
+            async UniTask UpdatePoseInBackground()
             {
                 while (true)
                 {
                     wrapper.SetPose(GetDevice().GetSinglePose());
-                    yield return null;
+                    await UniTask.DelayFrame(1);
                 }
             }
 
@@ -86,9 +84,9 @@ namespace Nanover.Frontend.XR
         {
             var wrapper = new DirectButton();
 
-            CoroutineHost.Instance.StartCoroutine(UpdatePressedInBackground());
+            UpdatePressedInBackground().Forget();
 
-            IEnumerator UpdatePressedInBackground()
+            async UniTask UpdatePressedInBackground()
             {
                 while (true)
                 {
@@ -100,7 +98,7 @@ namespace Nanover.Frontend.XR
                     else if (!pressed && wrapper.IsPressed)
                         wrapper.Release();
 
-                    yield return null;
+                    await UniTask.DelayFrame(1);
                 }
             }
 

@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using Nanover.Core.Async;
 using Nanover.Core.Math;
 using Nanover.Frontend.Manipulation;
@@ -46,9 +47,9 @@ namespace NanoverImd.Interaction
 
             calibratedSpace.CalibrationChanged += RemoteSimulationPoseChanged;
 
-            CoroutineHost.Instance.StartCoroutine(Update());
+            Update().Forget();
 
-            IEnumerator Update()
+            async UniTask Update()
             {
                 while (true)
                 {
@@ -63,7 +64,7 @@ namespace NanoverImd.Interaction
                         multiplayer.SimulationPose.UpdateValueWithLock(calibPose);
                     }
 
-                    yield return null;
+                    await UniTask.DelayFrame(1);
                 }
             }
         }

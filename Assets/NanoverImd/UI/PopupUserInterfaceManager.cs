@@ -1,9 +1,8 @@
-using Nanover.Core.Async;
+using Cysharp.Threading.Tasks;
 using Nanover.Frontend.Controllers;
 using Nanover.Frontend.Input;
 using Nanover.Frontend.UI;
 using Nanover.Frontend.XR;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.XR;
@@ -34,9 +33,9 @@ namespace NanoverImd.UI
         {
             Assert.IsNotNull(menuPrefab, "Missing menu prefab");
 
-            CoroutineHost.Instance.StartCoroutine(UpdatePressedInBackgroundCO());
+            UpdatePressedInBackground().Forget();
 
-            IEnumerator UpdatePressedInBackgroundCO()
+            async UniTask UpdatePressedInBackground()
             {
                 var openMenu = new DirectButton();
                 openMenu.Pressed += ShowMenu;
@@ -59,7 +58,7 @@ namespace NanoverImd.UI
                         Debug.LogException(e);
                     }
 
-                    yield return null;
+                    await UniTask.DelayFrame(1);
                 }
             }
         }

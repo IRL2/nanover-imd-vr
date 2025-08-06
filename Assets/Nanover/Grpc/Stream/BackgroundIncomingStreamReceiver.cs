@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Threading;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Google.Protobuf;
-using Nanover.Core.Async;
 using Nanover.Grpc.Stream;
 
 namespace Nanover.Grpc.Trajectory
@@ -26,17 +24,16 @@ namespace Nanover.Grpc.Trajectory
         private readonly Action<TResponse, TResponse> merger;
         private TResponse receivedDataBuffer = null;
 
-
         private BackgroundIncomingStreamReceiver(IncomingStream<TResponse> stream, Action<TResponse> messageHandler, Action<TResponse, TResponse> merger)
         {
             this.stream = stream;
             this.messageHandler = messageHandler;
             this.merger = merger;
             stream.MessageReceived += ReceiveOnBackgroundThread;
-            BackgroundThreadTask().AwaitInBackgroundIgnoreCancellation();
-            CoroutineHost.Instance.StartCoroutine(MainThreadCO());
+            BackgroundThreadTask().Forget();
+            MainThreadTask().Forget();
 
-            IEnumerator MainThreadCO()
+            async UniTask MainThreadTask()
             {
                 while (true)
                 {
@@ -50,7 +47,7 @@ namespace Nanover.Grpc.Trajectory
                         messageHandler.Invoke(newReceivedData);
                     }
 
-                    yield return null;
+                    await UniTask.DelayFrame(1);
                 }
             }
         }
@@ -101,9 +98,9 @@ namespace Nanover.Grpc.Trajectory
         }
 
 
-        private async Task BackgroundThreadTask()
+        private async UniTask BackgroundThreadTask()
         {
-            await Task.Run(stream.StartReceiving, stream.GetCancellationToken());
+            await UniTask.RunOnThreadPool(stream.StartReceiving, cancellationToken: stream.GetCancellationToken());
         }
     }
 }

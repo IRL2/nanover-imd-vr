@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Grpc.Core;
 using JetBrains.Annotations;
 using Nanover.Core.Async;
@@ -13,7 +14,7 @@ namespace Nanover.Grpc
     /// <summary>
     /// Base implementation of a C# wrapper around a gRPC client to a specific service.
     /// </summary>
-    public abstract class GrpcClient<TClient> : Cancellable, IAsyncClosable
+    public abstract class GrpcClient<TClient> : Cancellable
         where TClient : ClientBase<TClient>
     {
         /// <summary>
@@ -48,8 +49,8 @@ namespace Nanover.Grpc
         /// <param name="command">The name of the command to run, which must be registered on the server.</param>
         /// <param name="arguments">Name/value arguments to provide to the command.</param>
         /// <returns>Dictionary of results produced by the command.</returns>
-        public async Task<Dictionary<string, object>> RunCommandAsync(string command,
-                                                                      Dictionary<string, object> arguments = null)
+        public async UniTask<Dictionary<string, object>> RunCommandAsync(string command,
+                                                                         Dictionary<string, object> arguments = null)
         {
             var message = new CommandMessage
             {
@@ -88,32 +89,14 @@ namespace Nanover.Grpc
                 GetCancellationToken(), externalToken);
         }
 
-        /// <summary>
-        /// Create an outgoing stream from the definition of a gRPC call.
-        /// </summary>
-        protected OutgoingStream<TOutgoing, TResponse> GetOutgoingStream<TOutgoing, TResponse>(
-            ClientStreamingCall<TOutgoing, TResponse> call,
-            CancellationToken externalToken = default)
+        public void Close()
         {
-            if (IsCancelled)
-                throw new InvalidOperationException("The client is closed.");
-
-            return OutgoingStream<TOutgoing, TResponse>.CreateStreamFromClientCall(
-                call,
-                GetCancellationToken(), externalToken);
-        }
-
-        /// <inheritdoc cref="IAsyncClosable.CloseAsync" />
-        public Task CloseAsync()
-        {
-            //Cancel();
-
-            return Task.CompletedTask;
+            Cancel();
         }
 
         public void CloseAndCancelAllSubscriptions()
         {
-            CloseAsync();
+            Close();
         }
     }
 }
