@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Google.Protobuf.WellKnownTypes;
 using JetBrains.Annotations;
 using Nanover.Grpc.Stream;
@@ -44,7 +44,7 @@ namespace Nanover.Grpc.Multiplayer
             return GetIncomingStream(Client.SubscribeStateUpdates, request, externalToken);
         }
         
-        public async Task<bool> UpdateState(string token, Dictionary<string, object> updates, List<string> removals)
+        public async UniTask<bool> UpdateState(string token, Dictionary<string, object> updates, List<string> removals)
         {
             var request = new UpdateStateRequest()
             {
@@ -57,7 +57,7 @@ namespace Nanover.Grpc.Multiplayer
             return response.Success;
         }
         
-        public async Task<bool> UpdateLocks(string token, IDictionary<string, float> toAcquire, IEnumerable<string> toRemove)
+        public async UniTask<bool> UpdateLocks(string token, IDictionary<string, float> toAcquire, IEnumerable<string> toRemove)
         {
             var request = new UpdateLocksRequest
             {

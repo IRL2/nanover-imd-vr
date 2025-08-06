@@ -5,6 +5,7 @@ using System.Linq;
 using NanoverImd;
 using UnityEngine;
 using Nanover.Core.Async;
+using Cysharp.Threading.Tasks;
 
 namespace NanoverImd
 {
@@ -111,7 +112,7 @@ namespace NanoverImd
 
                 GUILayout.Box("User Commands");
                 if (GUILayout.Button("Refresh List"))
-                    simulation.Trajectory.UpdateCommands().AwaitInBackgroundIgnoreCancellation();
+                    simulation.Trajectory.UpdateCommands().Forget();
 
                 foreach (var command in simulation.Trajectory.CommandDefinitions.Values.Where(command => command.Name.StartsWith("user/")))
                 {

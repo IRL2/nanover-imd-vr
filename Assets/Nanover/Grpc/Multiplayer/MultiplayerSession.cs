@@ -1,7 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Nanover.Core.Async;
 using Nanover.Core.Math;
 using Nanover.Grpc.Stream;
@@ -71,7 +72,7 @@ namespace Nanover.Grpc.Multiplayer
         private List<string> pendingRemovals
             = new List<string>();
 
-        private Task valueFlushingTask;
+        private UniTask? valueFlushingTask;
 
         public event Action<string, object> SharedStateDictionaryKeyUpdated;
 
@@ -109,7 +110,7 @@ namespace Nanover.Grpc.Multiplayer
         /// Connect to a Multiplayer service over the given connection. 
         /// Closes any existing client.
         /// </summary>
-        public async Task OpenClient(GrpcConnection connection)
+        public async UniTask OpenClient(GrpcConnection connection)
         {
             await CloseClient();
             closing = false;
@@ -120,17 +121,16 @@ namespace Nanover.Grpc.Multiplayer
             if (valueFlushingTask == null)
             {
                 valueFlushingTask = FlushValuesInterval(ValuePublishInterval);
-                valueFlushingTask.AwaitInBackground();
 
-                async Task FlushValuesInterval(int interval)
+                async UniTask FlushValuesInterval(int interval)
                 {
                     try
                     {
                         while (true)
                         {
-                            await Task.WhenAll(
-                                FlushValuesAsync(),
-                                Task.Delay(interval));
+                            FlushValuesAsync().Forget();
+
+                            await UniTask.Delay(interval);
                         }
                     }
                     finally
@@ -157,7 +157,7 @@ namespace Nanover.Grpc.Multiplayer
         /// <summary>
         /// Close the current Multiplayer client and dispose all streams.
         /// </summary>
-        public async Task CloseClient()
+        public async UniTask CloseClient()
         {
             ClearSharedState();
 
@@ -170,7 +170,7 @@ namespace Nanover.Grpc.Multiplayer
 
             closing = true;
 
-            IncomingValueUpdates.CloseAsync().AwaitInBackgroundIgnoreCancellation();
+            IncomingValueUpdates.Close();
             IncomingValueUpdates = null;
 
             // Remove our personal avatar/playarea/origin
@@ -180,7 +180,7 @@ namespace Nanover.Grpc.Multiplayer
             PlayOrigins.RemoveValue(AccessToken ?? "");
             RemoveSharedStateKey(UpdateIndexKey);
 
-            await Task.WhenAny(FlushValuesAsync(), Task.Delay(1000));
+            await UniTask.WhenAny(FlushValuesAsync(), UniTask.Delay(1000));
 
             client.CloseAndCancelAllSubscriptions();
             client.Dispose();
@@ -223,7 +223,7 @@ namespace Nanover.Grpc.Multiplayer
         /// <summary>
         /// Attempt to gain exclusive write access to the shared value of the given key.
         /// </summary>
-        public async Task<bool> LockResource(string id)
+        public async UniTask<bool> LockResource(string id)
         {
             return await client.UpdateLocks(AccessToken, new Dictionary<string, float>
                                             {
@@ -235,7 +235,7 @@ namespace Nanover.Grpc.Multiplayer
         /// <summary>
         /// Release the lock on the given object of a given key.
         /// </summary>
-        public async Task<bool> ReleaseResource(string id)
+        public async UniTask<bool> ReleaseResource(string id)
         {
             return await client.UpdateLocks(AccessToken, new Dictionary<string, float>(), new string[]
             {
@@ -246,7 +246,7 @@ namespace Nanover.Grpc.Multiplayer
         /// <inheritdoc cref="IDisposable.Dispose" />
         public void Dispose()
         {
-            CloseClient().AwaitInBackgroundIgnoreCancellation();
+            CloseClient().Forget();
         }
 
         private void ClearSharedState()
@@ -312,7 +312,7 @@ namespace Nanover.Grpc.Multiplayer
         /// false if there were pending changes that failed to send, or true
         /// otherwise.
         /// </summary>
-        private async Task<bool> FlushValuesAsync()
+        private async UniTask<bool> FlushValuesAsync()
         {
             if (!pendingValues.Any() && !pendingRemovals.Any())
                 return true;

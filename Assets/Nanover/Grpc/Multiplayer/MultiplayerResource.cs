@@ -1,6 +1,5 @@
 using System;
-using System.Threading.Tasks;
-using Nanover.Core.Async;
+using Cysharp.Threading.Tasks;
 
 namespace Nanover.Grpc.Multiplayer
 {
@@ -142,7 +141,7 @@ namespace Nanover.Grpc.Multiplayer
         /// </summary>
         public void ObtainLock()
         {
-            ObtainLockAsync().AwaitInBackground();
+            ObtainLockAsync().Forget();
         }
 
         /// <summary>
@@ -151,10 +150,10 @@ namespace Nanover.Grpc.Multiplayer
         public void ReleaseLock()
         {
             CopyRemoteValueToLocal();
-            ReleaseLockAsync().AwaitInBackground();
+            ReleaseLockAsync().Forget();
         }
 
-        private async Task ObtainLockAsync()
+        private async UniTask ObtainLockAsync()
         {
             LockState = MultiplayerResourceLockState.Pending;
             var success = await session.LockResource(ResourceKey);
@@ -185,7 +184,7 @@ namespace Nanover.Grpc.Multiplayer
             LockRejected?.Invoke();
         }
 
-        private async Task ReleaseLockAsync()
+        private async UniTask ReleaseLockAsync()
         {
             if (LockState != MultiplayerResourceLockState.Unlocked)
             {

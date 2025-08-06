@@ -3,7 +3,6 @@ using Nanover.Frontend.XR;
 using UnityEngine;
 using UnityEngine.Events;
 using NanoverImd.Interaction;
-using System.Threading.Tasks;
 using Nanover.Core.Math;
 using UnityEngine.XR;
 using System.Collections.Generic;
@@ -11,6 +10,7 @@ using Nanover.Grpc.Multiplayer;
 using Nanover.Frontend.Controllers;
 using System.Linq;
 using static Nanover.Grpc.Trajectory.TrajectorySession;
+using Cysharp.Threading.Tasks;
 
 namespace NanoverImd
 {
@@ -75,9 +75,9 @@ namespace NanoverImd
         /// <summary>
         /// Connect to remote Nanover services.
         /// </summary>
-        public Task Connect(string address,
-                            int? trajectoryPort = null,
-                            int? multiplayerPort = null) =>
+        public UniTask Connect(string address,
+                               int? trajectoryPort = null,
+                               int? multiplayerPort = null) =>
             simulation.Connect(address, trajectoryPort, multiplayerPort);
 
         // These methods expose the underlying async methods to Unity for use
@@ -111,7 +111,7 @@ namespace NanoverImd
             Debug.LogError(string.Join(", ", commands.Select(c => c.Name)));
         }
 
-        public async Task<IEnumerable<CommandDefinition>> GetUserCommands()
+        public async UniTask<IEnumerable<CommandDefinition>> GetUserCommands()
         {
             var commands = await simulation.Trajectory.UpdateCommands();
             return commands.Values.Where(command => command.Name.StartsWith("user/"));

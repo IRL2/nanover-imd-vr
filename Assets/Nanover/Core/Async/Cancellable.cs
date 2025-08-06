@@ -10,10 +10,10 @@ namespace Nanover.Core.Async
     /// </summary>
     public abstract class Cancellable : ICancellable, IDisposable
     {
-        private readonly CancellationTokenSource cancellationSource;
+        private CancellationTokenSource cancellationSource;
 
         /// <inheritdoc cref="ICancellationTokenSource.GetCancellationToken" />
-        public bool IsCancelled => cancellationSource.IsCancellationRequested;
+        public bool IsCancelled => cancellationSource?.IsCancellationRequested ?? true;
 
         protected Cancellable(params CancellationToken[] externalTokens)
         {
@@ -32,13 +32,14 @@ namespace Nanover.Core.Async
         /// <inheritdoc cref="ICancellable.Cancel" />
         public void Cancel()
         {
-            cancellationSource.Cancel();
+            cancellationSource?.Cancel();
         }
 
         /// <inheritdoc cref="IDisposable.Dispose" />
         public virtual void Dispose()
         {
             cancellationSource?.Dispose();
+            cancellationSource = null;
         }
     }
 }
