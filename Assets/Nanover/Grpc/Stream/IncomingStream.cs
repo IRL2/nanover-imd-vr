@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Grpc.Core;
 using Nanover.Core.Async;
 
@@ -19,7 +20,7 @@ namespace Nanover.Grpc.Stream
     /// Wraps the incoming response stream of a gRPC call and raises an event
     /// when new content is received.
     /// </summary>
-    public sealed class IncomingStream<TIncoming> : Cancellable, IAsyncClosable
+    public sealed class IncomingStream<TIncoming> : Cancellable
     {
         /// <summary>
         /// Callback for when a new item is received from the stream.
@@ -27,7 +28,7 @@ namespace Nanover.Grpc.Stream
         public event Action<TIncoming> MessageReceived;
 
         private AsyncServerStreamingCall<TIncoming> streamingCall;
-        private Task iterationTask;
+        private UniTask? iterationTask;
 
         private IncomingStream(params CancellationToken[] externalTokens) : base(externalTokens)
         {
@@ -56,7 +57,7 @@ namespace Nanover.Grpc.Stream
         /// Start consuming the stream and raising events. Returns the
         /// iteration task.
         /// </summary>
-        public Task StartReceiving()
+        public void StartReceiving()
         {
             if (iterationTask != null)
                 throw new InvalidOperationException("Streaming has already started.");
@@ -64,60 +65,33 @@ namespace Nanover.Grpc.Stream
             if (IsCancelled)
                 throw new InvalidOperationException("Stream has already been closed.");
 
-            var enumerator =
-                new GrpcAsyncEnumeratorWrapper<TIncoming>(streamingCall.ResponseStream);
+            iterationTask = Iterate();
 
-            iterationTask = enumerator.ForEachAsync(OnMessageReceived,
-                                                    GetCancellationToken());
-
-            return iterationTask;
-        }
-
-        private void OnMessageReceived(TIncoming message)
-        {
-            MessageReceived?.Invoke(message);
-        }
-
-        /// <summary>
-        /// Wrapper around a gRPC <see cref="IAsyncStreamReader{T}" /> because
-        /// <see cref="MoveNext" /> throws an <see cref="RpcException" /> when the provided
-        /// token is already cancelled, instead of the expected
-        /// <see cref="OperationCanceledException" />.
-        /// </summary>
-        private class GrpcAsyncEnumeratorWrapper<T> : IAsyncStreamReader<T>
-        {
-            private readonly IAsyncStreamReader<T> enumerator;
-
-            /// <inheritdoc cref="IAsyncStreamReader{T}.Current" />
-            public T Current => enumerator.Current;
-
-            public GrpcAsyncEnumeratorWrapper(IAsyncStreamReader<T> wrapped)
+            async UniTask Iterate()
             {
-                enumerator = wrapped;
-            }
+                var enumerator = streamingCall.ResponseStream;
+                var token = GetCancellationToken();
 
-            /// <inheritdoc cref="IAsyncStreamReader{T}.MoveNext" />
-            public async Task<bool> MoveNext(CancellationToken cancellationToken)
-            {
                 try
                 {
-                    return await enumerator.MoveNext(cancellationToken);
+                    while (await enumerator.MoveNext(token))
+                    {
+                        token.ThrowIfCancellationRequested();
+                        MessageReceived(enumerator.Current);
+                        await UniTask.DelayFrame(1);
+                    }
                 }
                 catch (RpcException)
                 {
-                    // Throw if the cancellation token is cancelled
-                    cancellationToken.ThrowIfCancellationRequested();
-                    // Rethrow any exception not related to cancellation
+                    token.ThrowIfCancellationRequested();
                     throw;
                 }
             }
         }
 
-        /// <inheritdoc cref="IAsyncClosable.CloseAsync" />
-        public Task CloseAsync()
+        public void Close()
         {
             Cancel();
-            return Task.CompletedTask;
         }
     }
 }

@@ -1,8 +1,7 @@
 using System;
 using System.Threading;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Google.Protobuf;
-using Nanover.Core.Async;
 using Nanover.Grpc.Stream;
 
 namespace Nanover.Grpc.Trajectory
@@ -25,15 +24,32 @@ namespace Nanover.Grpc.Trajectory
         private readonly Action<TResponse, TResponse> merger;
         private TResponse receivedDataBuffer = null;
 
-
         private BackgroundIncomingStreamReceiver(IncomingStream<TResponse> stream, Action<TResponse> messageHandler, Action<TResponse, TResponse> merger)
         {
             this.stream = stream;
             this.messageHandler = messageHandler;
             this.merger = merger;
             stream.MessageReceived += ReceiveOnBackgroundThread;
-            BackgroundThreadTask().AwaitInBackgroundIgnoreCancellation();
-            MainThreadTask().AwaitInBackgroundIgnoreCancellation();
+            BackgroundThreadTask().Forget();
+            MainThreadTask().Forget();
+
+            async UniTask MainThreadTask()
+            {
+                while (true)
+                {
+                    if (stream.IsCancelled)
+                        break;
+
+                    // Atomically swap so that there is never a conflict with the merge into the same buffer
+                    var newReceivedData = Interlocked.Exchange(ref receivedDataBuffer, null);
+                    if (newReceivedData != null)
+                    {
+                        messageHandler.Invoke(newReceivedData);
+                    }
+
+                    await UniTask.DelayFrame(1);
+                }
+            }
         }
 
 
@@ -82,27 +98,9 @@ namespace Nanover.Grpc.Trajectory
         }
 
 
-        private async Task BackgroundThreadTask()
+        private async UniTask BackgroundThreadTask()
         {
-            await Task.Run(stream.StartReceiving, stream.GetCancellationToken());
-        }
-
-        private async Task MainThreadTask()
-        {
-            while (true)
-            {
-                if (stream.IsCancelled)
-                    return;
-
-                // Atomically swap so that there is never a conflict with the merge into the same buffer
-                var newReceivedData = Interlocked.Exchange(ref receivedDataBuffer, null);
-                if (newReceivedData != null)
-                {
-                    messageHandler.Invoke(newReceivedData);
-                }
-
-                await Task.Delay(1, stream.GetCancellationToken());
-            }
+            await UniTask.RunOnThreadPool(stream.StartReceiving, cancellationToken: stream.GetCancellationToken());
         }
     }
 }

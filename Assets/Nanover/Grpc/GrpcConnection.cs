@@ -15,7 +15,7 @@ namespace Nanover.Grpc
     /// a GRPC service should hold this connection and reference the
     /// CancellationToken to shut itself down when the connection is terminated.
     /// </summary>
-    public sealed class GrpcConnection : ICancellationTokenSource, IAsyncClosable
+    public sealed class GrpcConnection : ICancellationTokenSource
     {
         /// <summary>
         /// GRPC channel which represents a connection to a GRPC server.
@@ -67,7 +67,7 @@ namespace Nanover.Grpc
         /// Closes the GRPC channel asynchronously. This can be awaited or
         /// executed in the background.
         /// </summary>
-        public async Task CloseAsync()
+        public void Close()
         {
             if (IsCancelled)
                 return;
@@ -77,8 +77,6 @@ namespace Nanover.Grpc
             Channel?.Dispose();
             Channel = null;
             CancellationTokenSource = null;
-
-            await Task.CompletedTask;
         }
     }
 }
