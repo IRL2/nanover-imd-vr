@@ -98,9 +98,6 @@ namespace NanoverImd
             if (websocket != null)
                 await websocket.Close();
 
-            Task trajectory = Task.CompletedTask;
-            Task multiplayer = Task.CompletedTask;
-
             websocket = new NativeWebSocket.WebSocket(address);
             Trajectory.OpenClient(websocket);
             Multiplayer.OpenClient(websocket);

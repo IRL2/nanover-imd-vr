@@ -190,6 +190,7 @@ namespace MessagePackTesting
     public class FrameInner
     {
         [PropertyShape(Name = "particle.positions")]
+        [MessagePackConverter(typeof(Vector3Array))]
         public Vector3[]? Positions;
     }
 
