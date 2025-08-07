@@ -82,7 +82,7 @@ namespace NanoverImd
 
             if (trajectoryPort.HasValue)
                 Trajectory.OpenClient(GetChannel(address, trajectoryPort.Value));
-            
+
             if (multiplayerPort.HasValue)
                 await Multiplayer.OpenClient(GetChannel(address, multiplayerPort.Value));
 

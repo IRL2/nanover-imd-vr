@@ -184,28 +184,26 @@ namespace Nanover.Grpc.Multiplayer
 
         private void RunFlushingTask()
         {
-            if (valueFlushingTask == null)
+            valueFlushingTask = valueFlushingTask ?? FlushValuesInterval(ValuePublishInterval);
+
+            async UniTask FlushValuesInterval(int interval)
             {
-                valueFlushingTask = FlushValuesInterval(ValuePublishInterval);
-
-                async UniTask FlushValuesInterval(int interval)
+                try
                 {
-                    try
+                    while (true)
                     {
-                        while (true)
-                        {
-                            FlushValuesAsync().Forget();
+                        FlushValuesAsync().Forget();
 
-                            await UniTask.Delay(interval);
-                        }
+                        await UniTask.Delay(interval);
                     }
-                    finally
-                    {
-                        valueFlushingTask = null;
-                    }
+                }
+                finally
+                {
+                    valueFlushingTask = null;
                 }
             }
         }
+
 
         /// <summary>
         /// Close the current Multiplayer client and dispose all streams.
@@ -388,10 +386,12 @@ namespace Nanover.Grpc.Multiplayer
 
             if (client != null)
             {
-                foreach (var (key, value) in pendingValues)
-                    pendingValues[key] = value.ToProtobufValue();
+                var converted = new Dictionary<string, object>();
 
-                update = client.UpdateState(AccessToken, pendingValues, pendingRemovals);
+                foreach (var (key, value) in pendingValues)
+                    converted[key] = value.ToProtobufValue();
+
+                update = client.UpdateState(AccessToken, converted, pendingRemovals);
             }
             else if (websocket != null)
             {

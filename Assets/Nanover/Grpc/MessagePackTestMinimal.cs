@@ -186,14 +186,23 @@ namespace MessagePackTesting
         public HashSet<string> Removals = new HashSet<string>();
     }
 
+
+    public class FrameInner
+    {
+        [PropertyShape(Name = "particle.positions")]
+        public Vector3[]? Positions;
+    }
+
     public class Frame
     {
         [PropertyShape(Name = "topology")]
         public Topology? Topology;
 
-        [PropertyShape(Name = "positions")]
-        [MessagePackConverter(typeof(Vector3Array))]
-        public Vector3[]? Positions;
+        [PropertyShape(Ignore = true)]
+        public Vector3[]? Positions => FrameData?.Positions;
+
+        [PropertyShape(Name = "frame")]
+        public FrameInner? FrameData;
 
         [PropertyShape(Name = "state")]
         public Dictionary<string, object> State;
