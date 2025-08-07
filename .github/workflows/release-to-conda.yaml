@@ -1,0 +1,52 @@
+name: Publish release to conda
+
+on: 
+  push:
+  workflow_dispatch:
+  release:
+    types: [released]
+
+jobs:
+  conda:
+    name: Build the conda package
+    runs-on: windows-latest
+    steps:
+      - name: Download artifacts
+        id: download
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          repo: 'IRL2/nanover-imd-vr'
+          regex: true
+          file: 'windows'
+      - name: Check files
+        run: |
+          ls
+          $version="${{ steps.download.outputs.version }}"
+          $version="$version".Replace("v", "")
+          
+          echo "frontend_version=$version" >> $env:GITHUB_ENV
+          echo "build_number=0" >> $env:GITHUB_ENV
+          echo "NANOVER_LICENSE_PATH=$env:GITHUB_WORKSPACE\LICENSE" >> $env:GITHUB_ENV
+      - name: Check env
+        run: |
+          echo "$env:frontend_version"
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          miniforge-version: latest
+      - name: Install dependencies
+        run: conda install -y conda-build conda-verify
+      - name: Build conda package
+        run: |
+          ls -R conda
+          echo "build_number: $env:build_number"
+          echo "frontend_version: $env:frontend_version"
+          conda-build .\conda --prefix-length=10 --no-test --no-anaconda-upload --output-folder .\dist\conda-bld
+      - run: |
+          mkdir artifacts
+          cp -r ./dist/conda-bld ./artifacts
+      - name: Save the artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: conda-packages
+          path: ./artifacts
