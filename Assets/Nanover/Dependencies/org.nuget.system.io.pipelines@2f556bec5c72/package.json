@@ -1,0 +1,17 @@
+{
+  "name": "org.nuget.system.io.pipelines",
+  "displayName": "System.IO.Pipelines (NuGet)",
+  "version": "9.0.0",
+  "unity": "2019.1",
+  "description": "Single producer single consumer byte buffer management.\n\nCommonly Used Types:\nSystem.IO.Pipelines.Pipe\nSystem.IO.Pipelines.PipeWriter\nSystem.IO.Pipelines.PipeReader",
+  "keywords": [
+    "nuget"
+  ],
+  "category": null,
+  "dependencies": {
+    "org.nuget.system.buffers": "4.5.1",
+    "org.nuget.system.memory": "4.5.5",
+    "org.nuget.system.threading.tasks.extensions": "4.5.4"
+  },
+  "_fingerprint": "2f556bec5c72d2aa936a65d82b0efd0b8220b29c"
+}

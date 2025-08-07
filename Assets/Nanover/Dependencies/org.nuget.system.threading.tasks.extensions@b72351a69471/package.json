@@ -1,0 +1,15 @@
+{
+  "name": "org.nuget.system.threading.tasks.extensions",
+  "displayName": "System.Threading.Tasks.Extensions (NuGet)",
+  "version": "4.5.4",
+  "unity": "2019.1",
+  "description": "Provides additional types that simplify the work of writing concurrent and asynchronous code.\n\nCommonly Used Types:\nSystem.Threading.Tasks.ValueTask<TResult>\n \n7601f4f6225089ffb291dc7d58293c7bbf5c5d4f",
+  "keywords": [
+    "nuget"
+  ],
+  "category": null,
+  "dependencies": {
+    "org.nuget.system.runtime.compilerservices.unsafe": "4.5.3"
+  },
+  "_fingerprint": "b72351a694712f749086906e70b01e4360f4b07d"
+}
