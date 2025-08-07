@@ -22,24 +22,31 @@ namespace Nanover.Grpc.Frame
             MessagePackTesting.Frame data,
             Nanover.Frame.Frame previousFrame = null)
         {
-            var frame = previousFrame != null
-                            ? Nanover.Frame.Frame.ShallowCopy(previousFrame)
-                            : new Nanover.Frame.Frame();
+            var frame
+                = previousFrame != null
+                ? Nanover.Frame.Frame.ShallowCopy(previousFrame)
+                : new Nanover.Frame.Frame();
             var changes = FrameChanges.None;
 
-            if (data.Topology is { } topology)
+            if (data.FrameData is { } real)
             {
-                frame.BondPairs = topology.Bonds;
-                changes.MarkAsChanged(FrameData.BondArrayKey);
+                if (real.Positions is { } positions)
+                {
+                    frame.ParticlePositions = positions;
+                    changes.MarkAsChanged(FrameData.ParticlePositionArrayKey);
+                }
 
-                frame.ParticleElements = topology.Elements;
-                changes.MarkAsChanged(FrameData.ParticleElementArrayKey);
-            }
+                if (real.Elements is { } elements)
+                {
+                    frame.ParticleElements = elements;
+                    changes.MarkAsChanged(FrameData.ParticleElementArrayKey);
+                }
 
-            if (data.Positions is { } positions)
-            {
-                frame.ParticlePositions = positions;
-                changes.MarkAsChanged(FrameData.ParticlePositionArrayKey);
+                if (real.Bonds is { } bonds)
+                {
+                    frame.BondPairs = bonds;
+                    changes.MarkAsChanged(FrameData.BondArrayKey);
+                }
             }
 
             //Debug.LogError((data.UnusedData as IDictionary<object, object>).Keys);

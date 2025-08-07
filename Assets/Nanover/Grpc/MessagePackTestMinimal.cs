@@ -187,29 +187,32 @@ namespace MessagePackTesting
     }
 
 
-    public class FrameInner
+    public partial class FrameInner
     {
+        [PropertyShape(Name = "particle.elements")]
+        [MessagePackConverter(typeof(ElementArray))]
+        public Element[]? Elements;
+
+
         [PropertyShape(Name = "particle.positions")]
         [MessagePackConverter(typeof(Vector3Array))]
         public Vector3[]? Positions;
+
+        [PropertyShape(Name = "bond.pairs")]
+        [MessagePackConverter(typeof(BondPairArray))]
+        public BondPair[]? Bonds;
     }
 
-    public class Frame
+    public partial class Frame
     {
         [PropertyShape(Name = "topology")]
         public Topology? Topology;
-
-        [PropertyShape(Ignore = true)]
-        public Vector3[]? Positions => FrameData?.Positions;
 
         [PropertyShape(Name = "frame")]
         public FrameInner? FrameData;
 
         [PropertyShape(Name = "state")]
         public Dictionary<string, object> State;
-
-        [PropertyShape]
-        public UnusedDataPacket? UnusedData { get; set; }
     }
 
     public class Topology
@@ -316,7 +319,7 @@ namespace MessagePackTesting
                 MessagePackSerializer serializer = new();
                 var obj = serializer.Deserialize<Frame>(bytes, Witness.ShapeProvider)!;
 
-                if (obj.Positions is { } positions)
+                if (obj.FrameData.Positions is { } positions)
                 {
                     lines.positionCount = positions.Length;
                     lines.SetPositions(positions);
