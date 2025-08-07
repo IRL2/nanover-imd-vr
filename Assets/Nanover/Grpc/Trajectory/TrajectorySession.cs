@@ -58,11 +58,11 @@ namespace Nanover.Grpc.Trajectory
             websocket.OnMessage += (bytes) =>
             {
                 MessagePackSerializer serializer = new();
-                var frame = serializer.Deserialize<MessagePackTesting.Frame>(bytes, Witness.ShapeProvider)!;
+                var frame = serializer.Deserialize<MessagePackTesting.Message>(bytes, Witness.ShapeProvider)!;
                 ReceiveFrame(frame);
             };
 
-            void ReceiveFrame(MessagePackTesting.Frame nextFrame)
+            void ReceiveFrame(MessagePackTesting.Message nextFrame)
             {
                 CurrentFrameIndex = CurrentFrameIndex + 1;
 

@@ -19,7 +19,7 @@ namespace Nanover.Grpc.Frame
     public static class FrameConverter
     {
         public static (Nanover.Frame.Frame Frame, FrameChanges Update) ConvertFrame(
-            MessagePackTesting.Frame data,
+            MessagePackTesting.Message data,
             Nanover.Frame.Frame previousFrame = null)
         {
             var frame
@@ -28,7 +28,7 @@ namespace Nanover.Grpc.Frame
                 : new Nanover.Frame.Frame();
             var changes = FrameChanges.None;
 
-            if (data.FrameData is { } real)
+            if (data.FrameUpdate is { } real)
             {
                 if (real.Positions is { } positions)
                 {

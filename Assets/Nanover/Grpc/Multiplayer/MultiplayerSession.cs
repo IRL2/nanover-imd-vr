@@ -65,7 +65,7 @@ namespace Nanover.Grpc.Multiplayer
 
         private MultiplayerClient client;
 
-        private IncomingStream<StateUpdate> IncomingValueUpdates { get; set; }
+        private IncomingStream<Protocol.State.StateUpdate> IncomingValueUpdates { get; set; }
 
         private Dictionary<string, object> pendingValues
             = new Dictionary<string, object>();
@@ -116,9 +116,9 @@ namespace Nanover.Grpc.Multiplayer
             {
                 MessagePackSerializer serializer = new();
                 serializer = serializer.WithObjectConverter();
-                var frame = serializer.Deserialize<MessagePackTesting.Frame>(bytes, Witness.ShapeProvider)!;
+                var frame = serializer.Deserialize<MessagePackTesting.Message>(bytes, Witness.ShapeProvider)!;
                     
-                if (frame.State is { } state)
+                if (frame.FullState is { } state)
                     ReceiveState(state);
             };
 
@@ -169,11 +169,11 @@ namespace Nanover.Grpc.Multiplayer
             RunFlushingTask();
 
             IncomingValueUpdates = client.SubscribeStateUpdates();
-            BackgroundIncomingStreamReceiver<StateUpdate>.Start(IncomingValueUpdates,
+            BackgroundIncomingStreamReceiver<Protocol.State.StateUpdate>.Start(IncomingValueUpdates,
                                                                 OnResourceValuesUpdateReceived,
                                                                 MergeResourceUpdates);
 
-            void MergeResourceUpdates(StateUpdate dest, StateUpdate src)
+            void MergeResourceUpdates(Protocol.State.StateUpdate dest, Protocol.State.StateUpdate src)
             {
                 foreach (var (key, value) in src.ChangedKeys.Fields)
                     dest.ChangedKeys.Fields[key] = value;
@@ -327,7 +327,7 @@ namespace Nanover.Grpc.Multiplayer
             }
         }
 
-        private void OnResourceValuesUpdateReceived(StateUpdate update)
+        private void OnResourceValuesUpdateReceived(Protocol.State.StateUpdate update)
         {
             if (!IsOpen)
                 return;
@@ -395,7 +395,7 @@ namespace Nanover.Grpc.Multiplayer
             }
             else if (websocket != null)
             {
-                var change = new Update();
+                var change = new MessagePackTesting.StateUpdate();
                 foreach (var (key, value) in pendingValues)
                     change.Updates[key] = value;
                 change.Removals.UnionWith(pendingRemovals);

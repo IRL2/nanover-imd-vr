@@ -177,7 +177,18 @@ namespace MessagePackTesting
         public Vector3[][] Positions;
     }
 
-    public class Update
+    public class Topology
+    {
+         [PropertyShape(Name = "elements")]
+         [MessagePackConverter(typeof(ElementArray))]
+         public Element[] Elements;
+ 
+         [PropertyShape(Name = "bonds")]
+         [MessagePackConverter(typeof(BondPairArray))]
+         public BondPair[] Bonds;
+    }
+
+    public class StateUpdate
     {
         [PropertyShape(Name = "updates")]
         public Dictionary<string, object> Updates = new Dictionary<string, object>();
@@ -187,12 +198,11 @@ namespace MessagePackTesting
     }
 
 
-    public partial class FrameInner
+    public partial class FrameUpdate
     {
         [PropertyShape(Name = "particle.elements")]
         [MessagePackConverter(typeof(ElementArray))]
         public Element[]? Elements;
-
 
         [PropertyShape(Name = "particle.positions")]
         [MessagePackConverter(typeof(Vector3Array))]
@@ -203,27 +213,13 @@ namespace MessagePackTesting
         public BondPair[]? Bonds;
     }
 
-    public partial class Frame
+    public partial class Message
     {
-        [PropertyShape(Name = "topology")]
-        public Topology? Topology;
-
         [PropertyShape(Name = "frame")]
-        public FrameInner? FrameData;
+        public FrameUpdate? FrameUpdate;
 
         [PropertyShape(Name = "state")]
-        public Dictionary<string, object> State;
-    }
-
-    public class Topology
-    {
-        [PropertyShape(Name = "elements")]
-        [MessagePackConverter(typeof(ElementArray))]
-        public Element[] Elements;
-
-        [PropertyShape(Name = "bonds")]
-        [MessagePackConverter(typeof(BondPairArray))]
-        public BondPair[] Bonds;
+        public Dictionary<string, object> FullState;
     }
 
     [GenerateShapeFor(typeof(byte[]))]
@@ -231,8 +227,8 @@ namespace MessagePackTesting
     [GenerateShapeFor(typeof(object[]))]
     [GenerateShapeFor(typeof(HashSet<string>))]
     [GenerateShapeFor(typeof(List<object>))]
-    [GenerateShapeFor(typeof(Frame))]
-    [GenerateShapeFor(typeof(Update))]
+    [GenerateShapeFor(typeof(Message))]
+    [GenerateShapeFor(typeof(StateUpdate))]
     [GenerateShapeFor(typeof(Trajectory))]
     partial class Witness { }
 
@@ -317,9 +313,9 @@ namespace MessagePackTesting
             websocket.OnMessage += (bytes) =>
             {
                 MessagePackSerializer serializer = new();
-                var obj = serializer.Deserialize<Frame>(bytes, Witness.ShapeProvider)!;
+                var obj = serializer.Deserialize<Message>(bytes, Witness.ShapeProvider)!;
 
-                if (obj.FrameData.Positions is { } positions)
+                if (obj.FrameUpdate.Positions is { } positions)
                 {
                     lines.positionCount = positions.Length;
                     lines.SetPositions(positions);
