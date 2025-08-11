@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-conda:
-    name: Build the conda package
+    name: Build conda package
     runs-on: windows-latest
     steps:
       - name: Install conda
@@ -56,8 +56,8 @@ jobs:
           path: ./artifacts
 
   publish-conda:
-    name: Publish the conda package on Anaconda cloud
-    if: github.ref == 'refs/heads/main'
+    name: Publish conda package
+    # if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: build-conda
     defaults:
