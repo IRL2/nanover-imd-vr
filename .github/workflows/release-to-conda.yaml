@@ -1,7 +1,6 @@
 name: Publish release to conda
 
 on: 
-  push:
   workflow_dispatch:
   release:
     types: [released]
@@ -57,7 +56,7 @@ jobs:
 
   publish-conda:
     name: Publish conda package
-    # if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: build-conda
     defaults:
