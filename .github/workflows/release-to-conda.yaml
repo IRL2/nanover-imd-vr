@@ -11,13 +11,24 @@ jobs:
     name: Build the conda package
     runs-on: windows-latest
     steps:
-      - name: Download artifacts
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          miniforge-version: latest
+      - name: Install dependencies
+        run: conda install -y conda-build conda-verify
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+      - name: Download release
         id: download
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           repo: 'IRL2/nanover-imd-vr'
-          regex: true
-          file: 'windows'
+          file: 'nanover-imd-vr-windows.zip'
+        run:
+          Expand-Archive -Force nanover-imd-vr-windows.zip conda\artifacts
       - name: Check files
         run: |
           ls
@@ -27,15 +38,6 @@ jobs:
           echo "frontend_version=$version" >> $env:GITHUB_ENV
           echo "build_number=0" >> $env:GITHUB_ENV
           echo "NANOVER_LICENSE_PATH=$env:GITHUB_WORKSPACE\LICENSE" >> $env:GITHUB_ENV
-      - name: Check env
-        run: |
-          echo "$env:frontend_version"
-      - uses: conda-incubator/setup-miniconda@v3
-        with:
-          auto-update-conda: true
-          miniforge-version: latest
-      - name: Install dependencies
-        run: conda install -y conda-build conda-verify
       - name: Build conda package
         run: |
           ls -R conda
