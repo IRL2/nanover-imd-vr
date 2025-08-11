@@ -7,7 +7,7 @@ on:
     types: [released]
 
 jobs:
-  conda:
+  build-conda:
     name: Build the conda package
     runs-on: windows-latest
     steps:
@@ -16,7 +16,7 @@ jobs:
         with:
           auto-update-conda: true
           miniforge-version: latest
-      - name: Install dependencies
+      - name: Install release tools
         run: conda install -y conda-build conda-verify
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -32,9 +32,9 @@ jobs:
         run: |
           Expand-Archive -Force nanover-imd-vr-windows.zip conda\artifacts
           mv conda\artifacts\nanover-imd-vr-windows conda\artifacts\StandaloneWindows64
-      - name: Check files
+          ls -R conda
+      - name: Setup variables
         run: |
-          ls
           $version="${{ steps.download.outputs.version }}"
           $version="$version".Replace("v", "")
           
@@ -43,7 +43,6 @@ jobs:
           echo "NANOVER_LICENSE_PATH=$env:GITHUB_WORKSPACE\LICENSE" >> $env:GITHUB_ENV
       - name: Build conda package
         run: |
-          ls -R conda
           echo "build_number: $env:build_number"
           echo "frontend_version: $env:frontend_version"
           conda-build .\conda --prefix-length=10 --no-test --no-anaconda-upload --output-folder .\dist\conda-bld
@@ -55,3 +54,46 @@ jobs:
         with:
           name: conda-packages
           path: ./artifacts
+
+  publish-conda:
+    name: Publish the conda package on Anaconda cloud
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: build-conda
+    defaults:
+      run:
+        # This is necessary for the conda action. It replaces `conda init` as
+        # the shell does not load ,profile or .bashrc.
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          # WARNING! On the contrary to all the other places where we install
+          # conda, we install miniconda and NOT mi0niforge!
+          # This is because we do not need packages to RUN nanover, but packages
+          # from the default (anaconda) channel to upload to anaconda.
+          miniconda-version: latest
+      - name: Retrieve conda packages
+        uses: actions/download-artifact@v4
+        with:
+          name: conda-packages
+      - run: |
+          ls
+          ls conda-bld
+          ls conda-bld/win-64
+      - name: Install Anaconda
+        # We temporarilly ignore failure here. See #31.
+        run: conda install -y anaconda-client || echo "Fail?"
+      - name: Connect to Anaconda cloud
+        # The login token may be used by a failed build already. If we are asked
+        # if we want it back, we say yes. Hence the echo Y.
+        run: echo Y | anaconda login --username irl_bot --password ${{ secrets.ANACONDA_PASSWORD }}
+      - name: Upload packages
+        # Anaconda will complain if the given version of a package is already
+        # there. Until we have some versioning, we force the upload.
+        run: anaconda upload --user irl conda-bld/win-64/nanover-*.conda --force
+      - name: Disconnect from Anaconda cloud
+        #  Do not fail the build if we cannot logout.
+        run: anaconda logout || echo "Could not logout. Too bad."
