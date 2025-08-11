@@ -1,0 +1,14 @@
+{
+    "menu_name": "Nanover",
+    "menu_items":
+        [
+            {
+                "script": "${PREFIX}/Scripts/NanoverImd.bat",
+                "name": "Nanover iMD",
+                "workdir": "${PREFIX}",
+                "icon": "${MENU_DIR}/icon.png",
+                "desktop": true,
+                "quicklaunch": true
+            }
+        ]
+}
