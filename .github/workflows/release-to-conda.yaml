@@ -31,7 +31,7 @@ jobs:
       - name: Unzip release
         run: |
           Expand-Archive -Force nanover-imd-vr-windows.zip conda\artifacts
-          mv conda\nanover-imd-vr-windows conda\StandaloneWindows64
+          mv conda\artifacts\nanover-imd-vr-windows conda\artifacts\StandaloneWindows64
       - name: Check files
         run: |
           ls
