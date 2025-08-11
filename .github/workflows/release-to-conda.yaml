@@ -66,7 +66,6 @@ jobs:
         # the shell does not load ,profile or .bashrc.
         shell: bash -el {0}
     steps:
-      - uses: actions/checkout@v3
       - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
@@ -89,7 +88,7 @@ jobs:
       - name: Connect to Anaconda cloud
         # The login token may be used by a failed build already. If we are asked
         # if we want it back, we say yes. Hence the echo Y.
-        run: echo Y | anaconda login --username irl_bot --password ${{ secrets.ANACONDA_PASSWORD }}
+        run: echo Y | anaconda login --username irl_bot_2 --password ${{ secrets.ANACONDA_PASSWORD }}
       - name: Upload packages
         # Anaconda will complain if the given version of a package is already
         # there. Until we have some versioning, we force the upload.
