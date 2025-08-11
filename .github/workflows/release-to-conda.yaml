@@ -29,7 +29,7 @@ jobs:
           repo: 'IRL2/nanover-imd-vr'
           file: 'nanover-imd-vr-windows.zip'
       - name: Unzip release
-        run:
+        run: |
           Expand-Archive -Force nanover-imd-vr-windows.zip conda\artifacts
           mv conda\nanover-imd-vr-windows conda\StandaloneWindows64
       - name: Check files
