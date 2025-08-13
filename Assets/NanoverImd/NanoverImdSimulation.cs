@@ -64,6 +64,7 @@ namespace NanoverImd
         public SynchronisedFrameSource FrameSynchronizer { get; private set; }
 
         public event Action ConnectionEstablished;
+        public event Action ConnectionClosed;
 
         /// <summary>
         /// Connect to the host address and attempt to open clients for the
@@ -153,6 +154,8 @@ namespace NanoverImd
 
             if (this != null && gameObject != null)
                 gameObject.SetActive(false);
+
+            ConnectionClosed.Invoke();
         }
 
         private GrpcConnection GetChannel(string address, int port)

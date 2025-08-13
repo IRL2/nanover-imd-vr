@@ -49,7 +49,7 @@ namespace NanoverImd
         [SerializeField]
         private UnityEvent connectionEstablished;
         [SerializeField]
-        private UnityEvent connectionLost;
+        private UnityEvent connectionClosed;
 #pragma warning restore 0649
 
         public NanoverImdSimulation Simulation => simulation;
@@ -70,6 +70,7 @@ namespace NanoverImd
         private void Awake()
         {
             simulation.ConnectionEstablished += connectionEstablished.Invoke;
+            simulation.ConnectionClosed += connectionClosed.Invoke;
         }
 
         /// <summary>
@@ -152,7 +153,6 @@ namespace NanoverImd
             {
                 Debug.LogError($"{simulation.Multiplayer.TimeSinceIndex} / {simulation.Multiplayer.AwaitingIndex}");
                 Disconnect();
-                connectionLost.Invoke();
             }
         }
 

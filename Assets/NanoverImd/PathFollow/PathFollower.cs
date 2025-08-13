@@ -53,10 +53,20 @@ namespace NanoverImd.PathFollower
 
         public float LengthFollowed => targetDistance;
 
+        public void Reset()
+        {
+            testLine = null;
+            path.Clear();
+            targetDistance = 0;
+            AtomId = 0;
+            prevFrameTime = -1f;
+            frameDeltaTime = 0;
+        }
+
         private void OnFrameUpdated(IFrame frame, FrameChanges changes)
         {
             frameUpdated = changes.HasChanged("particle.positions");
-            var nextFrameTime = (float)(double) simulation.FrameSynchronizer.CurrentFrame.Data["system.simulation.time"];
+            var nextFrameTime = (float)(double)simulation.FrameSynchronizer.CurrentFrame.Data["system.simulation.time"];
             frameDeltaTime = prevFrameTime > 0 ? nextFrameTime - prevFrameTime : 0f;
             prevFrameTime = nextFrameTime;
         }

@@ -1,18 +1,19 @@
 using Nanover.Visualisation;
+using System.Collections;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class RelocateUILayer : MonoBehaviour
 {
     [SerializeField] private BoxVisualiser boxVisualiser;
 
-    void OnEnable()
+    private void OnEnable()
     {
-        ResetLocation();
+        StartCoroutine(ResetLocation());
     }
 
-    public void ResetLocation()
+    private IEnumerator ResetLocation()
     {
+        yield return new WaitForSeconds(.5f);
         Vector3 position = new Vector3();
         position.x = - 0.3f;// - boxVisualiser.GetBox().xAxis.x + 0.3f;
         position.y = 0;//boxVisualiser.GetBox().yAxis.y;

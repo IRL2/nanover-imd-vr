@@ -1,12 +1,10 @@
 using UnityEngine;
 using Nanover.Frontend.XR;
 using UnityEngine.XR;
-using NanoverImd.Interaction;
 
 public class LineModeToggler : MonoBehaviour
 {
     private Nanover.Frontend.Input.IButton menuButton;
-    private bool menuButtonPrevPressed;
 
 
     [SerializeField] GameObject[] ObjectsToActivate;
@@ -21,20 +19,17 @@ public class LineModeToggler : MonoBehaviour
     {
         menuButton = InputDeviceCharacteristics.Left.WrapUsageAsButton(CommonUsages.menuButton);
         UpdateStates();
+
+        menuButton.Pressed += () => SetExtendedModeEnabled(!isActiveAndEnabled);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void SetExtendedModeEnabled(bool enabled)
     {
-        if (menuButtonPrevPressed && !menuButton.IsPressed)
-        {
-            isExtendedModeEnabled = !isExtendedModeEnabled;
-            UpdateStates();
-        }
-        menuButtonPrevPressed = menuButton.IsPressed;
+        isExtendedModeEnabled = enabled;
+        UpdateStates();
     }
 
-    void UpdateStates()
+    public void UpdateStates()
     {
         for (int i = 0; i < ObjectsToActivate.Length; i++)
         {
