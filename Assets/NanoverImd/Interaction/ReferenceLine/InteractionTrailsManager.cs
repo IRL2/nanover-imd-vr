@@ -2,11 +2,9 @@ using System.Collections.Generic;
 using Nanover.Frontend.XR;
 using Nanover.Visualisation;
 using NanoverImd;
-using NanoverImd.Interaction;
 using NanoverImd.PathFollower;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UIElements;
 using UnityEngine.XR;
 
 
@@ -38,6 +36,14 @@ public class InteractionTrailsManager : MonoBehaviour
 
     // Add this field to store all created line indices
     private List<int> createdLineIndices = new();
+
+    public void OnDisconnect()
+    {
+        createdLineIndices.Clear();
+        currentLineIndex = -1;
+        lastAtomIndex = null;
+        lastPosition = null;
+    }
 
     private void OnEnable()
     {

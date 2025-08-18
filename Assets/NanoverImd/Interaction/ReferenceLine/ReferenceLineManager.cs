@@ -33,6 +33,12 @@ namespace NanoverImd.Interaction
         private Nanover.Frontend.Input.IButton primaryButton, secondaryButton, menuButton, xButton, yButton;
         private bool primaryButtonPrevPressed, secondaryButtonPrevPressed, menuButtonPrevPressed, xButtonPrevPressed, yButtonPrevPressed;
 
+        public void OnDisconnect()
+        {
+            currentLineIndex = -1;
+            createdLineIndices.Clear();
+        }
+
         void OnEnable()
         {
             primaryButton = InputDeviceCharacteristics.Right.WrapUsageAsButton(CommonUsages.primaryButton);
