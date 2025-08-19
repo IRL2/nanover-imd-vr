@@ -39,7 +39,7 @@ namespace NanoverImd.Interaction
             Residue
         }
 
-        public float InteractionRange = 0.25f;
+        public float InteractionRange = 0.40f;
 
         [SerializeField]
         private InteractionTarget interactionTarget = InteractionTarget.Single;
