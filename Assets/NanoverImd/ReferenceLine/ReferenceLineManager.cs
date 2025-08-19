@@ -1,11 +1,10 @@
+using System.Collections;
 using System.Collections.Generic;
+using Nanover.Frontend.XR;
+using TMPro;
 using UnityEngine;
 using UnityEngine.XR;
-
-using Nanover.Frontend.XR;
-
-using TMPro;
-using System.Collections;
+using static SimulationInformationDisplay;
 
 namespace NanoverImd.Interaction
 {
@@ -75,12 +74,12 @@ namespace NanoverImd.Interaction
             lineSmoothnessA = LineManager.CalculateAngularSmoothness(l) / Mathf.PI;
             lineSmoothnessB = LineManager.CalculateSmoothness(l);
 
-            simulationInformationDisplay.UpdateData("refLength", lineLength.ToString("F2"));
-            simulationInformationDisplay.UpdateData("refJagger", (lineSmoothnessA * 100).ToString("F1"));
-            simulationInformationDisplay.UpdateData("refTriplet", lineSmoothnessB.ToString("F2"));
-            simulationInformationDisplay.UpdateData("refPoints", l.positionCount.ToString());
-            simulationInformationDisplay.UpdateData("refOrigin", l.GetPosition(0).ToString("F2"));
-            simulationInformationDisplay.UpdateData("refEnd", l.GetPosition(l.positionCount - 1).ToString("F2"));
+            simulationInformationDisplay.UpdateData(DataKeys.refLength, lineLength.ToString("F2") + "nm");
+            simulationInformationDisplay.UpdateData(DataKeys.refJagger, (lineSmoothnessA * 100).ToString("F1"));
+            simulationInformationDisplay.UpdateData(DataKeys.refTriplet, lineSmoothnessB.ToString("F2"));
+            simulationInformationDisplay.UpdateData(DataKeys.refPoints, l.positionCount.ToString());
+            simulationInformationDisplay.UpdateData(DataKeys.refOrigin, l.GetPosition(0).ToString("F1"));
+            simulationInformationDisplay.UpdateData(DataKeys.refEnd, l.GetPosition(l.positionCount - 1).ToString("F1"));
             simulationInformationDisplay.RefreshDisplay();
         }
 
@@ -90,7 +89,7 @@ namespace NanoverImd.Interaction
             pointerMesh.rotation = Quaternion.LookRotation(userPointer.transform.forward, userPointer.transform.up);
 
             //lineInfoLabel.text = "\npointer at " + pointerMesh.localPosition.ToString() + " \n";
-            simulationInformationDisplay.UpdateData("pointerPosition", pointerMesh.localPosition.ToString("F2"));
+            simulationInformationDisplay.UpdateData(DataKeys.rightPosition, pointerMesh.localPosition.ToString("F2"));
 
             if (currentLineIndex >= 0)
             {

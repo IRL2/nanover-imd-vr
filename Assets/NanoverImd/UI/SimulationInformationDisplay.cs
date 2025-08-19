@@ -4,16 +4,38 @@ using UnityEngine;
 
 public class SimulationInformationDisplay : MonoBehaviour
 {
-    [SerializeField] TextMeshPro systemField;
-    [SerializeField] TextMeshPro interactionField;
-    [SerializeField] TextMeshPro referencelineField;
-    [SerializeField] TextMeshPro pathfollowerField;
-    [SerializeField] TextMeshPro instructionsField;
+    [SerializeField] TextMeshProUGUI systemField;
+    [SerializeField] TextMeshProUGUI interactionField;
+    [SerializeField] TextMeshProUGUI referencelineField;
+    [SerializeField] TextMeshProUGUI pathfollowerField;
+    [SerializeField] TextMeshProUGUI instructionsField;
 
-    private Dictionary<string, string> data = new Dictionary<string, string>();
+    private Dictionary<DataKeys, string> data = new Dictionary<DataKeys, string>();
 
     private string headerStyleIn = "<size=120%><u><b>";
     private string headerStyleOut = "</b></u></size>";
+    private string monoStyleIn = "";//"<mspace=0.6em>";
+    private string monoStyleOut = "";//"</mspace>";
+
+    public enum DataKeys 
+    {
+        simulationTime,
+        accumulatedWork,
+        rightPosition,
+        rightAtom,
+        leftPosition,
+        leftAtom,
+        refLength,
+        refPoints,
+        refOrigin,
+        refEnd,
+        refTriplet,
+        refJagger,
+        advance,
+        speed,
+        forceScale,
+        colinearity
+    }
 
     void LateUpdate()
     {
@@ -34,7 +56,7 @@ public class SimulationInformationDisplay : MonoBehaviour
         UpdateInstructions();
     }
 
-    public void UpdateData(string key, string value)
+    public void UpdateData(DataKeys key, string value)
     {
         data[data.ContainsKey(key) ? key : key] = value;
     }
@@ -42,21 +64,21 @@ public class SimulationInformationDisplay : MonoBehaviour
 
     void UpdateSystem()
     {
-        string simulationTime = data.TryGetValue("simulationTime", out var simTime) ? simTime : "N/A";
-        string accumulatedWork = data.TryGetValue("accumulatedWork", out var accWork) ? accWork : "N/A";
+        string simulationTime = data.TryGetValue(DataKeys.simulationTime, out var simTime) ? simTime : "N/A";
+        string accumulatedWork = data.TryGetValue(DataKeys.accumulatedWork, out var accWork) ? accWork : "N/A";
 
         systemField.text = headerStyleIn + "SYSTEM" + headerStyleOut
-            + "\n- " + "simulation time: " + simulationTime
-            + "\n- " + "accumulated work: " + accumulatedWork
+            + "\n- " + "simulation time: " + monoStyleIn + simulationTime + monoStyleOut
+            + "\n- " + "accumulated work: " + monoStyleIn + accumulatedWork + monoStyleOut
             ;
     }
 
     void UpdateInteraction()
     {
-        string rightPosition = data.TryGetValue("rightPosition", out var rightPos) ? rightPos : "N/A";
-        string rightAtom = data.TryGetValue("rightAtom", out var rightAtomValue) ? rightAtomValue : "N/A";
-        string leftPosition = data.TryGetValue("leftPosition", out var leftPos) ? leftPos : "N/A";
-        string leftAtom = data.TryGetValue("leftAtom", out var leftAtomValue) ? leftAtomValue : "N/A";
+        string rightPosition = data.TryGetValue(DataKeys.rightPosition, out var rightPos) ? rightPos : "N/A";
+        string rightAtom = data.TryGetValue(DataKeys.rightAtom, out var rightAtomValue) ? rightAtomValue : "N/A";
+        string leftPosition = data.TryGetValue(DataKeys.leftPosition, out var leftPos) ? leftPos : "N/A";
+        string leftAtom = data.TryGetValue(DataKeys.leftAtom, out var leftAtomValue) ? leftAtomValue : "N/A";
 
         interactionField.text = headerStyleIn + "INTERACTION"+ headerStyleOut
             + "\n- " + "right position at " + rightPosition
@@ -69,12 +91,12 @@ public class SimulationInformationDisplay : MonoBehaviour
 
     void UpdateReferenceline()
     {
-        string length = data.TryGetValue("refLength", out var len) ? len : "N/A";
-        string points = data.TryGetValue("refPoints", out var pts) ? pts : "N/A";
-        string origin = data.TryGetValue("refOrigin", out var org) ? org : "N/A";
-        string end = data.TryGetValue("refEnd", out var ed) ? ed : "N/A";
-        string triplet = data.TryGetValue("refTriplet", out var trp) ? trp : "N/A";
-        string jagger = data.TryGetValue("refJagger", out var jg) ? jg : "N/A";
+        string length = data.TryGetValue(DataKeys.refLength, out var len) ? len : "N/A";
+        string points = data.TryGetValue(DataKeys.refPoints, out var pts) ? pts : "N/A";
+        string origin = data.TryGetValue(DataKeys.refOrigin, out var org) ? org : "N/A";
+        string end = data.TryGetValue(DataKeys.refEnd, out var ed) ? ed : "N/A";
+        string triplet = data.TryGetValue(DataKeys.refTriplet, out var trp) ? trp : "N/A";
+        string jagger = data.TryGetValue(DataKeys.refJagger, out var jg) ? jg : "N/A";
 
         referencelineField.text = headerStyleIn + "REFERENCE LINE" + headerStyleOut
             + "\n- " + "length: " + length
@@ -88,14 +110,14 @@ public class SimulationInformationDisplay : MonoBehaviour
 
     void UpdateFollower(Dictionary<string, string>? keyValues = null)
     {
-        string advance = data.TryGetValue("advance", out var adv) ? adv : "N/A";
-        string speed = data.TryGetValue("speed", out var spd) ? spd : "N/A";
-        string forceScale = data.TryGetValue("forceScale", out var fs) ? fs : "N/A";
-        string colinearity = data.TryGetValue("colinearity", out var col) ? col : "N/A";
+        string advance = data.TryGetValue(DataKeys.advance, out var adv) ? adv : "N/A";
+        string speed = data.TryGetValue(DataKeys.speed, out var spd) ? spd : "N/A";
+        string forceScale = data.TryGetValue(DataKeys.forceScale, out var fs) ? fs : "N/A";
+        string colinearity = data.TryGetValue(DataKeys.colinearity, out var col) ? col : "N/A";
 
         pathfollowerField.text = headerStyleIn + "DaMD FOLLOWER" + headerStyleOut
-            + "\n- " + "advance: " + advance
-            + "\n- " + "speed: " + speed
+            + "\n- " + "advance: " + monoStyleIn + advance + monoStyleOut
+            + "\n- " + "speed: " + monoStyleIn + speed + monoStyleOut
             + "\n- " + "force scale: " + forceScale
             + "\n- " + "colinearity: " + colinearity
             ;

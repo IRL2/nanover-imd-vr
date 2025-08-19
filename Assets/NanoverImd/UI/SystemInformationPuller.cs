@@ -1,6 +1,7 @@
 using Nanover.Visualisation;
 using NanoverImd.PathFollower;
 using UnityEngine;
+using static SimulationInformationDisplay;
 
 public class SystemInformationPuller : MonoBehaviour
 {
@@ -30,17 +31,17 @@ public class SystemInformationPuller : MonoBehaviour
 
             if (data.TryGetValue("forces.user.work_done", out var work))
             {
-                display.UpdateData("accumulatedWork", ((float)(double)work).ToString("F2") + " mA");
+                display.UpdateData(DataKeys.accumulatedWork, ((float)(double)work).ToString("F2") + "mA");
             }
 
             if (data.TryGetValue("system.simulation.time", out var simTime))
             {
-                display.UpdateData("simulationTime", ((float)(double)simTime).ToString("F2") + " ps");
+                display.UpdateData(DataKeys.simulationTime, ((float)(double)simTime).ToString("F2") + "ps");
             }
         }
 
-        display.UpdateData("advance", $"{follower.LengthFollowed.ToString("F2")}nm");
-        display.UpdateData("speed", $"{follower.Speed}nm/ps");
-        display.UpdateData("forceScale", $"{follower.Scale}x");
+        display.UpdateData(DataKeys.advance, $"{follower.LengthFollowed.ToString("F2")}nm");
+        display.UpdateData(DataKeys.speed, $"{follower.Speed}nm/ps");
+        display.UpdateData(DataKeys.forceScale, $"{follower.Scale}x");
     }
 }
