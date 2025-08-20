@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using Nanover.Grpc.Stream;
+using UnityEngine;
 
 namespace Nanover.Grpc.Trajectory
 {
@@ -14,24 +16,42 @@ namespace Nanover.Grpc.Trajectory
     /// </summary>
     public class BackgroundIncomingStreamReceiver<TResponse> where TResponse : class, IMessage<TResponse>
     {
-        public static void Start(IncomingStream<TResponse> stream, Action<TResponse> messageHandler, Action<TResponse, TResponse> merger)
+        public static BackgroundIncomingStreamReceiver<TResponse> Start(IncomingStream<TResponse> stream, Action<TResponse> messageHandler, Action<TResponse, TResponse> merger)
         {
-            new BackgroundIncomingStreamReceiver<TResponse>(stream, messageHandler, merger);
+            return new BackgroundIncomingStreamReceiver<TResponse>(stream, messageHandler, merger);
         }
 
-        private readonly IncomingStream<TResponse> stream;
-        private readonly Action<TResponse> messageHandler;
         private readonly Action<TResponse, TResponse> merger;
         private TResponse receivedDataBuffer = null;
 
+        public readonly List<float> MessageReceiveTimes = new List<float>();
+
+        private void LogMessageReceiveTime()
+        {
+            var now = Time.realtimeSinceStartup;
+            MessageReceiveTimes.Add(now);
+
+            int expired = 0;
+
+            for (; expired < MessageReceiveTimes.Count; ++expired)
+                if (now - MessageReceiveTimes[expired] <= 1)
+                    break;
+
+            for (; expired > 0; --expired)
+                MessageReceiveTimes.RemoveAt(0);
+        }
+
         private BackgroundIncomingStreamReceiver(IncomingStream<TResponse> stream, Action<TResponse> messageHandler, Action<TResponse, TResponse> merger)
         {
-            this.stream = stream;
-            this.messageHandler = messageHandler;
             this.merger = merger;
             stream.MessageReceived += ReceiveOnBackgroundThread;
             BackgroundThreadTask().Forget();
             MainThreadTask().Forget();
+
+            async UniTask BackgroundThreadTask()
+            {
+                await UniTask.RunOnThreadPool(stream.StartReceiving, cancellationToken: stream.GetCancellationToken());
+            }
 
             async UniTask MainThreadTask()
             {
@@ -44,6 +64,7 @@ namespace Nanover.Grpc.Trajectory
                     var newReceivedData = Interlocked.Exchange(ref receivedDataBuffer, null);
                     if (newReceivedData != null)
                     {
+                        LogMessageReceiveTime();
                         messageHandler.Invoke(newReceivedData);
                     }
 
@@ -95,12 +116,6 @@ namespace Nanover.Grpc.Trajectory
                     }
                 }
             }
-        }
-
-
-        private async UniTask BackgroundThreadTask()
-        {
-            await UniTask.RunOnThreadPool(stream.StartReceiving, cancellationToken: stream.GetCancellationToken());
         }
     }
 }

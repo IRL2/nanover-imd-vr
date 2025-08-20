@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using Nanover.Core.Math;
 using Nanover.Frontend.Controllers;
@@ -7,10 +6,8 @@ using Nanover.Frontend.Manipulation;
 using Nanover.Visualisation;
 using Nanover.Visualisation.Properties;
 using Nanover.Visualisation.Property;
-using NanoverImd;
 using NanoverImd.Selection;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace NanoverImd.Interaction
 {
