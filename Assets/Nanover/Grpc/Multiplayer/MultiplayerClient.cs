@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf.WellKnownTypes;
 using JetBrains.Annotations;
@@ -33,15 +32,14 @@ namespace Nanover.Grpc.Multiplayer
         /// <remarks>
         /// Corresponds to the SubscribeStateUpdates gRPC call.
         /// </remarks>
-        public IncomingStream<StateUpdate> SubscribeStateUpdates(float updateInterval = DefaultUpdateInterval,
-                                                                 CancellationToken externalToken = default)
+        public IncomingStream<StateUpdate> SubscribeStateUpdates(float updateInterval = DefaultUpdateInterval)
         {
             var request = new SubscribeStateUpdatesRequest
             {
                 UpdateInterval = updateInterval,
             };
 
-            return GetIncomingStream(Client.SubscribeStateUpdates, request, externalToken);
+            return GetIncomingStream(Client.SubscribeStateUpdates, request);
         }
         
         public async UniTask<bool> UpdateState(string token, Dictionary<string, object> updates, List<string> removals)

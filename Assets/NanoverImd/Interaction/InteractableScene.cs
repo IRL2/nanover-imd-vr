@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using Nanover.Core.Math;
 using Nanover.Frame;
@@ -8,10 +7,8 @@ using Nanover.Frontend.Manipulation;
 using Nanover.Visualisation;
 using Nanover.Visualisation.Properties;
 using Nanover.Visualisation.Property;
-using NanoverImd;
 using NanoverImd.Selection;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace NanoverImd.Interaction
 {
@@ -42,7 +39,7 @@ namespace NanoverImd.Interaction
             Residue
         }
 
-        public float InteractionRange = 0.25f;
+        public float InteractionRange = 0.40f;
 
         [SerializeField]
         private InteractionTarget interactionTarget = InteractionTarget.Single;
