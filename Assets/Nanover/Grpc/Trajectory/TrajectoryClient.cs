@@ -1,4 +1,3 @@
-using System.Threading;
 using JetBrains.Annotations;
 using Nanover.Grpc.Stream;
 using Nanover.Protocol.Trajectory;
@@ -72,15 +71,11 @@ namespace Nanover.Grpc.Trajectory
         /// <remarks>
         /// Corresponds to the SubscribeLatestFrames gRPC call.
         /// </remarks>
-        public IncomingStream<GetFrameResponse> SubscribeLatestFrames(
-            float updateInterval = DefaultUpdateInterval,
-            CancellationToken externalToken = default)
+        public IncomingStream<GetFrameResponse> SubscribeLatestFrames(float updateInterval = DefaultUpdateInterval)
         {
             var request = new GetFrameRequest();
             request.FrameInterval = updateInterval;
-            return GetIncomingStream(Client.SubscribeLatestFrames,
-                                     request,
-                                     externalToken);
+            return GetIncomingStream(Client.SubscribeLatestFrames, request);
         }
     }
 }

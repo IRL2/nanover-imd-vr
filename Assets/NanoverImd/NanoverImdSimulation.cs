@@ -9,10 +9,15 @@ using Nanover.Visualisation;
 using NanoverImd.Interaction;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace NanoverImd
 {
@@ -103,6 +108,16 @@ namespace NanoverImd
             if (FrameSynchronizer == null)
                 FrameSynchronizer = gameObject.AddComponent<SynchronisedFrameSource>();
             FrameSynchronizer.FrameSource = Trajectory;
+
+#if UNITY_EDITOR
+            // Unity crashes if we don't disconnect ASAP before leaving playmode (due to YAHH http I think)
+            EditorApplication.playModeStateChanged += (state) => CloseAsync().Forget();
+#endif
+        }
+
+        private IEnumerator OnApplicationQuit()
+        {
+            yield return CloseAsync();
         }
 
         /// <summary>
@@ -170,16 +185,10 @@ namespace NanoverImd
 
             return channel;
         }
-
-
-        private async void OnDestroy()
-        {
-            await CloseAsync();
-        }
         
         public void Disconnect()
         {
-            _ = CloseAsync();
+            CloseAsync().Forget();
         }
 
         public void PlayTrajectory()
