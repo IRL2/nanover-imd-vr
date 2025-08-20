@@ -1050,7 +1050,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boxVisualiser: {fileID: 765365847}
-  canvasGroup: {fileID: 626703114}
+  canvasGroup: {fileID: 6323259627634837816}
+  boxMaterial: {fileID: 2100000, guid: cceac67cd55e64d43b334053e949f786, type: 2}
 --- !u!1 &156680488
 GameObject:
   m_ObjectHideFlags: 0
@@ -6656,7 +6657,6 @@ GameObject:
   - component: {fileID: 626703111}
   - component: {fileID: 626703110}
   - component: {fileID: 626703113}
-  - component: {fileID: 626703114}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -6746,7 +6746,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -6777,18 +6777,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!225 &626703114
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 626703108}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 0
 --- !u!1 &627270637
 GameObject:
   m_ObjectHideFlags: 0
@@ -14589,6 +14577,34 @@ PrefabInstance:
       propertyPath: m_Name
       value: Instructions
       objectReference: {fileID: 0}
+    - target: {fileID: 5166627030711886428, guid: fc530171eeeb65e4dbef9519380426a6, type: 3}
+      propertyPath: m_fontSize
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 5166627030711886428, guid: fc530171eeeb65e4dbef9519380426a6, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: fafb4dd55bd0d3444ab669dfd6cd3bf1, type: 2}
+    - target: {fileID: 5166627030711886428, guid: fc530171eeeb65e4dbef9519380426a6, type: 3}
+      propertyPath: m_fontColor.b
+      value: 0.368325
+      objectReference: {fileID: 0}
+    - target: {fileID: 5166627030711886428, guid: fc530171eeeb65e4dbef9519380426a6, type: 3}
+      propertyPath: m_fontColor.g
+      value: 0.6270766
+      objectReference: {fileID: 0}
+    - target: {fileID: 5166627030711886428, guid: fc530171eeeb65e4dbef9519380426a6, type: 3}
+      propertyPath: m_fontColor.r
+      value: 0.8396226
+      objectReference: {fileID: 0}
+    - target: {fileID: 5166627030711886428, guid: fc530171eeeb65e4dbef9519380426a6, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 5166627030711886428, guid: fc530171eeeb65e4dbef9519380426a6, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7604057128987923674, guid: fc530171eeeb65e4dbef9519380426a6, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -19798,6 +19814,7 @@ GameObject:
   - component: {fileID: 151472983}
   - component: {fileID: 6323259627634837814}
   - component: {fileID: 6323259627634837815}
+  - component: {fileID: 6323259627634837816}
   m_Layer: 0
   m_Name: Line Drawing User Interface
   m_TagString: Untagged
@@ -19837,6 +19854,18 @@ MonoBehaviour:
   frame: {fileID: 431384314}
   display: {fileID: 6323259627634837814}
   follower: {fileID: 13188939}
+--- !u!225 &6323259627634837816
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6323259627634837812}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1001 &8594975311572161820
 PrefabInstance:
   m_ObjectHideFlags: 0

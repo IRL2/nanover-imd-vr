@@ -6,9 +6,13 @@ public class RelocateUILayer : MonoBehaviour
 {
     [SerializeField] private BoxVisualiser boxVisualiser;
     [SerializeField] private CanvasGroup canvasGroup;
+    [SerializeField] private Material boxMaterial;
+
+    private Color initialBoxColor;
 
     private void OnEnable()
     {
+        initialBoxColor = boxMaterial.GetColor("_Color");
         StartCoroutine(ResetLocation());
     }
 
@@ -29,11 +33,14 @@ public class RelocateUILayer : MonoBehaviour
 
         rt.localRotation = Quaternion.Euler(0, 0, 0);
 
+
         // an opening door effect
-        for (float i = -90; i < -30; i++)
+        for (float i = 0; i <= 1; i+=0.05f)
         {
-            rt.localRotation = Quaternion.Euler(0, i, 0);
-            canvasGroup.alpha = (i + 90) / 60f; // from 0 to 1
+            float angle = Mathf.Lerp(-90f, -30f, i);
+            rt.localRotation = Quaternion.Euler(0, angle, 0);
+            canvasGroup.alpha = i;
+            boxMaterial.SetColor("_Color", Color.Lerp(initialBoxColor, Color.gray9, i));
             yield return null; // wait for the next frame
         }
 
@@ -43,7 +50,9 @@ public class RelocateUILayer : MonoBehaviour
     private void OnDisable()
     {
         StopAllCoroutines();
-        StartCoroutine(Dissapear());
+        canvasGroup.alpha = 0f;
+        boxMaterial.SetColor("_Color", initialBoxColor);
+        //StartCoroutine(Dissapear());
     }
 
     private IEnumerator Dissapear()

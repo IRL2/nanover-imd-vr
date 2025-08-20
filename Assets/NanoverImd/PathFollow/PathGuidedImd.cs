@@ -80,12 +80,12 @@ namespace NanoverImd.PathFollower
 
         public void OnEnable()
         {
-            lineModeToggler.SetExtendedModeEnabled(true);
+            lineModeToggler.EnableExtendedMode(true);
         }
 
         public void OnDisable()
         {
-            lineModeToggler.SetExtendedModeEnabled(false);
+            lineModeToggler.EnableExtendedMode(false);
 
             CancelFollower();
         }

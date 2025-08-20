@@ -1,11 +1,12 @@
 using UnityEngine;
 using Nanover.Frontend.XR;
 using UnityEngine.XR;
+using UnityEditor;
+using Unity.Collections;
 
 public class LineModeToggler : MonoBehaviour
 {
     private Nanover.Frontend.Input.IButton menuButton;
-
 
     [SerializeField] GameObject[] ObjectsToActivate;
     [SerializeField] GameObject[] ObjectsToDeactivate;
@@ -20,15 +21,18 @@ public class LineModeToggler : MonoBehaviour
         menuButton = InputDeviceCharacteristics.Left.WrapUsageAsButton(CommonUsages.menuButton);
         UpdateStates();
 
-        menuButton.Pressed += () => SetExtendedModeEnabled(!isActiveAndEnabled);
+        menuButton.Pressed += () => EnableExtendedMode(!isActiveAndEnabled);
     }
 
-    public void SetExtendedModeEnabled(bool enabled)
+    public void EnableExtendedMode(bool state = true)
     {
-        isExtendedModeEnabled = enabled;
+        isExtendedModeEnabled = state;
         UpdateStates();
     }
 
+    /// <summary>
+    /// update 
+    /// </summary>
     public void UpdateStates()
     {
         for (int i = 0; i < ObjectsToActivate.Length; i++)
