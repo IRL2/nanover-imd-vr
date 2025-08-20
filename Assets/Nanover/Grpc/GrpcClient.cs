@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Grpc.Core;
@@ -77,8 +76,7 @@ namespace Nanover.Grpc
         /// </summary>
         protected IncomingStream<TResponse> GetIncomingStream<TRequest, TResponse>(
             ServerStreamingCall<TRequest, TResponse> call,
-            TRequest request,
-            CancellationToken externalToken = default)
+            TRequest request)
         {
             if (IsCancelled)
                 throw new InvalidOperationException("The client is closed.");
@@ -86,17 +84,12 @@ namespace Nanover.Grpc
             return IncomingStream<TResponse>.CreateStreamFromServerCall(
                 call,
                 request,
-                GetCancellationToken(), externalToken);
+                GetCancellationToken());
         }
 
         public void Close()
         {
             Cancel();
-        }
-
-        public void CloseAndCancelAllSubscriptions()
-        {
-            Close();
         }
     }
 }

@@ -40,6 +40,9 @@ namespace Nanover.Grpc.Trajectory
         private TrajectoryClient trajectoryClient;
 
         private IncomingStream<GetFrameResponse> frameStream;
+        private BackgroundIncomingStreamReceiver<GetFrameResponse> frameReceiver;
+
+        public List<float> MessageReceiveTimes => frameReceiver?.MessageReceiveTimes ?? new List<float>();
 
         public TrajectorySession()
         {
@@ -58,7 +61,7 @@ namespace Nanover.Grpc.Trajectory
 
             trajectoryClient = new TrajectoryClient(connection);
             frameStream = trajectoryClient.SubscribeLatestFrames(1f / 30f);
-            BackgroundIncomingStreamReceiver<GetFrameResponse>.Start(frameStream, ReceiveFrame, Merge);
+            frameReceiver = BackgroundIncomingStreamReceiver<GetFrameResponse>.Start(frameStream, ReceiveFrame, Merge);
 
             // Integrating frames from the buffer with the current frame
             void ReceiveFrame(GetFrameResponse response)
@@ -105,7 +108,7 @@ namespace Nanover.Grpc.Trajectory
         /// </summary>
         public void CloseClient()
         {
-            trajectoryClient?.CloseAndCancelAllSubscriptions();
+            trajectoryClient?.Close();
             trajectoryClient?.Dispose();
             trajectoryClient = null;
 

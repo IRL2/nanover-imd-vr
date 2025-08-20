@@ -1,13 +1,11 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using Cysharp.Threading.Tasks;
-using Nanover.Core.Async;
 using Nanover.Core.Math;
 using Nanover.Grpc.Stream;
 using Nanover.Grpc.Trajectory;
 using Nanover.Protocol.State;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Nanover.Grpc.Multiplayer
@@ -32,7 +30,7 @@ namespace Nanover.Grpc.Multiplayer
             Avatars = new MultiplayerAvatars(this);
             PlayAreas = new PlayAreaCollection(this);
             PlayOrigins = new PlayOriginCollection(this);
-            
+
             SimulationPose =
                 new MultiplayerResource<Transformation>(this, SimulationPoseKey, PoseFromObject,
                                                         PoseToObject);
@@ -65,6 +63,9 @@ namespace Nanover.Grpc.Multiplayer
         private MultiplayerClient client;
 
         private IncomingStream<StateUpdate> IncomingValueUpdates { get; set; }
+        private BackgroundIncomingStreamReceiver<StateUpdate> updateReceiver;
+
+        public List<float> MessageReceiveTimes => updateReceiver?.MessageReceiveTimes ?? new List<float>();
 
         private Dictionary<string, object> pendingValues
             = new Dictionary<string, object>();
@@ -77,8 +78,6 @@ namespace Nanover.Grpc.Multiplayer
         public event Action<string, object> SharedStateDictionaryKeyUpdated;
 
         public event Action<string> SharedStateDictionaryKeyRemoved;
-
-        public event Action ReceiveUpdate;
 
         public event Action MultiplayerJoined;
 
@@ -104,7 +103,11 @@ namespace Nanover.Grpc.Multiplayer
         private int lastReceivedIndex = -1;
         private float lastReceivedIndexTime = -1;
 
+        public float LastIndexRTT { get; private set; } = -1;
+
         private string UpdateIndexKey => $"update.index.{AccessToken}";
+
+        private Dictionary<int, float> updateSendTimes = new Dictionary<int, float>();
 
         /// <summary>
         /// Connect to a Multiplayer service over the given connection. 
@@ -141,9 +144,11 @@ namespace Nanover.Grpc.Multiplayer
             }
             
             IncomingValueUpdates = client.SubscribeStateUpdates();
-            BackgroundIncomingStreamReceiver<StateUpdate>.Start(IncomingValueUpdates,
-                                                                OnResourceValuesUpdateReceived,
-                                                                MergeResourceUpdates);
+            updateReceiver = BackgroundIncomingStreamReceiver<StateUpdate>.Start(
+                IncomingValueUpdates,
+                OnResourceValuesUpdateReceived,
+                MergeResourceUpdates
+            );
 
             void MergeResourceUpdates(StateUpdate dest, StateUpdate src)
             {
@@ -165,6 +170,8 @@ namespace Nanover.Grpc.Multiplayer
             lastSentIndex = -1;
             lastReceivedIndexTime = -1;
 
+            LastIndexRTT = -1;
+
             if (!IsOpen)
                 return;
 
@@ -182,9 +189,12 @@ namespace Nanover.Grpc.Multiplayer
 
             await UniTask.WhenAny(FlushValuesAsync(), UniTask.Delay(1000));
 
-            client.CloseAndCancelAllSubscriptions();
+            client.Close();
+
             client.Dispose();
             client = null;
+
+            updateSendTimes.Clear();
 
             AccessToken = null;
         }
@@ -275,14 +285,21 @@ namespace Nanover.Grpc.Multiplayer
             if (!IsOpen)
                 return;
 
-            ReceiveUpdate?.Invoke();
-            
             if (update.ChangedKeys.Fields.ContainsKey(UpdateIndexKey))
             {
                 lastReceivedIndex = (int) update.ChangedKeys
                                                 .Fields[UpdateIndexKey]
                                                 .NumberValue;
                 lastReceivedIndexTime = Time.realtimeSinceStartup;
+
+                foreach (var index in new HashSet<int>(updateSendTimes.Keys))
+                {
+                    if (index == lastReceivedIndex)
+                        LastIndexRTT = lastReceivedIndexTime - updateSendTimes[index];
+                    
+                    if (index <= lastReceivedIndex)
+                        updateSendTimes.Remove(index);
+                }
             }
 
             foreach (var (key, value1) in update.ChangedKeys.Fields)
@@ -305,6 +322,7 @@ namespace Nanover.Grpc.Multiplayer
         {
             pendingValues[UpdateIndexKey] = nextUpdateIndex;
             lastSentIndex = nextUpdateIndex;
+            updateSendTimes[nextUpdateIndex] = Time.realtimeSinceStartup;
         }
 
         /// <summary>
