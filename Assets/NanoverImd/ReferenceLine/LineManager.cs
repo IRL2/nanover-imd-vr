@@ -12,11 +12,15 @@ public class LineManager : MonoBehaviour
 
     [SerializeField] private NanoverImdSimulation simulation;
 
+    private readonly List<LineData> lines = new(); // Stores LineData for each line
+    private readonly HashSet<int> dirtyLines = new HashSet<int>();
+
     // types of lines
     public const int SOLID_LINE = 0;
     public const int DASH_LINE = 1;
 
     // Struct to store line type, renderer, and points
+
     private struct LineData
     {
         public int Type;
@@ -31,14 +35,13 @@ public class LineManager : MonoBehaviour
         }
     }
 
-    private readonly List<LineData> lines = new(); // Stores LineData for each line
-    private readonly HashSet<int> dirtyLines = new HashSet<int>();
 
     public int CreateNewLine(int type)
     {
         var lineObj = Instantiate(type == DASH_LINE ? dashLinePrefab : solidLinePrefab, gameObject.transform);
         var lineRenderer = lineObj.GetComponent<LineRenderer>();
         lines.Add(new LineData(type, lineRenderer));
+        lineRenderer.name = "line." + (lines.Count -1) + "." + (type == DASH_LINE ? "reference" : "trail");
         return lines.Count - 1;
     }
 
@@ -67,6 +70,7 @@ public class LineManager : MonoBehaviour
         var lineData = lines[index];
         var coords = Nanover.Core.Serialization.Serialization.ToDataStructure(lineData.Points);
         string key = "lines." + index + (lines[index].Type == DASH_LINE ? ".reference" : ".trail");
+        Debug.Log($"Sending line {index} with key {key}");
         simulation.Multiplayer.SetSharedState(key, coords);
     }
 
@@ -206,6 +210,11 @@ public class LineManager : MonoBehaviour
         lines[index].Renderer.endWidth *= scale;
     }
 
+    /// <summary>
+    /// Given a line index, simplifies the line using the Douglas-Peucker algorithm.
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="tolerance"></param>
     public void SimplifyLine(int index, float? tolerance = 0.001f)
     {
         if (index < 0 || index >= lines.Count) return;
@@ -231,29 +240,43 @@ public class LineManager : MonoBehaviour
         // sort by alphabetical order, so that lines are restored in the correct order
         stateDictionary = stateDictionary.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
+        lines.Clear(); // Clear existing lines before restoring
 
         foreach (var kvp in stateDictionary)
         {
             if (kvp.Key.StartsWith("lines."))
             {
+                Debug.Log($"Restoring key {kvp.Key}");
+
                 string[] parts = kvp.Key.Split('.');
                 if (parts.Length < 3) continue;
                 int index = int.Parse(parts[1]);
                 int type = parts[2] == "reference" ? DASH_LINE : SOLID_LINE;
 
-                int id;
-                if (index >= lines.Count)
+                // Check for the existence of the line as a child game object, they should have the same name
+                var existingLine = this.gameObject.transform.Find("line." + index + "." + (type == DASH_LINE ? "reference" : "trail"));
+                if (existingLine == null)
                 {
-                    id = CreateNewLine(type);
+                    Debug.LogWarning($"No existing line found for index {index} and type {type}, creating a new one.");
+                    index = CreateNewLine(type);
+                }
+                else // if it already exist, skip
+                {
+                    continue;
                 }
 
-                Debug.Log($"Restoring line {index} of type {type} with key {kvp.Key}");
+                Debug.Log($"Restoring line {kvp.Key} of type {type} as the line {lines[index].Renderer.transform.parent.name}");
 
                 var lineData = lines[index];
                 lineData.Type = type;
                 lineData.Renderer.positionCount = 0; // Reset position count
                 lineData.Points.Clear(); // Clear existing points
+
+                // (FAILED) Attempts to deserialize the points from the shared state
                 List<Vector3> pointsList = Nanover.Core.Serialization.Serialization.FromDataStructure(kvp.Value) as List<Vector3>;
+                var deserialized = Nanover.Core.Serialization.Serialization.FromDataStructure(kvp.Value);
+                var deserializedO = Nanover.Core.Serialization.Serialization.FromDataStructure(kvp.Value) as List<object>;
+                Debug.Log(deserialized?.GetType().Name);
 
                 Debug.Log($"Restoring line {index} with value {pointsList}");
 
