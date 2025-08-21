@@ -31,6 +31,7 @@ namespace NanoverImd
 
         private bool discovery;
         private ICollection<ServiceHub> knownServiceHubs = new List<ServiceHub>();
+        private IList<string> knownSimulations = new List<string>();
 
         public float interactionForceMultiplier = 1000;
 
@@ -95,6 +96,16 @@ namespace NanoverImd
                 
                 if (GUILayout.Button("Reset Box"))
                     simulation.ResetBox();
+
+                GUILayout.Box("Switch Simulation");
+                if (GUILayout.Button("Refresh"))
+                    simulation.Trajectory.GetSimulationListing().ContinueWith((list) => knownSimulations = list);
+
+                for (int i = 0; i < knownSimulations.Count; ++i)
+                {
+                    if (GUILayout.Button(knownSimulations[i]))
+                        simulation.Trajectory.SetSimulationIndex(i);
+                }
 
                 GUILayout.Box("Colocation");
                 application.ColocateLighthouses = GUILayout.Toggle(application.ColocateLighthouses, "Colocated Lighthouses");
