@@ -49,10 +49,10 @@ namespace NanoverImd.Editor
 
             if (simulation != null)
             {
-                if (simulation.Trajectory.Client != null)
-                    Draw(simulation.Trajectory.CurrentFrame, simulation.Trajectory.CurrentFrameIndex);
+                if (simulation.Trajectory.CurrentFrame is { } frame)
+                    Draw(frame, simulation.Trajectory.CurrentFrameIndex);
                 else
-                    EditorGUILayout.HelpBox("Session not connected", MessageType.Error);
+                    EditorGUILayout.HelpBox("No current frame", MessageType.Error);
             }
 
             EditorGUILayout.EndScrollView();

@@ -25,6 +25,16 @@ namespace Nanover.Core.Serialization
         {
             switch (obj)
             {
+                case IReadOnlyDictionary<object, object> dictAnnoying:
+                    yield return (JsonToken.StartObject, null);
+                    foreach (var (key, value) in dictAnnoying)
+                    {
+                        yield return (JsonToken.PropertyName, key);
+                        foreach (var v in Iterate(value))
+                            yield return v;
+                    }
+                    yield return (JsonToken.EndObject, null);
+                    break;
                 case IReadOnlyDictionary<string, object> dict:
                     yield return (JsonToken.StartObject, null);
                     foreach (var (key, value) in dict)
@@ -48,7 +58,10 @@ namespace Nanover.Core.Serialization
                 case bool bol:
                     yield return (JsonToken.Boolean, bol);
                     break;
-                case int nt :
+                case int nt:
+                    yield return (JsonToken.Integer, nt);
+                    break;
+                case UInt64 nt:
                     yield return (JsonToken.Integer, nt);
                     break;
                 case float flt:
@@ -58,7 +71,7 @@ namespace Nanover.Core.Serialization
                     yield return (JsonToken.Float, dbl);
                     break;
                 default:
-                    throw new ArgumentException($"Cannot parse {obj}");
+                    throw new ArgumentException($"Cannot parse {obj} ({obj.GetType()})");
             }
         }
 

@@ -1,0 +1,372 @@
+using System;
+using System.Collections;
+using Nanover.Core.Science;
+using Nanover.Frame;
+using Nerdbank.MessagePack;
+using PolyType;
+using UnityEngine;
+using UnityEngine.Networking;
+using NativeWebSocket;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+
+using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
+using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
+
+namespace MessagePackTesting
+{
+    public class ElementArray : MessagePackConverter<Element[]>
+    {
+        public override Element[]? Read(ref MessagePackReader reader, SerializationContext context)
+        {
+            var bytes = context.GetConverter<byte[]>(Witness.ShapeProvider).Read(ref reader, context);
+            if (bytes is null)
+                return null;
+
+            var elements = new Element[bytes.Length];
+            for (int i = 0; i < bytes.Length; ++i)
+                elements[i] = (Element)bytes[i];
+
+            return elements;
+        }
+
+        public override void Write(ref MessagePackWriter writer, in Element[]? value, SerializationContext context)
+        {
+            if (value is null)
+            {
+                writer.WriteNil();
+                return;
+            }
+
+            var bytes = new byte[value.Length];
+            for (int i = 0; i < bytes.Length; ++i)
+                bytes[i] = (byte)value[i];
+
+            context.GetConverter<byte[]>(Witness.ShapeProvider).Write(ref writer, bytes, context);
+        }
+    }
+
+    public class BondPairArray : MessagePackConverter<BondPair[]>
+    {
+        public override BondPair[]? Read(ref MessagePackReader reader, SerializationContext context)
+        {
+            var bytes = context.GetConverter<byte[]>(Witness.ShapeProvider).Read(ref reader, context);
+
+            if (bytes is null)
+                return null;
+
+            var bonds = new BondPair[bytes.Length / sizeof(UInt32) / 2];
+
+            for (int i = 0; i < bonds.Length; ++i)
+            {
+                bonds[i].A = (int)BitConverter.ToUInt32(bytes, (i * 2 + 0) * sizeof(UInt32));
+                bonds[i].B = (int)BitConverter.ToUInt32(bytes, (i * 2 + 1) * sizeof(UInt32));
+            }
+
+            return bonds;
+        }
+
+        public override void Write(ref MessagePackWriter writer, in BondPair[]? value, SerializationContext context)
+        {
+            if (value is null)
+            {
+                writer.WriteNil();
+                return;
+            }
+
+            var bytes = new byte[value.Length * sizeof(UInt32) * 2];
+            for (int i = 0; i < value.Length; ++i)
+            {
+                BitConverter.GetBytes(value[i].A).CopyTo(bytes, (i * 2 + 0) * sizeof(UInt32));
+                BitConverter.GetBytes(value[i].B).CopyTo(bytes, (i * 2 + 1) * sizeof(UInt32));
+            }
+
+            context.GetConverter<byte[]>(Witness.ShapeProvider).Write(ref writer, bytes, context);
+        }
+    }
+
+    public class Vector3ArrayArray : MessagePackConverter<Vector3[][]>
+    {
+        public override Vector3[][]? Read(ref MessagePackReader reader, SerializationContext context)
+        {
+            var byteArrays = context.GetConverter<byte[][]>(Witness.ShapeProvider).Read(ref reader, context);
+
+            if (byteArrays is null)
+                return null;
+
+            var vec3Arrays = new Vector3[byteArrays.Length][];
+
+            for (int y = 0; y < byteArrays.Length; ++y)
+            {
+                var bytes = byteArrays[y];
+                var vec3 = new Vector3[bytes.Length / sizeof(float) / 3];
+
+                vec3Arrays[y] = vec3;
+
+                for (int x = 0; x < vec3Arrays[y].Length; ++x)
+                    vec3Arrays[y][x] = new Vector3(
+                        BitConverter.ToSingle(bytes, (x * 3 + 0) * sizeof(float)),
+                        BitConverter.ToSingle(bytes, (x * 3 + 1) * sizeof(float)),
+                        BitConverter.ToSingle(bytes, (x * 3 + 2) * sizeof(float))
+                    );
+            }
+
+            return vec3Arrays;
+        }
+
+        public override void Write(ref MessagePackWriter writer, in Vector3[][]? value, SerializationContext context)
+        {
+            if (value is null)
+            {
+                writer.WriteNil();
+                return;
+            }
+
+            var byteArrays = new byte[value.Length][];
+
+            for (int y = 0; y < byteArrays.Length; ++y)
+            {
+                var vec3s = value[y];
+                var bytes = new byte[vec3s.Length * sizeof(float) * 3];
+
+                byteArrays[y] = bytes;
+
+                for (int x = 0; x < vec3s.Length; ++x)
+                {
+                    BitConverter.GetBytes(vec3s[x].x).CopyTo(bytes, (x * 3 + 0) * sizeof(float));
+                    BitConverter.GetBytes(vec3s[x].y).CopyTo(bytes, (x * 3 + 1) * sizeof(float));
+                    BitConverter.GetBytes(vec3s[x].z).CopyTo(bytes, (x * 3 + 2) * sizeof(float));
+                }
+            }
+
+            context.GetConverter<byte[][]>(Witness.ShapeProvider).Write(ref writer, byteArrays, context);
+        }
+    }
+
+    public class Vector3Array : MessagePackConverter<Vector3[]>
+    {
+        public override Vector3[]? Read(ref MessagePackReader reader, SerializationContext context)
+        {
+            var bytes = context.GetConverter<byte[]>(Witness.ShapeProvider).Read(ref reader, context);
+
+            if (bytes is null)
+                return null;
+
+            var vec3 = new Vector3[bytes.Length / sizeof(float) / 3];
+
+            for (int x = 0; x < vec3.Length; ++x)
+                vec3[x] = new Vector3(
+                    BitConverter.ToSingle(bytes, (x * 3 + 0) * sizeof(float)),
+                    BitConverter.ToSingle(bytes, (x * 3 + 1) * sizeof(float)),
+                    BitConverter.ToSingle(bytes, (x * 3 + 2) * sizeof(float))
+                );
+
+            return vec3;
+        }
+
+        public override void Write(ref MessagePackWriter writer, in Vector3[]? value, SerializationContext context)
+        {
+        }
+    }
+
+    public class Trajectory
+    {
+        [PropertyShape(Name = "topology")]
+        public Topology Topology;
+
+        [PropertyShape(Name = "positions")]
+        [MessagePackConverter(typeof(Vector3ArrayArray))]
+        public Vector3[][] Positions;
+    }
+
+    public class Topology
+    {
+         [PropertyShape(Name = "elements")]
+         [MessagePackConverter(typeof(ElementArray))]
+         public Element[] Elements;
+ 
+         [PropertyShape(Name = "bonds")]
+         [MessagePackConverter(typeof(BondPairArray))]
+         public BondPair[] Bonds;
+    }
+
+    public class StateUpdate
+    {
+        [PropertyShape(Name = "updates")]
+        public Dictionary<string, object> Updates = new Dictionary<string, object>();
+
+        [PropertyShape(Name = "removals")]
+        public HashSet<string> Removals = new HashSet<string>();
+    }
+
+
+    public partial class FrameUpdate
+    {
+        [PropertyShape(Name = "particle.elements")]
+        [MessagePackConverter(typeof(ElementArray))]
+        public Element[]? Elements;
+
+        [PropertyShape(Name = "particle.positions")]
+        [MessagePackConverter(typeof(Vector3Array))]
+        public Vector3[]? Positions;
+
+        [PropertyShape(Name = "bond.pairs")]
+        [MessagePackConverter(typeof(BondPairArray))]
+        public BondPair[]? Bonds;
+
+        [PropertyShape(Name = "system.box.vectors")]
+        [MessagePackConverter(typeof(Vector3Array))]
+        public Vector3[]? BoxVectors;
+    }
+
+    public partial class CommandRequest
+    {
+        [PropertyShape(Name = "id")]
+        public int Id;
+
+        [PropertyShape(Name = "name")]
+        public string? Name;
+
+        [PropertyShape(Name = "arguments")]
+        public CommandArguments? Arguments;
+    }
+
+    public partial class CommandUpdate
+    {
+        [PropertyShape(Name = "request")]
+        public CommandRequest Request;
+
+        [PropertyShape(Name = "response")]
+        public CommandReturn Response;
+    }
+
+    public partial class Message
+    {
+        [PropertyShape(Name = "frame")]
+        public FrameUpdate? FrameUpdate;
+
+        [PropertyShape(Name = "state")]
+        public StateUpdate? StateUpdate;
+
+        [PropertyShape(Name = "command")]
+        public List<CommandUpdate>? CommandUpdates;
+    }
+
+    public interface WebSocketMessageSource
+    {
+        UniTask<CommandReturn> RunCommand(string name, CommandArguments args = null);
+
+        event Action<Message> OnMessage;
+    }
+
+    [GenerateShapeFor(typeof(byte[]))]
+    [GenerateShapeFor(typeof(byte[][]))]
+    [GenerateShapeFor(typeof(object[]))]
+    [GenerateShapeFor(typeof(HashSet<string>))]
+    [GenerateShapeFor(typeof(List<object>))]
+    [GenerateShapeFor(typeof(Message))]
+    [GenerateShapeFor(typeof(Trajectory))]
+    public partial class Witness { }
+
+    [Serializable]
+    public class DiscoveryInfo
+    {
+        public string name;
+        public string https;
+        public string ws;
+    }
+
+    [Serializable]
+    public class DiscoveryEntry
+    {
+        public string code;
+        public DiscoveryInfo info;
+    }
+    
+    [Serializable]
+    public class DiscoveryListing
+    {
+        public List<DiscoveryEntry> list;
+    }
+
+    public static class WebsocketDiscovery
+    {
+        public static readonly string Endpoint = "https://irl-discovery.onrender.com/list";
+
+        public static async UniTask<List<DiscoveryEntry>> DiscoverWebsocketServers()
+        {
+            var request = UnityWebRequest.Get(Endpoint);
+            await request.SendWebRequest();
+
+            var json = request.downloadHandler.text;
+            json = "{\"list\":" + json + "}";
+
+            var listing = JsonUtility.FromJson<DiscoveryListing>(json);
+            return listing.list;
+        }
+    }
+
+    public class MessagePackTestMinimal : MonoBehaviour
+    {
+        [SerializeField]
+        private LineRenderer lines;
+
+        IEnumerator Start()
+        {
+            yield return new WaitForSeconds(.5f);
+
+            //Test();
+        }
+
+        WebSocket websocket;
+
+        async void Test()
+        {
+            var request = UnityWebRequest.Get("https://irl-discovery.onrender.com/list");
+            await request.SendWebRequest();
+
+            var json = request.downloadHandler.text;
+            json = "{\"list\":" + json + "}";
+            var listing = JsonUtility.FromJson<DiscoveryListing>(json);
+
+            websocket = new WebSocket(listing.list[0].info.ws);
+
+            websocket.OnOpen += () =>
+            {
+                Debug.Log("Connection open!");
+            };
+
+            websocket.OnError += (e) =>
+            {
+                Debug.Log("Error! " + e);
+            };
+
+            websocket.OnClose += (e) =>
+            {
+                Debug.Log("Connection closed!");
+            };
+
+            websocket.OnMessage += (bytes) =>
+            {
+                MessagePackSerializer serializer = new();
+                var obj = serializer.Deserialize<Message>(bytes, Witness.ShapeProvider)!;
+
+                if (obj.FrameUpdate.Positions is { } positions)
+                {
+                    lines.positionCount = positions.Length;
+                    lines.SetPositions(positions);
+                }
+            };
+
+            // waiting for messages
+            await websocket.Connect();
+        }
+
+        void Update()
+        {
+#if !UNITY_WEBGL || UNITY_EDITOR
+            websocket?.DispatchMessageQueue();
+#endif
+        }
+    }
+}

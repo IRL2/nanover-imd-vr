@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Grpc.Net.Client;
 using JetBrains.Annotations;
 using Nanover.Core.Async;

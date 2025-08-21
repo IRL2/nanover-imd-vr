@@ -1,6 +1,5 @@
 ﻿using Nanover.Core.Math;
 using Nanover.Core.Serialization;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 using UnityEngine;
 
@@ -20,9 +19,9 @@ namespace Nanover.Grpc.Multiplayer
 
         protected override bool ParseItem(string key, object value, out PlayArea parsed)
         {
-            if (value is Dictionary<string, object> dict)
+            if (IsMapping(value))
             {
-                parsed = Serialization.FromDataStructure<PlayArea>(dict);
+                parsed = Serialization.FromDataStructure<PlayArea>(value);
                 return true;
             }
 
@@ -49,9 +48,9 @@ namespace Nanover.Grpc.Multiplayer
 
         protected override bool ParseItem(string key, object value, out PlayOrigin parsed)
         {
-            if (value is Dictionary<string, object> dict)
+            if (IsMapping(value))
             {
-                parsed = Serialization.FromDataStructure<PlayOrigin>(dict);
+                parsed = Serialization.FromDataStructure<PlayOrigin>(value);
                 return true;
             }
 
