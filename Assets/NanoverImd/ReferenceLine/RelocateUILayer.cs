@@ -40,7 +40,7 @@ public class RelocateUILayer : MonoBehaviour
             float angle = Mathf.Lerp(-90f, -30f, i);
             rt.localRotation = Quaternion.Euler(0, angle, 0);
             canvasGroup.alpha = i;
-            boxMaterial.SetColor("_Color", Color.Lerp(initialBoxColor, Color.gray9, i));
+            boxMaterial.SetColor("_Color", Color.Lerp(initialBoxColor, Color.gray8, i));
             yield return null; // wait for the next frame
         }
 

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using NanoverImd;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class LineManager : MonoBehaviour
 {
@@ -221,75 +221,107 @@ public class LineManager : MonoBehaviour
         lines[index].Renderer.Simplify((float)tolerance);
 
         lines[index].Renderer.GetPositions(lines[index].Points.ToArray());
-
-        //var simplifiedPoints = DouglasPeucker(lines[index].Points, tolerance);
-        //lines[index].Points = simplifiedPoints;
-        //lines[index].Renderer.positionCount = simplifiedPoints.Count;
-        //lines[index].Renderer.SetPositions(simplifiedPoints.ToArray());
     }
 
 
     void OnEnable()
     {
-        //Restore();
+        RestoreLines();
     }
 
-    public void Restore()
+    private void Update()
+    {
+        // check every second if there are lines to restore
+        if (Time.frameCount % 120 == 0 && dirtyLines.Count() == 0)
+        {
+            RestoreLines();
+        }
+    }
+
+
+    public void RestoreLines()
     {
         Dictionary<string, object> stateDictionary = simulation.Multiplayer.SharedStateDictionary;
+
         // sort by alphabetical order, so that lines are restored in the correct order
         stateDictionary = stateDictionary.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-        lines.Clear(); // Clear existing lines before restoring
+        // filter entries that start with "lines."
+        var stateLines = stateDictionary.Where(kvp => kvp.Key.StartsWith("lines.")).ToList();
 
-        foreach (var kvp in stateDictionary)
+        // no lines to restore
+        if (stateLines.Count == 0)
         {
-            if (kvp.Key.StartsWith("lines."))
+            Debug.Log("No lines to restore.");
+            while (transform.childCount > 0) Destroy(transform.GetChild(0).gameObject);
+            lines.Clear();
+            return;
+        }
+
+        // get local existing lines in the scene
+        var existingLines = new Dictionary<string, GameObject>();
+        foreach (Transform child in transform)
+        {
+            if (child.name.StartsWith("line."))
             {
-                Debug.Log($"Restoring key {kvp.Key}");
-
-                string[] parts = kvp.Key.Split('.');
-                if (parts.Length < 3) continue;
-                int index = int.Parse(parts[1]);
-                int type = parts[2] == "reference" ? DASH_LINE : SOLID_LINE;
-
-                // Check for the existence of the line as a child game object, they should have the same name
-                var existingLine = this.gameObject.transform.Find("line." + index + "." + (type == DASH_LINE ? "reference" : "trail"));
-                if (existingLine == null)
-                {
-                    Debug.LogWarning($"No existing line found for index {index} and type {type}, creating a new one.");
-                    index = CreateNewLine(type);
-                }
-                else // if it already exist, skip
-                {
-                    continue;
-                }
-
-                Debug.Log($"Restoring line {kvp.Key} of type {type} as the line {lines[index].Renderer.transform.parent.name}");
-
-                var lineData = lines[index];
-                lineData.Type = type;
-                lineData.Renderer.positionCount = 0; // Reset position count
-                lineData.Points.Clear(); // Clear existing points
-
-                // (FAILED) Attempts to deserialize the points from the shared state
-                List<Vector3> pointsList = Nanover.Core.Serialization.Serialization.FromDataStructure(kvp.Value) as List<Vector3>;
-                var deserialized = Nanover.Core.Serialization.Serialization.FromDataStructure(kvp.Value);
-                var deserializedO = Nanover.Core.Serialization.Serialization.FromDataStructure(kvp.Value) as List<object>;
-                Debug.Log(deserialized?.GetType().Name);
-
-                Debug.Log($"Restoring line {index} with value {pointsList}");
-
-                if (pointsList is List<Vector3> points)
-                {
-                    lineData.Points.AddRange(points);
-                    lineData.Renderer.positionCount = points.Count;
-                    lineData.Renderer.SetPositions(points.ToArray());
-                }
-
-                lines[index] = lineData; // Update the line data
+                existingLines[child.name] = child.gameObject;
             }
         }
+
+        // iterate over the lines in the state, 
+        // if a line exist locally: try to update it
+        // else: create it
+        foreach (var kvp in stateLines)
+        {
+            string name = kvp.Key.Remove(4,1); // remove the "s" in "lines", because local lines are named "line.x.type" // this should be fixed
+            //Debug.Log("Looking for existent line: " + name + " of " + kvp.Key);
+
+            var pointsList = Nanover.Core.Serialization.Serialization.FromDataStructure<List<Vector3>>(kvp.Value);
+
+            if (existingLines.TryGetValue(name, out GameObject existingLineObj))
+            {
+                // if it already exist, update it or skip it
+                if (existingLineObj.GetComponent<LineRenderer>().positionCount != pointsList.Count)
+                {
+                    Debug.Log($"Found existing line for index {name} with different points count");
+                    UpdateLineData(int.Parse(kvp.Key.Split('.')[1]), pointsList);
+                }
+            }
+            else
+            {
+                Debug.Log($"No existing line found for {name}, creating a new one");
+                CreateLineFromPoints(kvp.Key, pointsList);
+            }
+        }
+
+    }
+
+
+    private void CreateLineFromPoints(string key, List<Vector3> pointsList)
+    {
+        string[] parts = key.Split('.');
+        if (parts.Length < 3) return;
+
+        int entryIndex = int.Parse(parts[1]);
+        int type = parts[2] == "reference" ? DASH_LINE : SOLID_LINE;
+
+        int newLineIndex = CreateNewLine(type);
+
+        //Debug.Log($"Restoring line {key} of type {type} on {lines[newLineIndex].Renderer.transform.parent.name}");
+
+        lines[newLineIndex].Points.AddRange(pointsList);
+        lines[newLineIndex].Renderer.positionCount = pointsList.Count;
+        lines[newLineIndex].Renderer.SetPositions(pointsList.ToArray());
+    }
+
+
+    private void UpdateLineData(int index, List<Vector3> pointsList)
+    {
+        // update the points list and renderer
+        lines[index].Points.Clear();
+        lines[index].Points.AddRange(pointsList);
+        lines[index].Renderer.positionCount = pointsList.Count;
+        lines[index].Renderer.SetPositions(pointsList.ToArray());
     }
 
 }

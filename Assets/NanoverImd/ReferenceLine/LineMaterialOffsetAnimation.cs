@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class ReferenceLineAnimator : MonoBehaviour
@@ -15,17 +16,33 @@ public class ReferenceLineAnimator : MonoBehaviour
     [Range(0.0f, 1.0f)]
     float speed = 0.2f; // Speed of the texture offset
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private Color transparentColor = new Color(0, 0, 0, 0);
+
+
     void Start()
     {
         textureName = material.GetTexturePropertyNames()[0];
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
         material.SetTextureOffset(textureName, horizontalVector * offset);
         offset -= Time.deltaTime * speed; // Adjust speed as needed
         offset %= 1.0f; // Keep offset within [0, 1] range to avoid overflow
+    }
+
+    private void OnEnable()
+    {
+        //StartCoroutine(FadeIn()); // not yet, need to prevent flashing
+    }
+
+    private IEnumerator FadeIn()
+    {
+        for (float i = 0; i <= 1; i += 0.05f)
+        {
+            material.SetColor("_Color", Color.Lerp(transparentColor, Color.white, i));
+            yield return null;
+        }
     }
 }
