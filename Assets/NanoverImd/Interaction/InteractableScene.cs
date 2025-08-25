@@ -37,6 +37,7 @@ namespace NanoverImd.Interaction
         }
 
         public float InteractionRange = 0.40f;
+        public bool InteractWithHydrogens = true;
 
         [SerializeField]
         private InteractionTarget interactionTarget = InteractionTarget.Single;
@@ -87,10 +88,16 @@ namespace NanoverImd.Interaction
             interactedParticles.Value = pts.ToArray();
 
             const string interactionRangeKey = "suggested.interaction.range";
+            const string interactionHydrogenKey = "suggested.interaction.hydrogens";
 
             if (simulation.Multiplayer.GetSharedState(interactionRangeKey) is double range)
             {
                 InteractionRange = (float) range;
+            }
+
+            if (simulation.Multiplayer.GetSharedState(interactionHydrogenKey) is bool hydrogens)
+            {
+                InteractWithHydrogens = hydrogens;
             }
         }
 
@@ -127,7 +134,7 @@ namespace NanoverImd.Interaction
             var particleIndex = GetClosestParticleToWorldPosition(
                 grabberPose.Position,
                 cutoff: scale * InteractionRange,
-                includeHydrogens: false
+                includeHydrogens: InteractWithHydrogens
             );
 
             return particleIndex;
