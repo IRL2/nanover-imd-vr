@@ -131,6 +131,8 @@ namespace NanoverImd
                 ConnectionEstablished?.Invoke();
             };
 
+            websocket.OnClose += (code) => Disconnect();
+
             OnMessage += (Message message) =>
             {
                 if (message.CommandUpdates is { } updates)
