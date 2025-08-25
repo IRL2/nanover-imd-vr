@@ -40,7 +40,7 @@ namespace NanoverImd.UI
                 async void RunCommand()
                 {
                     notifiedController.PushNotification($"Run {command.Name}");
-                    var result = await simulation.Trajectory.RunCommandAsync(command.Name);
+                    var result = await simulation.Trajectory.RunCommand(command.Name);
                     if (result != null && result.TryGetValue("result", out object notification))
                         notifiedController.PushNotification($"{command.Name}: {notification}");
                     else if (result != null)

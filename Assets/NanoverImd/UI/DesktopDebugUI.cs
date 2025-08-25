@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NanoverImd;
 using UnityEngine;
-using Nanover.Core.Async;
+using MessagePackTesting;
 using Cysharp.Threading.Tasks;
 
 namespace NanoverImd
@@ -31,6 +31,7 @@ namespace NanoverImd
 
         private bool discovery;
         private ICollection<ServiceHub> knownServiceHubs = new List<ServiceHub>();
+        private ICollection<DiscoveryEntry> knownWebSockets = new List<DiscoveryEntry>();
         private IList<string> knownSimulations = new List<string>();
 
         public float interactionForceMultiplier = 1000;
@@ -41,8 +42,8 @@ namespace NanoverImd
             GUILayout.Box("Nanover iMD");
 
             GUILayout.Box("Connect");
-            //if (GUILayout.Button("Autoconnect"))
-            //    _ = simulation.AutoConnect();
+            if (GUILayout.Button("Autoconnect WebSocket"))
+                simulation.AutoConnectWebSocket().Forget();
 
             if (GUILayout.Button("Manual"))
             {
@@ -55,6 +56,8 @@ namespace NanoverImd
 
                 if (discovery)
                 {
+                    WebsocketDiscovery.DiscoverWebsocketServers().ContinueWith(result => knownWebSockets = result);
+
                     var client = new Client();
                     knownServiceHubs = client
                         .SearchForServices(500)
@@ -181,6 +184,8 @@ namespace NanoverImd
 
             if (GUILayout.Button("Search"))
             {
+                WebsocketDiscovery.DiscoverWebsocketServers().ContinueWith(result => knownWebSockets = result);
+
                 var client = new Client();
                 knownServiceHubs = client
                     .SearchForServices(500)
@@ -191,6 +196,20 @@ namespace NanoverImd
 
             if (GUILayout.Button("Cancel"))
                 discovery = false;
+
+            if (knownWebSockets.Count > 0)
+            {
+                GUILayout.Box("Found WebSockets");
+
+                foreach (var entry in knownWebSockets)
+                {
+                    if (GUILayout.Button($"{entry.code}: {entry.info.name} ({entry.info.ws})"))
+                    {
+                        discovery = false;
+                        application.Connect(entry);
+                    }
+                }
+            }
 
             if (knownServiceHubs.Count > 0)
             {

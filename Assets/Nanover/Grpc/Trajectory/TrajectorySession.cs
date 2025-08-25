@@ -1,13 +1,19 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using MessagePackTesting;
 using Nanover.Frame;
 using Nanover.Frame.Event;
 using Nanover.Grpc.Frame;
 using Nanover.Grpc.Stream;
 using Nanover.Protocol.Command;
 using Nanover.Protocol.Trajectory;
-using Cysharp.Threading.Tasks;
+using NativeWebSocket;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
+using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
 
 namespace Nanover.Grpc.Trajectory
 {
@@ -42,11 +48,45 @@ namespace Nanover.Grpc.Trajectory
         private IncomingStream<GetFrameResponse> frameStream;
         private BackgroundIncomingStreamReceiver<GetFrameResponse> frameReceiver;
 
-        public List<float> MessageReceiveTimes => frameReceiver?.MessageReceiveTimes ?? new List<float>();
+        private List<float> messageReceiveTimes = new List<float>();
+        public List<float> MessageReceiveTimes => frameReceiver?.MessageReceiveTimes ?? messageReceiveTimes;
+
+        private WebSocket websocket;
+        private WebSocketMessageSource websocketClient;
 
         public TrajectorySession()
         {
             trajectorySnapshot.FrameChanged += (sender, args) => FrameChanged?.Invoke(sender, args);
+        }
+
+        public void OpenClient(WebSocket websocket, WebSocketMessageSource client)
+        {
+            this.websocket = websocket;
+            websocketClient = client;
+
+            client.OnMessage += (Message message) =>
+            {
+                if (message.FrameUpdate is { } update)
+                    ReceiveFrame(update);
+            };
+
+            void ReceiveFrame(FrameUpdate update)
+            {
+                CurrentFrameIndex = CurrentFrameIndex + 1;
+
+                var clear = false;
+                var prevFrame = clear ? null : CurrentFrame;
+
+                var (frame, changes) = FrameConverter.ConvertFrame(update, prevFrame);
+
+                if (clear)
+                    changes = FrameChanges.All;
+
+                if (changes.HasAnythingChanged)
+                    messageReceiveTimes.Add(Time.realtimeSinceStartup);
+
+                trajectorySnapshot.SetCurrentFrame(frame, changes);
+            }
         }
 
         /// <summary>
@@ -108,6 +148,9 @@ namespace Nanover.Grpc.Trajectory
         /// </summary>
         public void CloseClient()
         {
+            websocket = null;
+            websocketClient = null;
+
             trajectoryClient?.Close();
             trajectoryClient?.Dispose();
             trajectoryClient = null;
@@ -128,55 +171,55 @@ namespace Nanover.Grpc.Trajectory
         /// <inheritdoc cref="TrajectoryClient.CommandPlay"/>
         public void Play()
         {
-            trajectoryClient?.RunCommandAsync(TrajectoryClient.CommandPlay);
+            RunCommand(TrajectoryClient.CommandPlay);
         }
         
         /// <inheritdoc cref="TrajectoryClient.CommandPause"/>
         public void Pause()
         {
-            trajectoryClient?.RunCommandAsync(TrajectoryClient.CommandPause);
+            RunCommand(TrajectoryClient.CommandPause);
         }
         
         /// <inheritdoc cref="TrajectoryClient.CommandReset"/>
         public void Reset()
         {
-            trajectoryClient?.RunCommandAsync(TrajectoryClient.CommandReset);
+            RunCommand(TrajectoryClient.CommandReset);
         }
         
         /// <inheritdoc cref="TrajectoryClient.CommandStep"/>
         public void Step()
         {
-            trajectoryClient?.RunCommandAsync(TrajectoryClient.CommandStep);
+            RunCommand(TrajectoryClient.CommandStep);
         }
 
         /// <inheritdoc cref="TrajectoryClient.CommandStepBackward"/>
         public void StepBackward()
         {
-            trajectoryClient?.RunCommandAsync(TrajectoryClient.CommandStepBackward);
+            RunCommand(TrajectoryClient.CommandStepBackward);
         }
 
         // TODO: handle the non-existence of these commands
         /// <inheritdoc cref="TrajectoryClient.CommandGetSimulationsListing"/>
         public async UniTask<List<string>> GetSimulationListing()
         {
-            var result = await RunCommandAsync(TrajectoryClient.CommandGetSimulationsListing);
-            var listing = result["simulations"] as List<object>;
-            return listing?.ConvertAll(o => o as string) ?? new List<string>();
+            var result = await RunCommand(TrajectoryClient.CommandGetSimulationsListing);
+            var listing = result["simulations"] as IList<object>;
+
+            return listing?.Select(o => o as string).ToList() ?? new List<string>();
         }
 
         /// <inheritdoc cref="TrajectoryClient.CommandSetSimulationIndex"/>
         public void SetSimulationIndex(int index)
         {
-            trajectoryClient?.RunCommandAsync(TrajectoryClient.CommandSetSimulationIndex, new Dictionary<string, object> { { "index", index } });
+            RunCommand(TrajectoryClient.CommandSetSimulationIndex, new CommandArguments { { "index", index } });
         }
 
-        public void RunCommand(string name, Dictionary<string, object> arguments = null)
+        public UniTask<CommandReturn> RunCommand(string name, CommandArguments arguments = null)
         {
-            trajectoryClient?.RunCommandAsync(name, arguments);
+            return websocketClient?.RunCommand(name, arguments) 
+                ?? trajectoryClient?.RunCommandAsync(name, arguments)
+                ?? UniTask.FromCanceled<CommandReturn>();
         }
-
-        public UniTask<Dictionary<string, object>> RunCommandAsync(string name, Dictionary<string, object> arguments = null) 
-            => trajectoryClient?.RunCommandAsync(name, arguments) ?? UniTask.FromCanceled<Dictionary<string, object>>();
 
         public async UniTask<Dictionary<string, CommandDefinition>> UpdateCommands()
         {
@@ -200,6 +243,6 @@ namespace Nanover.Grpc.Trajectory
             }
         }
 
-        public TrajectoryClient Client => trajectoryClient;
+        public bool Connected => trajectoryClient != null || websocket?.State == WebSocketState.Open;
     }
 }

@@ -7,6 +7,7 @@ using Nanover.Frame;
 using Nanover.Frame.Event;
 using Nanover.Protocol;
 using Nanover.Protocol.Trajectory;
+using UnityEngine;
 
 namespace Nanover.Grpc.Frame
 {
@@ -17,6 +18,43 @@ namespace Nanover.Grpc.Frame
     /// </summary>
     public static class FrameConverter
     {
+        public static (Nanover.Frame.Frame Frame, FrameChanges Update) ConvertFrame(
+            MessagePackTesting.FrameUpdate data,
+            Nanover.Frame.Frame previousFrame = null)
+        {
+            var frame
+                = previousFrame != null
+                ? Nanover.Frame.Frame.ShallowCopy(previousFrame)
+                : new Nanover.Frame.Frame();
+            var changes = FrameChanges.None;
+
+            if (data.Positions is { } positions)
+            {
+                frame.ParticlePositions = positions;
+                changes.MarkAsChanged(FrameData.ParticlePositionArrayKey);
+            }
+
+            if (data.Elements is { } elements)
+            {
+                frame.ParticleElements = elements;
+                changes.MarkAsChanged(FrameData.ParticleElementArrayKey);
+            }
+
+            if (data.Bonds is { } bonds)
+            {
+                frame.BondPairs = bonds;
+                changes.MarkAsChanged(FrameData.BondArrayKey);
+            }
+
+            if (data.BoxVectors is { } box)
+            {
+                frame.BoxVectors = new Core.Math.LinearTransformation(box[0], box[1], box[2]);
+                changes.MarkAsChanged(StandardFrameProperties.BoxTransformation.Key);
+            }
+
+            return (frame, changes);
+        }
+
         /// <summary>
         /// Convert data into a <see cref="Frame" />.
         /// </summary>
