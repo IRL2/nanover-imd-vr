@@ -56,7 +56,6 @@ jobs:
 
   publish-conda:
     name: Publish conda package
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: build-conda
     defaults:
