@@ -285,7 +285,9 @@ namespace NanoverImd
 
             Trajectory.CloseClient();
             await Multiplayer.CloseClient();
-            await websocket?.Close();
+            
+            if (websocket != null)
+                await websocket.Close();
 
             foreach (var channel in channels.Values)
             {
