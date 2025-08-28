@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using Essd;
 using MessagePackTesting;
 using Nanover.Frontend.UI;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace NanoverImd.UI.Scene
 {
@@ -99,7 +100,7 @@ namespace NanoverImd.UI.Scene
             {
                 var local = hub.Address.Equals("127.0.0.1") || hub.Address.Equals("localhost");
                 menu.AddItem(hub.Name, local ? localServerIcon : remoteServerIcon,
-                             () => application.Connect(hub), hub.Address);
+                                () => application.Connect(hub), hub.Address); 
             }
             foreach (var entry in websockets)
             {

@@ -20,6 +20,8 @@ using Nerdbank.MessagePack;
 
 using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
 using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
+using UnityEngine.SocialPlatforms;
+
 
 
 #if UNITY_EDITOR
@@ -221,11 +223,19 @@ namespace NanoverImd
         public async UniTask Connect(ServiceHub hub)
         {
             Debug.Log($"Connecting to {hub.Name} ({hub.Id})");
-
             var services = hub.Properties["services"] as JObject;
-            await Connect(hub.Address,
-                          GetServicePort(TrajectoryServiceName),
-                          GetServicePort(MultiplayerServiceName));
+
+            if (GetServicePort("ws") is int port)
+            {
+                var address = $"ws://{hub.Address}:{port}";
+                await ConnectWebSocket(address);
+            }
+            else
+            {
+                await Connect(hub.Address,
+                              GetServicePort(TrajectoryServiceName),
+                              GetServicePort(MultiplayerServiceName));
+            }
 
             int? GetServicePort(string name)
             {
