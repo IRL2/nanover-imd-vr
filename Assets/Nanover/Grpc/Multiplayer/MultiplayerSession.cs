@@ -51,7 +51,7 @@ namespace Nanover.Grpc.Multiplayer
         /// <summary>
         /// Is there an open client on this session?
         /// </summary>
-        public bool IsOpen => (client != null || websocket != null) && !closing;
+        public bool IsOpen => (client != null && !closing) || websocket != null;
 
         private bool closing = false;
 

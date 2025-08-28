@@ -26,8 +26,7 @@ namespace NanoverImd
 
         private bool directConnect;
         private string directConnectAddress = "localhost";
-        private string trajectoryPort = "38801";
-        private string multiplayerPort = "38801";
+        private string generalPort = "38801";
 
         private bool discovery;
         private ICollection<ServiceHub> knownServiceHubs = new List<ServiceHub>();
@@ -155,19 +154,24 @@ namespace NanoverImd
 
             GUILayout.Label("Address");
             directConnectAddress = GUILayout.TextField(directConnectAddress);
-            GUILayout.Label("Trajectory Port");
-            trajectoryPort = GUILayout.TextField(trajectoryPort);
-            GUILayout.Label("Multiplayer Port");
-            multiplayerPort = GUILayout.TextField(multiplayerPort);
+            GUILayout.Label("Port");
+            generalPort = GUILayout.TextField(generalPort);
 
-            if (GUILayout.Button("Connect"))
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Connect gRPC"))
             {
                 directConnect = false;
                 application.Connect(
                     directConnectAddress,
-                    ParseInt(trajectoryPort),
-                    ParseInt(multiplayerPort));
+                    ParseInt(generalPort),
+                    ParseInt(generalPort));
             }
+            if (GUILayout.Button("Connect WebSocket"))
+            {
+                directConnect = false;
+                application.Simulation.ConnectWebSocket($"ws://{directConnectAddress}:{ParseInt(generalPort)}").Forget();
+            }
+            GUILayout.EndHorizontal();
 
             if (GUILayout.Button("Cancel"))
                 directConnect = false;

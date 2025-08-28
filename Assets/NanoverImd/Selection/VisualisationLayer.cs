@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nanover.Core;
 using Nanover.Core.Math;
 using Nanover.Visualisation.Property;
 using UnityEngine;
@@ -151,24 +152,30 @@ namespace NanoverImd.Selection
         /// </summary>
         public void UpdateOrCreateSelection(string key, object value)
         {
-            if (!(value is Dictionary<string, object> dict))
-                return;
-            foreach (var selection in selections)
-                if (selection.Selection.ID == key)
-                {
-                    if (selection.Selection.ID == ParticleSelection.RootSelectionId)
+            if (value is IDictionary<string, object> dict)
+                UseDictionary(dict);
+            else if (value is IDictionary<object, object> dict2)
+                UseDictionary(dict2.StringifyKeys());
+
+            void UseDictionary(IDictionary<string, object> dict)
+            {
+                foreach (var selection in selections)
+                    if (selection.Selection.ID == key)
                     {
-                        dict.Remove(ParticleSelection.KeySelected);
+                        if (selection.Selection.ID == ParticleSelection.RootSelectionId)
+                        {
+                            dict.Remove(ParticleSelection.KeySelected);
+                        }
+
+                        selection.Selection.UpdateFromObject(dict);
+                        selection.gameObject.name = selection.Selection.Name;
+                        return;
                     }
 
-                    selection.Selection.UpdateFromObject(dict);
-                    selection.gameObject.name = selection.Selection.Name;
-                    return;
-                }
-
-            var newSelection = new ParticleSelection(dict);
-            var selec = AddSelection(newSelection);
-            selec.UpdateVisualiser();
+                var newSelection = new ParticleSelection(dict);
+                var selec = AddSelection(newSelection);
+                selec.UpdateVisualiser();
+            }
         }
 
         /// <summary>

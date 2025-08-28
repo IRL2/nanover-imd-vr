@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Nanover.Core
 {
@@ -37,6 +38,26 @@ namespace Nanover.Core
             return false;
         }
 
+        public static bool TryGetStructure(this IDictionary<string, object> dictionary, string key, out IDictionary<string, object> value)
+        {
+            if (dictionary.TryGetValue(key, out var potentialValue))
+            {
+                if (potentialValue is IDictionary<string, object> dict1)
+                {
+                    value = dict1;
+                    return true;
+                }
+                else if (potentialValue is IDictionary<object, object> dict2)
+                {
+                    value = dict2.StringifyKeys();
+                    return true;
+                }
+            }
+
+            value = default;
+            return false;
+        }
+
         /// <summary>
         /// Get an item of the dictionary of the given type <typeparamref name="T" />,
         /// returning the default if the key is not present and throwing an exception if
@@ -67,6 +88,11 @@ namespace Nanover.Core
                                              string id)
         {
             return dictionary.GetValueOrDefault<T[]>(id) ?? new T[0];
+        }
+
+        public static IDictionary<string, TValue> StringifyKeys<TValue>(this IDictionary<object, TValue> dictionary)
+        {
+            return dictionary.ToDictionary(pair => pair.Key.ToString(), pair => pair.Value);
         }
     }
 }

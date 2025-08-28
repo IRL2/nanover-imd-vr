@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Nanover.Core;
+using UnityEngine;
 
 namespace NanoverImd.Selection
 {
@@ -32,7 +33,7 @@ namespace NanoverImd.Selection
 
         private List<int> selection = null;
 
-        private Dictionary<string, object> properties = new Dictionary<string, object>();
+        private IDictionary<string, object> properties = new Dictionary<string, object>();
 
         public const string KeyName = "name";
         public const string KeyProperties = "properties";
@@ -70,7 +71,7 @@ namespace NanoverImd.Selection
         /// <summary>
         /// Create a selection from a dictionary representation of the selection.
         /// </summary>
-        public ParticleSelection(Dictionary<string, object> obj) : this(obj[KeyId] as string)
+        public ParticleSelection(IDictionary<string, object> obj) : this(obj[KeyId] as string)
         {
             UpdateFromObject(obj);
         }
@@ -78,11 +79,22 @@ namespace NanoverImd.Selection
         /// <summary>
         /// Update this selection based upon a dictionary representation.
         /// </summary>
-        public void UpdateFromObject(Dictionary<string, object> obj)
+        public void UpdateFromObject(IDictionary<string, object> obj)
         {
+            IDictionary<string, object> GetDictionary(string key)
+            {
+                if (!obj.TryGetValue(key, out var dict))
+                    return null;
+
+                if (dict is IDictionary<object, object> annoying)
+                    return annoying.StringifyKeys();
+
+                return new Dictionary<string, object>();
+            }
+
             Name = obj.GetValueOrDefault(KeyName, "Unnamed Selection");
-            properties = obj.GetValueOrDefault(KeyProperties, new Dictionary<string, object>());
-            var selectedDict = obj.GetValueOrDefault(KeySelected, new Dictionary<string, object>());
+            properties = GetDictionary(KeyProperties);
+            var selectedDict = GetDictionary(KeySelected);
             if (selectedDict != null)
             {
                 var ids = selectedDict.GetValueOrDefault<IReadOnlyList<object>>(KeyParticleIds,
@@ -96,8 +108,18 @@ namespace NanoverImd.Selection
                 {
                     selection = selection ?? new List<int>();
                     selection.Clear();
-                    foreach (var id in ids)
-                        selection.Add((int) (double) id);
+
+                    try
+                    {
+                        foreach (var id in ids)
+                            selection.Add((int)(double)id);
+                    }
+                    catch (InvalidCastException)
+                    {
+                        foreach (var id in ids)
+                            selection.Add((int)(UInt64)id);
+                    }
+
                     selection.Sort();
                 }
             }
