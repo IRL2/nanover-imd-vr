@@ -51,7 +51,7 @@ namespace Nanover.Grpc.Multiplayer
         /// <summary>
         /// Is there an open client on this session?
         /// </summary>
-        public bool IsOpen => (client != null && !closing) || websocket != null;
+        public bool IsOpen => (client != null || websocket != null) && !closing;
 
         private bool closing = false;
 
@@ -249,6 +249,8 @@ namespace Nanover.Grpc.Multiplayer
             client?.Close();
             client?.Dispose();
             client = null;
+            websocket = null;
+            closing = false;
 
             updateSendTimes.Clear();
 
