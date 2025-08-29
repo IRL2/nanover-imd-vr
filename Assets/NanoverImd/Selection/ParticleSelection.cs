@@ -96,16 +96,8 @@ namespace NanoverImd.Selection
                 {
                     selection = selection ?? new List<int>();
                     selection.Clear();
-                    try
-                    {
-                        foreach (var id in ids)
-                            selection.Add((int)(double)id);
-                    }
-                    catch (InvalidCastException)
-                    {
-                        foreach (var id in ids)
-                            selection.Add((int)(UInt64)id);
-                    }
+                    foreach (var id in ids)
+                        selection.Add(Convert.ToInt32(id));
                     selection.Sort();
                 }
             }
