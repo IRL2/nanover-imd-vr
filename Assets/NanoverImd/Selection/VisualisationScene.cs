@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using MessagePackTesting;
 using Nanover.Visualisation;
 using Nanover.Visualisation.Components.Adaptor;
 using Nanover.Visualisation.Property;
@@ -145,7 +144,7 @@ namespace NanoverImd.Selection
             if (key.StartsWith(ParticleSelection.SelectionIdPrefix))
             {
                 // TODO: Work out which layer the selection is on.
-                BaseLayer.UpdateOrCreateSelection(key, value.StringifyStructureKeys());
+                BaseLayer.UpdateOrCreateSelection(key, value);
             }
         }
 

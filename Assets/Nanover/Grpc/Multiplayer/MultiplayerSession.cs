@@ -151,8 +151,10 @@ namespace Nanover.Grpc.Multiplayer
 
                 foreach (var (key, value) in update.Updates)
                 {
-                    SharedStateDictionary[key] = value;
-                    SharedStateDictionaryKeyUpdated?.Invoke(key, value);
+                    var sanitised = value.StringifyStructureKeys();
+
+                    SharedStateDictionary[key] = sanitised;
+                    SharedStateDictionaryKeyUpdated?.Invoke(key, sanitised);
                 }
             }
 
