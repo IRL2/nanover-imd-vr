@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Nanover.Core.Serialization;
 using Nanover.Grpc.Multiplayer;
 
@@ -18,9 +19,9 @@ namespace NanoverImd.Interaction
         /// <inheritdoc cref="MultiplayerCollection{TItem}.ParseItem"/>
         protected override bool ParseItem(string key, object value, out ParticleInteraction parsed)
         {
-            if (IsMapping(value))
+            if (value is Dictionary<string, object> dict)
             {
-                parsed = Serialization.FromDataStructure<ParticleInteraction>(value);
+                parsed = Serialization.FromDataStructure<ParticleInteraction>(dict);
                 return true;
             }
 

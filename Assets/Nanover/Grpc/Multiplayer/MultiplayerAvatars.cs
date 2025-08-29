@@ -23,13 +23,13 @@ namespace Nanover.Grpc.Multiplayer
 
         /// <inheritdoc cref="MultiplayerCollection{TItem}.KeyPrefix"/>
         protected override string KeyPrefix => "avatar.";
-
+        
         /// <inheritdoc cref="MultiplayerCollection{TItem}.ParseItem"/>
         protected override bool ParseItem(string key, object value, out MultiplayerAvatar parsed)
         {
-            if (IsMapping(value))
+            if (value is Dictionary<string, object> dict)
             {
-                parsed = Core.Serialization.Serialization.FromDataStructure<MultiplayerAvatar>(value);
+                parsed = Core.Serialization.Serialization.FromDataStructure<MultiplayerAvatar>(dict);
                 parsed.ID = key.Remove(0, KeyPrefix.Length);
                 return true;
             }

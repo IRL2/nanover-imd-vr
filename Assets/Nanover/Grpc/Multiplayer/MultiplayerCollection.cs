@@ -14,11 +14,6 @@ namespace Nanover.Grpc.Multiplayer
     /// <typeparam name="TItem">The type to convert keys of this type into.</typeparam>
     public abstract class MultiplayerCollection<TItem>
     {
-        public static bool IsMapping(object @object)
-        {
-            return @object is IDictionary<string, object> || @object is IDictionary<object, object>;
-        }
-
         /// <summary>
         /// Callback for when a key is updated in the collection, either remotely or by the
         /// client.
@@ -81,7 +76,7 @@ namespace Nanover.Grpc.Multiplayer
             Multiplayer.SharedStateDictionaryKeyUpdated += OnKeyUpdated;
             Multiplayer.SharedStateDictionaryKeyRemoved += OnKeyRemoved;
         }
-
+        
         /// <summary>
         /// Get the current value for a given key. If a local change has been made, this changed
         /// value is returned until an up-to-date server reply is received. Otherwise, the latest
