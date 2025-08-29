@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MessagePackTesting;
 using Nanover.Visualisation;
 using Nanover.Visualisation.Components.Adaptor;
 using Nanover.Visualisation.Property;
@@ -144,21 +145,10 @@ namespace NanoverImd.Selection
         /// </summary>
         private void MultiplayerOnSharedStateDictionaryKeyChanged(string key, object value)
         {
-            object ConvertStructure(object structure)
-            {
-                if (structure is not IDictionary<object, object> dict)
-                    return structure;
-
-                return dict.ToDictionary(
-                    pair => pair.Key.ToString(), 
-                    pair => ConvertStructure(pair.Value)
-                );
-            }
-
             if (key.StartsWith(ParticleSelection.SelectionIdPrefix))
             {
                 // TODO: Work out which layer the selection is on.
-                BaseLayer.UpdateOrCreateSelection(key, ConvertStructure(value));
+                BaseLayer.UpdateOrCreateSelection(key, value.StringifyStructureKeys());
             }
         }
 

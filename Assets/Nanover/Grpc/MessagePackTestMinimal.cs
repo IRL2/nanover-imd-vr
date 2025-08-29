@@ -9,6 +9,7 @@ using PolyType;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
@@ -382,67 +383,14 @@ namespace MessagePackTesting
         }
     }
 
-    public class MessagePackTestMinimal : MonoBehaviour
+    public static class ObjectExtensions
     {
-        [SerializeField]
-        private LineRenderer lines;
-
-        IEnumerator Start()
+        public static object StringifyStructureKeys(this object structure)
         {
-            yield return new WaitForSeconds(.5f);
+            if (structure is not IDictionary<object, object> dict)
+                return structure;
 
-            //Test();
-        }
-
-        WebSocket websocket;
-
-        async void Test()
-        {
-            var request = UnityWebRequest.Get("https://irl-discovery.onrender.com/list");
-            await request.SendWebRequest();
-
-            var json = request.downloadHandler.text;
-            json = "{\"list\":" + json + "}";
-            var listing = JsonUtility.FromJson<DiscoveryListing>(json);
-
-            websocket = new WebSocket(listing.list[0].info.ws);
-
-            websocket.OnOpen += () =>
-            {
-                Debug.Log("Connection open!");
-            };
-
-            websocket.OnError += (e) =>
-            {
-                Debug.Log("Error! " + e);
-            };
-
-            websocket.OnClose += (e) =>
-            {
-                Debug.Log("Connection closed!");
-            };
-
-            websocket.OnMessage += (bytes) =>
-            {
-                MessagePackSerializer serializer = new();
-                var obj = serializer.Deserialize<Message>(bytes, Witness.ShapeProvider)!;
-
-                if (obj.FrameUpdate.ParticlePositions is { } positions)
-                {
-                    lines.positionCount = positions.Length;
-                    lines.SetPositions(positions);
-                }
-            };
-
-            // waiting for messages
-            await websocket.Connect();
-        }
-
-        void Update()
-        {
-#if !UNITY_WEBGL || UNITY_EDITOR
-            websocket?.DispatchMessageQueue();
-#endif
+            return dict.ToDictionary(pair => pair.Key.ToString(), pair => StringifyStructureKeys(pair.Value));
         }
     }
 }
