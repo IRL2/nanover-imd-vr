@@ -159,7 +159,7 @@ namespace NanoverImd.Editor
                     EditorGUI.indentLevel += 2;
                     if (list.Count > 8)
                     {
-                        EditorGUILayout.LabelField(string.Join(", ", list), new GUIStyle { wordWrap = true });
+                        EditorGUILayout.LabelField(string.Join(", ", list), new GUIStyle(EditorStyles.label) { wordWrap = true });
                     }
                     else
                     {

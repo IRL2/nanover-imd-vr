@@ -1,20 +1,58 @@
-using System;
-using System.Collections;
+using Cysharp.Threading.Tasks;
+using Nanover.Core.Math;
 using Nanover.Core.Science;
 using Nanover.Frame;
+using Nanover.Protocol.Trajectory;
+using NativeWebSocket;
 using Nerdbank.MessagePack;
 using PolyType;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
-using NativeWebSocket;
-using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
-
 using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
 using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
 
 namespace MessagePackTesting
 {
+    public class Uint32Array : MessagePackConverter<int[]>
+    {
+        public override int[]? Read(ref MessagePackReader reader, SerializationContext context)
+        {
+            var bytes = context.GetConverter<byte[]>(Witness.ShapeProvider).Read(ref reader, context);
+
+            if (bytes is null)
+                return null;
+
+            var values = new int[bytes.Length / sizeof(UInt32)];
+
+            for (int i = 0; i < values.Length; ++i)
+            {
+                values[i] = (int)BitConverter.ToUInt32(bytes, i * sizeof(UInt32));
+            }
+
+            return values;
+        }
+
+        public override void Write(ref MessagePackWriter writer, in int[]? value, SerializationContext context)
+        {
+            if (value is null)
+            {
+                writer.WriteNil();
+                return;
+            }
+
+            var bytes = new byte[value.Length * sizeof(UInt32)];
+            for (int i = 0; i < value.Length; ++i)
+            {
+                BitConverter.GetBytes(value[i]).CopyTo(bytes, i * sizeof(UInt32));
+            }
+
+            context.GetConverter<byte[]>(Witness.ShapeProvider).Write(ref writer, bytes, context);
+        }
+    }
+
     public class ElementArray : MessagePackConverter<Element[]>
     {
         public override Element[]? Read(ref MessagePackReader reader, SerializationContext context)
@@ -202,17 +240,55 @@ namespace MessagePackTesting
 
     public partial class FrameUpdate
     {
-        [PropertyShape(Name = "particle.elements")]
+        [PropertyShape(Name = FrameData.ParticleCountValueKey)]
+        public int? ParticleCount;
+
+        [PropertyShape(Name = FrameData.ParticleElementArrayKey)]
         [MessagePackConverter(typeof(ElementArray))]
-        public Element[]? Elements;
+        public Element[]? ParticleElements;
 
-        [PropertyShape(Name = "particle.positions")]
+        [PropertyShape(Name = FrameData.ParticlePositionArrayKey)]
         [MessagePackConverter(typeof(Vector3Array))]
-        public Vector3[]? Positions;
+        public Vector3[]? ParticlePositions;
 
-        [PropertyShape(Name = "bond.pairs")]
+        [PropertyShape(Name = FrameData.ParticleNameArrayKey)]
+        public string[]? ParticleNames;
+
+        [PropertyShape(Name = FrameData.ParticleResidueArrayKey)]
+        [MessagePackConverter(typeof(Uint32Array))]
+        public int[]? ParticleResidues;
+
+        [PropertyShape(Name = FrameData.ParticleTypeArrayKey)]
+        public string[]? ParticleTypes;
+
+        [PropertyShape(Name = FrameData.BondArrayKey)]
         [MessagePackConverter(typeof(BondPairArray))]
-        public BondPair[]? Bonds;
+        public BondPair[]? BondPairs;
+
+        [PropertyShape(Name = FrameData.BondOrderArrayKey)]
+        public int[]? BondOrders;
+
+        [PropertyShape(Name = FrameData.ResidueCountValueKey)]
+        public int? ResidueCount;
+
+        [PropertyShape(Name = FrameData.ResidueNameArrayKey)]
+        public string[]? ResidueNames;
+
+        [PropertyShape(Name = FrameData.ChainCountValueKey)]
+        public int? EntityCount;
+
+        [PropertyShape(Name = FrameData.ChainNameArrayKey)]
+        public string[]? EntityName;
+
+        [PropertyShape(Name = FrameData.ResidueChainArrayKey)]
+        [MessagePackConverter(typeof(Uint32Array))]
+        public int[]? ResidueEntities;
+
+        [PropertyShape(Name = FrameData.KineticEnergyValueKey)]
+        public float? KineticEnergy;
+
+        [PropertyShape(Name = FrameData.PotentialEnergyValueKey)]
+        public float? PotentialEnergy;
 
         [PropertyShape(Name = "system.box.vectors")]
         [MessagePackConverter(typeof(Vector3Array))]
@@ -351,7 +427,7 @@ namespace MessagePackTesting
                 MessagePackSerializer serializer = new();
                 var obj = serializer.Deserialize<Message>(bytes, Witness.ShapeProvider)!;
 
-                if (obj.FrameUpdate.Positions is { } positions)
+                if (obj.FrameUpdate.ParticlePositions is { } positions)
                 {
                     lines.positionCount = positions.Length;
                     lines.SetPositions(positions);

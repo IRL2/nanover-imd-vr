@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using Google.Protobuf.WellKnownTypes;
 using JetBrains.Annotations;
 using Nanover.Core;
@@ -28,28 +29,94 @@ namespace Nanover.Grpc.Frame
                 : new Nanover.Frame.Frame();
             var changes = FrameChanges.None;
 
-            if (data.Positions is { } positions)
+            if (data.ParticleCount is { } count) {
+                frame.ParticleCount = count;
+                changes.MarkAsChanged(FrameData.ParticleCountValueKey);
+            }
+
+            if (data.ParticlePositions is { } positions)
             {
                 frame.ParticlePositions = positions;
                 changes.MarkAsChanged(FrameData.ParticlePositionArrayKey);
             }
 
-            if (data.Elements is { } elements)
+            if (data.ParticleElements is { } elements)
             {
                 frame.ParticleElements = elements;
                 changes.MarkAsChanged(FrameData.ParticleElementArrayKey);
             }
 
-            if (data.Bonds is { } bonds)
+            if (data.ParticleNames is { } names)
+            {
+                frame.ParticleNames = names;
+                changes.MarkAsChanged(FrameData.ParticleNameArrayKey);
+            }
+
+            if (data.ParticleResidues is { } residues) {
+                frame.ParticleResidues = residues;
+                changes.MarkAsChanged(FrameData.ParticleResidueArrayKey);
+            }
+
+            if (data.ParticleTypes is { } types)
+            {
+                frame.ParticleTypes = types;
+                changes.MarkAsChanged(FrameData.ParticleTypeArrayKey);
+            }
+
+            if (data.BondPairs is { } bonds)
             {
                 frame.BondPairs = bonds;
                 changes.MarkAsChanged(FrameData.BondArrayKey);
+            }
+
+            if (data.BondOrders is { } orders)
+            {
+                frame.BondOrders = orders;
+                changes.MarkAsChanged(FrameData.BondOrderArrayKey);
+            }
+
+            if (data.ResidueCount is { } residueCount)
+            {
+                frame.ResidueCount = residueCount;
+                changes.MarkAsChanged(FrameData.ResidueCountValueKey);
+            }
+
+            if (data.ResidueNames is { } residueNames)
+            {
+                frame.ResidueNames = residueNames;
+                changes.MarkAsChanged(FrameData.ResidueNameArrayKey);
+            }
+
+            if (data.EntityCount is { } entityCount)
+            {
+                frame.EntityCount = entityCount;
+                changes.MarkAsChanged(FrameData.ChainCountValueKey);
+            }
+
+            if (data.EntityName is { } entityNames)
+            {
+                changes.MarkAsChanged(FrameData.ChainNameArrayKey);
+            }
+
+            if (data.ResidueEntities is { } residueEntities)
+            {
+                frame.ResidueEntities = residueEntities;
+                changes.MarkAsChanged(FrameData.ResidueChainArrayKey);
             }
 
             if (data.BoxVectors is { } box)
             {
                 frame.BoxVectors = new Core.Math.LinearTransformation(box[0], box[1], box[2]);
                 changes.MarkAsChanged(StandardFrameProperties.BoxTransformation.Key);
+            }
+
+            if (data.KineticEnergy is { } kineticEnergy) {
+                changes.MarkAsChanged(FrameData.KineticEnergyValueKey);
+            }
+
+            if (data.PotentialEnergy is { } potentialEnergy)
+            {
+                changes.MarkAsChanged(FrameData.PotentialEnergyValueKey);
             }
 
             return (frame, changes);

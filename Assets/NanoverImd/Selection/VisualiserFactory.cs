@@ -348,17 +348,11 @@ namespace NanoverImd.Selection
                 // to be a predefined visualiser
                 visualiser = GetPredefinedVisualiser(visName);
             }
-            else if (data is IDictionary<string, object> dict)
+            else if (data is Dictionary<string, object> dict)
             {
                 // A dictionary indicates the visualiser should be created from
                 // fields in dict
                 (visualiser, isPrefab) = (GetVisualiserFromDictionary(dict), false);
-            }
-            else if (data is IDictionary<object, object> dict2)
-            {
-                // A dictionary indicates the visualiser should be created from
-                // fields in dict
-                (visualiser, isPrefab) = (GetVisualiserFromDictionary(dict2.StringifyKeys()), false);
             }
 
             return (visualiser, isPrefab);
@@ -414,12 +408,12 @@ namespace NanoverImd.Selection
         /// </summary>
         private const string ResidueSecondaryStructureKey = "residue.secondarystructures";
 
-        private static (GameObject subgraph, IDictionary<string, object> parameters) GetSubgraph(
-            IDictionary<string, object> dict,
+        private static (GameObject subgraph, Dictionary<string, object> parameters) GetSubgraph(
+            Dictionary<string, object> dict,
             string key,
             Func<string, GameObject> findSubgraph)
         {
-            if (dict.TryGetStructure(key, out var strut))
+            if (dict.TryGetValue<Dictionary<string, object>>(key, out var strut))
             {
                 if (strut.TryGetValue<string>(TypeKeyword, out var type))
                 {
@@ -443,14 +437,14 @@ namespace NanoverImd.Selection
         }
 
         private static (List<GameObject> subgraphs,
-            Dictionary<GameObject, IDictionary<string, object>> subgraphParameters) FindSubgraphs(
-                IDictionary<string, object> dict)
+            Dictionary<GameObject, Dictionary<string, object>> subgraphParameters) FindSubgraphs(
+                Dictionary<string, object> dict)
         {
             // Set of subgraphs to be used in the visualiser
             var subgraphs = new List<GameObject>();
 
             // Mapping of subgraph object to its dictionary representation
-            var subgraphParameters = new Dictionary<GameObject, IDictionary<string, object>>();
+            var subgraphParameters = new Dictionary<GameObject, Dictionary<string, object>>();
 
             GameObject FindSubgraph(string key, Func<string, GameObject> findSubgraph)
             {
@@ -503,7 +497,7 @@ namespace NanoverImd.Selection
         /// <summary>
         /// Generate a visualiser from a dictionary describing subgraphs and parameters.
         /// </summary>
-        private static GameObject GetVisualiserFromDictionary(IDictionary<string, object> dict)
+        private static GameObject GetVisualiserFromDictionary(Dictionary<string, object> dict)
         {
             // Create a basic dynamic visualiser, with a FrameAdaptor to
             // read in frames and a DynamicVisualiserSubgraphs to contain the dynamic nodes
@@ -561,7 +555,7 @@ namespace NanoverImd.Selection
         /// </summary>
         private static bool FindParameter<TInputType, TInputNodeType, TInputComponentType>(
             string name,
-            IDictionary<string, object> parameters,
+            IReadOnlyDictionary<string, object> parameters,
             TryParseObject<TInputType> tryParseObject,
             GameObject visualiser)
             where TInputNodeType : IInputNode
@@ -587,7 +581,7 @@ namespace NanoverImd.Selection
         /// was provided.
         /// </summary>
         private static bool FindParameter(IInputNode input,
-                                          IDictionary<string, object> parameters,
+                                          IReadOnlyDictionary<string, object> parameters,
                                           GameObject visualiser)
         {
             switch (input)
