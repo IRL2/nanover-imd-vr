@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Nanover.Protocol.Trajectory;
 
 namespace Nanover.Frame.Event
 {

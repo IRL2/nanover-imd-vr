@@ -74,14 +74,6 @@ namespace NanoverImd
             simulation.ConnectionEstablished += connectionEstablished.Invoke;
         }
 
-        /// <summary>
-        /// Connect to remote Nanover services.
-        /// </summary>
-        public UniTask Connect(string address,
-                               int? trajectoryPort = null,
-                               int? multiplayerPort = null) =>
-            simulation.Connect(address, trajectoryPort, multiplayerPort);
-
         // These methods expose the underlying async methods to Unity for use
         // in the UI so we disable warnings about not awaiting them, and use
         // void return type instead of Task.

@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Nanover.Core;
 using Nanover.Core.Science;
 using Nanover.Frame;
-using Nanover.Protocol.Trajectory;
 using Nanover.Visualisation.Components;
 using Nanover.Visualisation.Property;
 using UnityEngine;

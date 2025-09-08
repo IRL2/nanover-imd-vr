@@ -62,9 +62,6 @@ namespace NanoverImd
 
         public ParticleInteractionCollection Interactions;
 
-        private Dictionary<string, GrpcConnection> channels
-            = new Dictionary<string, GrpcConnection>();
-
         private NativeWebSocket.WebSocket websocket;
 
         /// <summary>
@@ -84,27 +81,6 @@ namespace NanoverImd
         public event Action ConnectionEstablished;
 
         public event Action<Message> OnMessage;
-
-        /// <summary>
-        /// Connect to the host address and attempt to open clients for the
-        /// trajectory and multiplayer services.
-        /// </summary>
-        public async UniTask Connect(string address,
-                                     int? trajectoryPort,
-                                     int? multiplayerPort = null)
-        {
-            await CloseAsync();
-
-            if (trajectoryPort.HasValue)
-                Trajectory.OpenClient(GetChannel(address, trajectoryPort.Value));
-
-            if (multiplayerPort.HasValue)
-                await Multiplayer.OpenClient(GetChannel(address, multiplayerPort.Value));
-
-            gameObject.SetActive(true);
-
-            ConnectionEstablished?.Invoke();
-        }
 
         public async UniTask ConnectWebSocket(string address)
         {
@@ -234,9 +210,7 @@ namespace NanoverImd
             }
             else
             {
-                await Connect(hub.Address,
-                              GetServicePort(TrajectoryServiceName),
-                              GetServicePort(MultiplayerServiceName));
+                throw new Exception("NO SERVER!");
             }
 
             int? GetServicePort(string name)
@@ -291,28 +265,8 @@ namespace NanoverImd
             if (websocket != null)
                 await websocket.Close();
 
-            foreach (var channel in channels.Values)
-            {
-                channel.Close();
-            }
-
-            channels.Clear();
-
             if (this != null && gameObject != null)
                 gameObject.SetActive(false);
-        }
-
-        private GrpcConnection GetChannel(string address, int port)
-        {
-            string key = $"{address}:{port}";
-
-            if (!channels.TryGetValue(key, out var channel))
-            {
-                channel = new GrpcConnection(address, port);
-                channels[key] = channel;
-            }
-
-            return channel;
         }
 
         private void Update()

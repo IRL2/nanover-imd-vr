@@ -13,14 +13,10 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "Grpc.Core.Api.dll",
-        "Google.Protobuf.dll",
         "System.Threading.Channels.dll",
         "Nanover.Protocol.dll",
         "Nerdbank.MessagePack.dll",
-        "PolyType.dll",
-        "Grpc.Net.Client.dll",
-        "Grpc.Net.Common.dll"
+        "PolyType.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

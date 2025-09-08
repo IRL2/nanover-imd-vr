@@ -3,9 +3,6 @@ using WebSocketTypes;
 using Nanover.Frame;
 using Nanover.Frame.Event;
 using Nanover.Grpc.Frame;
-using Nanover.Grpc.Stream;
-using Nanover.Protocol.Command;
-using Nanover.Protocol.Trajectory;
 using NativeWebSocket;
 using System;
 using System.Collections.Generic;
@@ -40,16 +37,8 @@ namespace Nanover.Grpc.Trajectory
         /// </summary>
         private readonly TrajectorySnapshot trajectorySnapshot = new TrajectorySnapshot();
 
-        /// <summary>
-        /// Underlying TrajectoryClient for receiving new frames.
-        /// </summary>
-        private TrajectoryClient trajectoryClient;
-
-        private IncomingStream<GetFrameResponse> frameStream;
-        private BackgroundIncomingStreamReceiver<GetFrameResponse> frameReceiver;
-
         private List<float> messageReceiveTimes = new List<float>();
-        public List<float> MessageReceiveTimes => frameReceiver?.MessageReceiveTimes ?? messageReceiveTimes;
+        public List<float> MessageReceiveTimes => messageReceiveTimes;
 
         private WebSocket websocket;
         private WebSocketMessageSource websocketClient;
@@ -90,75 +79,12 @@ namespace Nanover.Grpc.Trajectory
         }
 
         /// <summary>
-        /// Connect to a trajectory service over the given connection and
-        /// listen in the background for frame changes. Closes any existing
-        /// client.
-        /// </summary>
-        public void OpenClient(GrpcConnection connection)
-        {
-            CloseClient();
-            trajectorySnapshot.Clear();
-
-            trajectoryClient = new TrajectoryClient(connection);
-            frameStream = trajectoryClient.SubscribeLatestFrames(1f / 30f);
-            frameReceiver = BackgroundIncomingStreamReceiver<GetFrameResponse>.Start(frameStream, ReceiveFrame, Merge);
-
-            // Integrating frames from the buffer with the current frame
-            void ReceiveFrame(GetFrameResponse response)
-            {
-                CurrentFrameIndex = (int) response.FrameIndex;
-
-                var nextFrame = response.Frame;
-                var clear = ContainsClear(response);
-                var prevFrame = clear ? null : CurrentFrame;
-
-                var (frame, changes) = FrameConverter.ConvertFrame(nextFrame, prevFrame);
-
-                if (clear)
-                    changes = FrameChanges.All;
-
-                trajectorySnapshot.SetCurrentFrame(frame, changes);
-            }
-
-            // Aggregating frames while they wait in the buffer
-            void Merge(GetFrameResponse dest, GetFrameResponse toMerge)
-            {
-                if (ContainsClear(toMerge))
-                    dest.Frame = new FrameData();
-
-                if (!ContainsClear(dest))
-                    dest.FrameIndex = toMerge.FrameIndex;
-
-                foreach (var (key, array) in toMerge.Frame.Arrays)
-                    dest.Frame.Arrays[key] = array;
-                foreach (var (key, value) in toMerge.Frame.Values)
-                    dest.Frame.Values[key] = value;
-            }
-
-            // Does the frame indicate that previous frame contents should be
-            // cleared?
-            bool ContainsClear(GetFrameResponse response)
-            {
-                return response.FrameIndex == 0;
-            }
-        }
-
-        /// <summary>
         /// Close the current trajectory client.
         /// </summary>
         public void CloseClient()
         {
             websocket = null;
             websocketClient = null;
-
-            trajectoryClient?.Close();
-            trajectoryClient?.Dispose();
-            trajectoryClient = null;
-
-            frameStream?.Close();
-            frameStream?.Dispose();
-            frameStream = null;
-
             trajectorySnapshot.Clear();
         }
 
@@ -216,8 +142,7 @@ namespace Nanover.Grpc.Trajectory
 
         public UniTask<CommandReturn> RunCommand(string name, CommandArguments arguments = null)
         {
-            return websocketClient?.RunCommand(name, arguments) 
-                ?? trajectoryClient?.RunCommandAsync(name, arguments)
+            return websocketClient?.RunCommand(name, arguments)
                 ?? UniTask.FromCanceled<CommandReturn>();
         }
 
@@ -232,17 +157,8 @@ namespace Nanover.Grpc.Trajectory
         {
             public string Name { get; set; }
             public CommandArguments Arguments { get; set; }
-
-            public static CommandDefinition FromCommandMessage(CommandMessage message)
-            {
-                return new CommandDefinition()
-                {
-                    Name = message.Name,
-                    Arguments = message.Arguments.ToDictionary(),
-                };
-            }
         }
 
-        public bool Connected => trajectoryClient != null || websocket?.State == WebSocketState.Open;
+        public bool Connected => websocket?.State == WebSocketState.Open;
     }
 }

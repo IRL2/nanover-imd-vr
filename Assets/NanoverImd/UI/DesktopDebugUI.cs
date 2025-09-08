@@ -158,21 +158,11 @@ namespace NanoverImd
             GUILayout.Label("Port");
             generalPort = GUILayout.TextField(generalPort);
 
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Connect gRPC"))
-            {
-                directConnect = false;
-                application.Connect(
-                    directConnectAddress,
-                    ParseInt(generalPort),
-                    ParseInt(generalPort));
-            }
             if (GUILayout.Button("Connect WebSocket"))
             {
                 directConnect = false;
                 application.Simulation.ConnectWebSocket($"ws://{directConnectAddress}:{ParseInt(generalPort)}").Forget();
             }
-            GUILayout.EndHorizontal();
 
             if (GUILayout.Button("Cancel"))
                 directConnect = false;

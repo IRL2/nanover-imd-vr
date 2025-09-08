@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Nanover.Core.Math;
-using Nanover.Grpc.Stream;
-using Nanover.Grpc.Trajectory;
 using UnityEngine;
 using NativeWebSocket;
 using WebSocketTypes;
@@ -51,7 +49,7 @@ namespace Nanover.Grpc.Multiplayer
         /// <summary>
         /// Is there an open client on this session?
         /// </summary>
-        public bool IsOpen => (client != null || websocket != null) && !closing;
+        public bool IsOpen => websocket != null && !closing;
 
         private bool closing = false;
 
@@ -61,13 +59,8 @@ namespace Nanover.Grpc.Multiplayer
         /// </summary>
         public int ValuePublishInterval { get; set; } = 1000 / 30;
 
-        private MultiplayerClient client;
-
-        private IncomingStream<Protocol.State.StateUpdate> IncomingValueUpdates { get; set; }
-        private BackgroundIncomingStreamReceiver<Protocol.State.StateUpdate> updateReceiver;
         private List<float> messageReceiveTimes = new List<float>();
-
-        public List<float> MessageReceiveTimes => updateReceiver?.MessageReceiveTimes ?? messageReceiveTimes;
+        public List<float> MessageReceiveTimes => messageReceiveTimes;
 
         private Dictionary<string, object> pendingValues
             = new Dictionary<string, object>();
@@ -165,36 +158,6 @@ namespace Nanover.Grpc.Multiplayer
             MultiplayerJoined?.Invoke();
         }
 
-        /// <summary>
-        /// Connect to a Multiplayer service over the given connection. 
-        /// Closes any existing client.
-        /// </summary>
-        public async UniTask OpenClient(GrpcConnection connection)
-        {
-            await CloseClient();
-            closing = false;
-
-            client = new MultiplayerClient(connection);
-            AccessToken = Guid.NewGuid().ToString();
-
-            RunFlushingTask();
-
-            IncomingValueUpdates = client.SubscribeStateUpdates();
-            updateReceiver = BackgroundIncomingStreamReceiver<Protocol.State.StateUpdate>.Start(
-                IncomingValueUpdates,
-                OnResourceValuesUpdateReceived,
-                MergeResourceUpdates
-            );
-
-            void MergeResourceUpdates(Protocol.State.StateUpdate dest, Protocol.State.StateUpdate src)
-            {
-                foreach (var (key, value) in src.ChangedKeys.Fields)
-                    dest.ChangedKeys.Fields[key] = value;
-            }
-
-            MultiplayerJoined?.Invoke();
-        }
-
         private void RunFlushingTask()
         {
             valueFlushingTask = valueFlushingTask ?? FlushValuesInterval(ValuePublishInterval);
@@ -236,9 +199,6 @@ namespace Nanover.Grpc.Multiplayer
 
             closing = true;
 
-            IncomingValueUpdates?.Close();
-            IncomingValueUpdates = null;
-
             // Remove our personal avatar/playarea/origin
             SimulationPose.ReleaseLock();
             Avatars.CloseClient();
@@ -248,9 +208,6 @@ namespace Nanover.Grpc.Multiplayer
 
             await UniTask.WhenAny(FlushValuesAsync(), UniTask.Delay(1000));
 
-            client?.Close();
-            client?.Dispose();
-            client = null;
             websocket = null;
             closing = false;
 
@@ -295,14 +252,7 @@ namespace Nanover.Grpc.Multiplayer
         /// </summary>
         public async UniTask<bool> LockResource(string id)
         {
-            if (websocket != null)
-                return true;
-
-            return await client.UpdateLocks(AccessToken, new Dictionary<string, float>
-                                            {
-                                                [id] = 1f
-                                            },
-                                            new string[0]);
+            return true;
         }
 
         /// <summary>
@@ -310,13 +260,7 @@ namespace Nanover.Grpc.Multiplayer
         /// </summary>
         public async UniTask<bool> ReleaseResource(string id)
         {
-            if (websocket != null)
-                return true;
-
-            return await client.UpdateLocks(AccessToken, new Dictionary<string, float>(), new string[]
-            {
-                id
-            });
+            return true;
         }
 
         /// <inheritdoc cref="IDisposable.Dispose" />
@@ -342,44 +286,6 @@ namespace Nanover.Grpc.Multiplayer
                 catch (Exception e)
                 {
                     Debug.LogException(e);
-                }
-            }
-        }
-
-        private void OnResourceValuesUpdateReceived(Protocol.State.StateUpdate update)
-        {
-            if (!IsOpen)
-                return;
-
-            if (update.ChangedKeys.Fields.ContainsKey(UpdateIndexKey))
-            {
-                lastReceivedIndex = (int) update.ChangedKeys
-                                                .Fields[UpdateIndexKey]
-                                                .NumberValue;
-                lastReceivedIndexTime = Time.realtimeSinceStartup;
-
-                foreach (var index in new HashSet<int>(updateSendTimes.Keys))
-                {
-                    if (index == lastReceivedIndex)
-                        LastIndexRTT = lastReceivedIndexTime - updateSendTimes[index];
-                    
-                    if (index <= lastReceivedIndex)
-                        updateSendTimes.Remove(index);
-                }
-            }
-
-            foreach (var (key, value1) in update.ChangedKeys.Fields)
-            {
-                var value = value1.ToObject();
-                if (value == null)
-                {
-                    SharedStateDictionary.Remove(key);
-                    SharedStateDictionaryKeyRemoved?.Invoke(key);
-                }
-                else
-                {
-                    SharedStateDictionary[key] = value;
-                    SharedStateDictionaryKeyUpdated?.Invoke(key, value);
                 }
             }
         }
@@ -411,16 +317,7 @@ namespace Nanover.Grpc.Multiplayer
 
             var update = UniTask.FromResult(true);
 
-            if (client != null)
-            {
-                var converted = new Dictionary<string, object>();
-
-                foreach (var (key, value) in pendingValues)
-                    converted[key] = value.ToProtobufValue();
-
-                update = client.UpdateState(AccessToken, converted, pendingRemovals);
-            }
-            else if (websocket != null)
+            if (websocket != null)
             {
                 var change = new StateUpdate();
                 foreach (var (key, value) in pendingValues)

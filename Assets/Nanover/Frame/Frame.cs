@@ -1,14 +1,36 @@
-using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using Nanover.Core;
 using Nanover.Core.Math;
 using Nanover.Core.Science;
-using Nanover.Protocol.Trajectory;
 using UnityEngine;
 
 namespace Nanover.Frame
 {
+    public static class FrameData
+    {
+        public const string BondArrayKey = "bond.pairs";
+        public const string BondOrderArrayKey = "bond.orders";
+
+        public const string ParticlePositionArrayKey = "particle.positions";
+        public const string ParticleElementArrayKey = "particle.elements";
+        public const string ParticleTypeArrayKey = "particle.types";
+        public const string ParticleNameArrayKey = "particle.names";
+        public const string ParticleResidueArrayKey = "particle.residues";
+        public const string ParticleCountValueKey = "particle.count";
+
+        public const string ResidueNameArrayKey = "residue.names";
+        public const string ResidueIdArrayKey = "residue.ids";
+        public const string ResidueChainArrayKey = "residue.chains";
+        public const string ResidueCountValueKey = "residue.count";
+
+        public const string ChainNameArrayKey = "chain.names";
+        public const string ChainCountValueKey = "chain.count";
+
+        public const string KineticEnergyValueKey = "energy.kinetic";
+        public const string PotentialEnergyValueKey = "energy.potential";
+    }
+
     /// <summary>
     /// A single Frame in a trajectory. It is a snapshot of a system, represented by a
     /// set of properties. These properties include particle positions, types and

@@ -1,20 +1,11 @@
-using JetBrains.Annotations;
-using Nanover.Grpc.Stream;
-using Nanover.Protocol.Trajectory;
-
 namespace Nanover.Grpc.Trajectory
 {
-    /// <summary>
-    /// Callback when a new frame is received.
-    /// </summary>
-    public delegate void FrameReceivedCallback(uint frameIndex, [CanBeNull] FrameData frameData);
-
     /// <summary>
     /// Wraps a <see cref="TrajectoryService.TrajectoryServiceClient" /> and
     /// provides access to a stream of frames from a trajectory provided by a
     /// server over a <see cref="GrpcConnection" />.
     /// </summary>
-    public sealed class TrajectoryClient : GrpcClient<TrajectoryService.TrajectoryServiceClient>
+    public sealed class TrajectoryClient
     {
         /// <summary>
         /// Command the server to play the simulation if it is paused.
@@ -51,36 +42,9 @@ namespace Nanover.Grpc.Trajectory
         /// </summary>
         public const string CommandSetSimulationIndex = "playback/load";
 
-        // Chosen as an acceptable minimum rate that should ideally be 
-        // explicitly increased.
-        private const float DefaultUpdateInterval = 1f / 30f;
-
         /// <summary>
         /// Fetch list of available commands from server.
         /// </summary>
         public const string CommandGetCommandsListing = "commands/list";
-
-        public TrajectoryClient([NotNull] GrpcConnection connection) : base(connection)
-        {
-        }
-
-        /// <summary>
-        /// Begin a new subscription to trajectory frames and asynchronously
-        /// enumerate over them, calling the provided callback for each frame
-        /// received.
-        /// </summary>
-        /// <param name="updateInterval">
-        /// How many seconds the service should wait and aggregate updates 
-        /// between  sending them to us.
-        /// </param>
-        /// <remarks>
-        /// Corresponds to the SubscribeLatestFrames gRPC call.
-        /// </remarks>
-        public IncomingStream<GetFrameResponse> SubscribeLatestFrames(float updateInterval = DefaultUpdateInterval)
-        {
-            var request = new GetFrameRequest();
-            request.FrameInterval = updateInterval;
-            return GetIncomingStream(Client.SubscribeLatestFrames, request);
-        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using Cysharp.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -30,7 +31,7 @@ namespace NanoverImd.UI.Scene
                      ? (int?) int.Parse(portInput.text)
                      : null;
 
-            application.Connect(hostInputField.text, port, port);
+            application.Simulation.ConnectWebSocket($"{hostInputField.text}:{port}").Forget();
         }
     }
 }
