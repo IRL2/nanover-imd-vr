@@ -512,6 +512,7 @@ MonoBehaviour:
   simulation: {fileID: 431384315}
   controller: {fileID: 1083629888}
   InteractionRange: 0.4
+  InteractWithHydrogens: 1
   interactionTarget: 0
 --- !u!4 &54429686
 Transform:
@@ -16060,6 +16061,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   simulation: {fileID: 431384315}
   label: {fileID: 955151424}
+  ReportToState: 0
   Frame: 0
   State: 0
   RTT: 0

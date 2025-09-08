@@ -1,13 +1,11 @@
 using Cysharp.Threading.Tasks;
-using Nanover.Core.Math;
 using Nanover.Core.Science;
 using Nanover.Frame;
+using Nanover.Grpc.Frame;
 using Nanover.Protocol.Trajectory;
-using NativeWebSocket;
 using Nerdbank.MessagePack;
 using PolyType;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -320,7 +318,7 @@ namespace MessagePackTesting
     public partial class Message
     {
         [PropertyShape(Name = "frame")]
-        public FrameUpdate? FrameUpdate;
+        public Dictionary<string, object>? FrameUpdate;
 
         [PropertyShape(Name = "state")]
         public StateUpdate? StateUpdate;
