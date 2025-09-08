@@ -223,15 +223,15 @@ namespace Nanover.Grpc.Trajectory
 
         public async UniTask<Dictionary<string, CommandDefinition>> UpdateCommands()
         {
-            var commands = await trajectoryClient?.GetCommandsAsync();
-            CommandDefinitions = commands.ToDictionary(command => command.Name, CommandDefinition.FromCommandMessage);
+            var result = await RunCommand(TrajectoryClient.CommandGetCommandsListing);
+            CommandDefinitions = ((Dictionary<string, object>)result["list"]).ToDictionary(pair => pair.Key, pair => new CommandDefinition { Name = pair.Key, Arguments = pair.Value as CommandArguments });
             return CommandDefinitions;
         }
 
         public class CommandDefinition
         {
             public string Name { get; set; }
-            public Dictionary<string, object> Arguments { get; set; }
+            public CommandArguments Arguments { get; set; }
 
             public static CommandDefinition FromCommandMessage(CommandMessage message)
             {

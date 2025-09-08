@@ -387,10 +387,11 @@ namespace MessagePackTesting
     {
         public static object StringifyStructureKeys(this object structure)
         {
-            if (structure is not IDictionary<object, object> dict)
-                return structure;
-
-            return dict.ToDictionary(pair => pair.Key.ToString(), pair => StringifyStructureKeys(pair.Value));
+            if (structure is IDictionary<object, object> dict)
+                return dict.ToDictionary(pair => pair.Key.ToString(), pair => StringifyStructureKeys(pair.Value));
+            if (structure is IDictionary<string, object> dict2)
+                return dict2.ToDictionary(pair => pair.Key.ToString(), pair => StringifyStructureKeys(pair.Value));
+            return structure;
         }
     }
 }

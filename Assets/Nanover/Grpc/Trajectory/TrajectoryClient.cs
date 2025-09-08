@@ -55,6 +55,11 @@ namespace Nanover.Grpc.Trajectory
         // explicitly increased.
         private const float DefaultUpdateInterval = 1f / 30f;
 
+        /// <summary>
+        /// Fetch list of available commands from server.
+        /// </summary>
+        public const string CommandGetCommandsListing = "commands/list";
+
         public TrajectoryClient([NotNull] GrpcConnection connection) : base(connection)
         {
         }

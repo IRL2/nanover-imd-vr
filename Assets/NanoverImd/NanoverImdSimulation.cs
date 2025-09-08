@@ -151,7 +151,7 @@ namespace NanoverImd
             foreach (var update in updates)
             {
                 if (pendingCommands.Remove(update.Request.Id, out var source))
-                    source.TrySetResult(update.Response);
+                    source.TrySetResult(update.Response.StringifyStructureKeys() as CommandArguments);
             }
         }
 
