@@ -147,7 +147,7 @@ namespace Nanover.Grpc.Frame
             return new LinearTransformation(axes[0], axes[1], axes[2]);
         }
 
-        public static IList<UInt32> BytesToUInt32(byte[] bytes)
+        public static UInt32[] BytesToUInt32(byte[] bytes)
         {
             var values = new UInt32[bytes.Length / sizeof(UInt32)];
 
@@ -159,7 +159,7 @@ namespace Nanover.Grpc.Frame
             return values;
         }
 
-        public static IList<Vector3> BytesToVector3Array(byte[] bytes)
+        public static Vector3[] BytesToVector3Array(byte[] bytes)
         {
             var vec3 = new Vector3[bytes.Length / sizeof(float) / 3];
 
@@ -173,7 +173,7 @@ namespace Nanover.Grpc.Frame
             return vec3;
         }
 
-        public static IList<Element> BytesToElementArray(byte[] bytes)
+        public static Element[] BytesToElementArray(byte[] bytes)
         {
             var elements = new Element[bytes.Length];
             for (int i = 0; i < bytes.Length; ++i)
@@ -182,7 +182,7 @@ namespace Nanover.Grpc.Frame
             return elements;
         }
 
-        public static IList<BondPair> BytesToBondPairArray(byte[] bytes)
+        public static BondPair[] BytesToBondPairArray(byte[] bytes)
         {
             var bonds = new BondPair[bytes.Length / sizeof(UInt32) / 2];
 
@@ -195,7 +195,7 @@ namespace Nanover.Grpc.Frame
             return bonds;
         }
 
-        public static IList<float> BytesToFloatArray(byte[] bytes)
+        public static float[] BytesToFloatArray(byte[] bytes)
         {
             var values = new float[bytes.Length / sizeof(float)];
 
