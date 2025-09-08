@@ -95,7 +95,7 @@ namespace NanoverImd
         /// <summary>
         /// Disconnect from all Nanover services.
         /// </summary>
-        public void Disconnect() => simulation.CloseAsync();
+        public void Disconnect() => simulation.Close();
 
         /// <summary>
         /// Called from UI to quit the application.

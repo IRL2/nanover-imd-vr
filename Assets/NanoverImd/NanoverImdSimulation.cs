@@ -186,13 +186,13 @@ namespace NanoverImd
 
 #if UNITY_EDITOR
             // Unity crashes if we don't disconnect ASAP before leaving playmode (due to YAHH http I think)
-            EditorApplication.playModeStateChanged += (state) => CloseAsync().Forget();
+            EditorApplication.playModeStateChanged += (state) => Close();
 #endif
         }
 
-        private IEnumerator OnApplicationQuit()
+        private void OnApplicationQuit()
         {
-            yield return CloseAsync();
+            Close();
         }
 
         /// <summary>
@@ -254,16 +254,16 @@ namespace NanoverImd
         /// <summary>
         /// Close all sessions.
         /// </summary>
-        public async UniTask CloseAsync()
+        public void Close()
         {
             pendingCommands.Clear();
             ManipulableParticles.ClearAllGrabs();
 
             Trajectory.CloseClient();
-            await Multiplayer.CloseClient();
-            
-            if (websocket != null)
-                await websocket.Close();
+            Multiplayer.CloseClient();
+
+            websocket?.Close().AsUniTask().Forget();
+            websocket = null;
 
             if (this != null && gameObject != null)
                 gameObject.SetActive(false);
@@ -275,17 +275,15 @@ namespace NanoverImd
             websocket?.DispatchMessageQueue();
 #endif
         }
-        private async void OnDestroy()
+        private void OnDestroy()
         {
-            if (websocket != null)
-                await websocket.Close();
-
-            await CloseAsync();
+            websocket?.Close().AsUniTask().Forget();
+            Close();
         }
         
         public void Disconnect()
         {
-            CloseAsync().Forget();
+            Close();
         }
 
         public UniTask<CommandReturn> RunCommand(string command, CommandArguments arguments = null)

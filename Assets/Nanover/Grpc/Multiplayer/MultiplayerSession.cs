@@ -184,7 +184,7 @@ namespace Nanover.Grpc.Multiplayer
         /// <summary>
         /// Close the current Multiplayer client and dispose all streams.
         /// </summary>
-        public async UniTask CloseClient()
+        public void CloseClient()
         {
             ClearSharedState();
 
@@ -205,8 +205,7 @@ namespace Nanover.Grpc.Multiplayer
             PlayAreas.RemoveValue(AccessToken ?? "");
             PlayOrigins.RemoveValue(AccessToken ?? "");
             RemoveSharedStateKey(UpdateIndexKey);
-
-            await UniTask.WhenAny(FlushValuesAsync(), UniTask.Delay(1000));
+            FlushValuesAsync().Forget();
 
             websocket = null;
             closing = false;
@@ -266,7 +265,7 @@ namespace Nanover.Grpc.Multiplayer
         /// <inheritdoc cref="IDisposable.Dispose" />
         public void Dispose()
         {
-            CloseClient().Forget();
+            CloseClient();
         }
 
         private void ClearSharedState()
