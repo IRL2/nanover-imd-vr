@@ -49,7 +49,7 @@ namespace NanoverImd.PathFollower
                 // find the last line renderer that has "reference" in its name
                 for (int i = lines.Length - 1; i >= 0; i--)
                 {
-                    if (lines[i].name.Contains("dash"))
+                    if (lines[i].name.Contains("reference"))
                     {
                         return lines[i];
                     }
