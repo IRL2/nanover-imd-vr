@@ -1,8 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Nanover.Core.Science;
 using Nanover.Frame;
-using Nanover.Grpc.Frame;
-using Nanover.Protocol.Trajectory;
 using Nerdbank.MessagePack;
 using PolyType;
 using System;
@@ -234,64 +232,6 @@ namespace MessagePackTesting
 
         [PropertyShape(Name = "removals")]
         public HashSet<string> Removals = new HashSet<string>();
-    }
-
-
-    public partial class FrameUpdate
-    {
-        [PropertyShape(Name = FrameData.ParticleCountValueKey)]
-        public int? ParticleCount;
-
-        [PropertyShape(Name = FrameData.ParticleElementArrayKey)]
-        [MessagePackConverter(typeof(ElementArray))]
-        public Element[]? ParticleElements;
-
-        [PropertyShape(Name = FrameData.ParticlePositionArrayKey)]
-        [MessagePackConverter(typeof(Vector3Array))]
-        public Vector3[]? ParticlePositions;
-
-        [PropertyShape(Name = FrameData.ParticleNameArrayKey)]
-        public string[]? ParticleNames;
-
-        [PropertyShape(Name = FrameData.ParticleResidueArrayKey)]
-        [MessagePackConverter(typeof(Uint32Array))]
-        public int[]? ParticleResidues;
-
-        [PropertyShape(Name = FrameData.ParticleTypeArrayKey)]
-        public string[]? ParticleTypes;
-
-        [PropertyShape(Name = FrameData.BondArrayKey)]
-        [MessagePackConverter(typeof(BondPairArray))]
-        public BondPair[]? BondPairs;
-
-        [PropertyShape(Name = FrameData.BondOrderArrayKey)]
-        public int[]? BondOrders;
-
-        [PropertyShape(Name = FrameData.ResidueCountValueKey)]
-        public int? ResidueCount;
-
-        [PropertyShape(Name = FrameData.ResidueNameArrayKey)]
-        public string[]? ResidueNames;
-
-        [PropertyShape(Name = FrameData.ChainCountValueKey)]
-        public int? EntityCount;
-
-        [PropertyShape(Name = FrameData.ChainNameArrayKey)]
-        public string[]? EntityName;
-
-        [PropertyShape(Name = FrameData.ResidueChainArrayKey)]
-        [MessagePackConverter(typeof(Uint32Array))]
-        public int[]? ResidueEntities;
-
-        [PropertyShape(Name = FrameData.KineticEnergyValueKey)]
-        public float? KineticEnergy;
-
-        [PropertyShape(Name = FrameData.PotentialEnergyValueKey)]
-        public float? PotentialEnergy;
-
-        [PropertyShape(Name = "system.box.vectors")]
-        [MessagePackConverter(typeof(Vector3Array))]
-        public Vector3[]? BoxVectors;
     }
 
     public partial class CommandRequest

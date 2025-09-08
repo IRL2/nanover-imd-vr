@@ -87,24 +87,6 @@ namespace Nanover.Grpc.Trajectory
 
                 trajectorySnapshot.SetCurrentFrame(frame, changes);
             }
-
-            void ReceiveFrame2(FrameUpdate update)
-            {
-                CurrentFrameIndex = CurrentFrameIndex + 1;
-
-                var clear = false;
-                var prevFrame = clear ? null : CurrentFrame;
-
-                var (frame, changes) = FrameConverter.ConvertFrame(update, prevFrame);
-
-                if (clear)
-                    changes = FrameChanges.All;
-
-                if (changes.HasAnythingChanged)
-                    messageReceiveTimes.Add(Time.realtimeSinceStartup);
-
-                trajectorySnapshot.SetCurrentFrame(frame, changes);
-            }
         }
 
         /// <summary>
