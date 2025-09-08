@@ -7,7 +7,7 @@ using Nanover.Grpc.Stream;
 using Nanover.Grpc.Trajectory;
 using UnityEngine;
 using NativeWebSocket;
-using MessagePackTesting;
+using WebSocketTypes;
 
 namespace Nanover.Grpc.Multiplayer
 {

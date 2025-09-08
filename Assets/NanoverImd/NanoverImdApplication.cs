@@ -10,8 +10,9 @@ using Nanover.Grpc.Multiplayer;
 using Nanover.Frontend.Controllers;
 using System.Linq;
 using static Nanover.Grpc.Trajectory.TrajectorySession;
-using MessagePackTesting;
+using WebSocketTypes;
 using Cysharp.Threading.Tasks;
+using WebDiscovery;
 
 namespace NanoverImd
 {

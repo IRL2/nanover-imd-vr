@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using NanoverImd;
 using UnityEngine;
-using MessagePackTesting;
+using WebSocketTypes;
 using Cysharp.Threading.Tasks;
+using WebDiscovery;
 
 namespace NanoverImd
 {

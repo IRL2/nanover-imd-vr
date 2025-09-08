@@ -1,6 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Essd;
-using MessagePackTesting;
+using WebSocketTypes;
 using Nanover.Core.Math;
 using Nanover.Frontend.Manipulation;
 using Nanover.Grpc;
@@ -21,6 +21,8 @@ using Nerdbank.MessagePack;
 using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
 using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
 using UnityEngine.SocialPlatforms;
+using WebDiscovery;
+
 
 
 
