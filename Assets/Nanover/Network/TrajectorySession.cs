@@ -21,6 +21,46 @@ namespace Nanover.Network.Trajectory
     /// </summary>
     public class TrajectorySession : ITrajectorySnapshot, IDisposable
     {
+        /// <summary>
+        /// Command the server to play the simulation if it is paused.
+        /// </summary>
+        public const string CommandPlay = "playback/play";
+
+        /// <summary>
+        /// Command the server to pause the simulation if it is playing.
+        /// </summary>
+        public const string CommandPause = "playback/pause";
+
+        /// <summary>
+        /// Command the server to advance by one simulation step.
+        /// </summary>
+        public const string CommandStep = "playback/step";
+
+        /// <summary>
+        /// Command the server to go back by one simulation step.
+        /// </summary>
+        public const string CommandStepBackward = "playback/step_back";
+
+        /// <summary>
+        /// Command the server to reset the simulation to its initial state.
+        /// </summary>
+        public const string CommandReset = "playback/reset";
+
+        /// <summary>
+        /// Fetch list of available simulations from server.
+        /// </summary>
+        public const string CommandGetSimulationsListing = "playback/list";
+
+        /// <summary>
+        /// Select from the simulations by index of the listing.
+        /// </summary>
+        public const string CommandSetSimulationIndex = "playback/load";
+
+        /// <summary>
+        /// Fetch list of available commands from server.
+        /// </summary>
+        public const string CommandGetCommandsListing = "commands/list";
+
         /// <inheritdoc cref="ITrajectorySnapshot.CurrentFrame" />
         public Nanover.Frame.Frame CurrentFrame => trajectorySnapshot.CurrentFrame;
         
@@ -94,41 +134,41 @@ namespace Nanover.Network.Trajectory
             CloseClient();
         }
         
-        /// <inheritdoc cref="TrajectoryClient.CommandPlay"/>
+        /// <inheritdoc cref="CommandPlay"/>
         public void Play()
         {
-            RunCommand(TrajectoryClient.CommandPlay);
+            RunCommand(CommandPlay);
         }
         
-        /// <inheritdoc cref="TrajectoryClient.CommandPause"/>
+        /// <inheritdoc cref="CommandPause"/>
         public void Pause()
         {
-            RunCommand(TrajectoryClient.CommandPause);
+            RunCommand(CommandPause);
         }
         
-        /// <inheritdoc cref="TrajectoryClient.CommandReset"/>
+        /// <inheritdoc cref="CommandReset"/>
         public void Reset()
         {
-            RunCommand(TrajectoryClient.CommandReset);
+            RunCommand(CommandReset);
         }
         
-        /// <inheritdoc cref="TrajectoryClient.CommandStep"/>
+        /// <inheritdoc cref="CommandStep"/>
         public void Step()
         {
-            RunCommand(TrajectoryClient.CommandStep);
+            RunCommand(CommandStep);
         }
 
-        /// <inheritdoc cref="TrajectoryClient.CommandStepBackward"/>
+        /// <inheritdoc cref="CommandStepBackward"/>
         public void StepBackward()
         {
-            RunCommand(TrajectoryClient.CommandStepBackward);
+            RunCommand(CommandStepBackward);
         }
 
         // TODO: handle the non-existence of these commands
-        /// <inheritdoc cref="TrajectoryClient.CommandGetSimulationsListing"/>
+        /// <inheritdoc cref="CommandGetSimulationsListing"/>
         public async UniTask<List<string>> GetSimulationListing()
         {
-            var result = await RunCommand(TrajectoryClient.CommandGetSimulationsListing);
+            var result = await RunCommand(CommandGetSimulationsListing);
             var listing = result["simulations"] as IList<object>;
 
             return listing?.Select(o => o as string).ToList() ?? new List<string>();
@@ -137,7 +177,7 @@ namespace Nanover.Network.Trajectory
         /// <inheritdoc cref="TrajectoryClient.CommandSetSimulationIndex"/>
         public void SetSimulationIndex(int index)
         {
-            RunCommand(TrajectoryClient.CommandSetSimulationIndex, new CommandArguments { { "index", index } });
+            RunCommand(CommandSetSimulationIndex, new CommandArguments { { "index", index } });
         }
 
         public UniTask<CommandReturn> RunCommand(string name, CommandArguments arguments = null)
@@ -148,7 +188,7 @@ namespace Nanover.Network.Trajectory
 
         public async UniTask<Dictionary<string, CommandDefinition>> UpdateCommands()
         {
-            var result = await RunCommand(TrajectoryClient.CommandGetCommandsListing);
+            var result = await RunCommand(CommandGetCommandsListing);
             CommandDefinitions = ((Dictionary<string, object>)result["list"]).ToDictionary(pair => pair.Key, pair => new CommandDefinition { Name = pair.Key, Arguments = pair.Value as CommandArguments });
             return CommandDefinitions;
         }
