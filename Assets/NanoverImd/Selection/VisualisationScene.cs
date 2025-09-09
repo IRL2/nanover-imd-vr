@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using Nanover.Visualisation;
 using Nanover.Visualisation.Components.Adaptor;
 using Nanover.Visualisation.Property;
-using NanoverImd;
 using NanoverImd.Interaction;
 using UnityEngine;
 

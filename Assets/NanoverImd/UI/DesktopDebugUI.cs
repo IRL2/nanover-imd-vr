@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using NanoverImd;
 using UnityEngine;
-using Nanover.Core.Async;
+using WebSocketTypes;
 using Cysharp.Threading.Tasks;
+using WebDiscovery;
 
 namespace NanoverImd
 {
@@ -26,11 +27,11 @@ namespace NanoverImd
 
         private bool directConnect;
         private string directConnectAddress = "localhost";
-        private string trajectoryPort = "38801";
-        private string multiplayerPort = "38801";
+        private string generalPort = "38801";
 
         private bool discovery;
         private ICollection<ServiceHub> knownServiceHubs = new List<ServiceHub>();
+        private ICollection<DiscoveryEntry> knownWebSockets = new List<DiscoveryEntry>();
         private IList<string> knownSimulations = new List<string>();
 
         public float interactionForceMultiplier = 1000;
@@ -41,8 +42,6 @@ namespace NanoverImd
             GUILayout.Box("Nanover iMD");
 
             GUILayout.Box("Connect");
-            //if (GUILayout.Button("Autoconnect"))
-            //    _ = simulation.AutoConnect();
 
             if (GUILayout.Button("Manual"))
             {
@@ -55,6 +54,8 @@ namespace NanoverImd
 
                 if (discovery)
                 {
+                    WebsocketDiscovery.DiscoverWebsocketServers().ContinueWith(result => knownWebSockets = result);
+
                     var client = new Client();
                     knownServiceHubs = client
                         .SearchForServices(500)
@@ -154,19 +155,24 @@ namespace NanoverImd
 
             GUILayout.Label("Address");
             directConnectAddress = GUILayout.TextField(directConnectAddress);
-            GUILayout.Label("Trajectory Port");
-            trajectoryPort = GUILayout.TextField(trajectoryPort);
-            GUILayout.Label("Multiplayer Port");
-            multiplayerPort = GUILayout.TextField(multiplayerPort);
+            GUILayout.Label("Port");
+            generalPort = GUILayout.TextField(generalPort);
 
-            if (GUILayout.Button("Connect"))
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Connect gRPC"))
             {
                 directConnect = false;
                 application.Connect(
                     directConnectAddress,
-                    ParseInt(trajectoryPort),
-                    ParseInt(multiplayerPort));
+                    ParseInt(generalPort),
+                    ParseInt(generalPort));
             }
+            if (GUILayout.Button("Connect WebSocket"))
+            {
+                directConnect = false;
+                application.Simulation.ConnectWebSocket($"ws://{directConnectAddress}:{ParseInt(generalPort)}").Forget();
+            }
+            GUILayout.EndHorizontal();
 
             if (GUILayout.Button("Cancel"))
                 directConnect = false;
@@ -181,6 +187,8 @@ namespace NanoverImd
 
             if (GUILayout.Button("Search"))
             {
+                WebsocketDiscovery.DiscoverWebsocketServers().ContinueWith(result => knownWebSockets = result);
+
                 var client = new Client();
                 knownServiceHubs = client
                     .SearchForServices(500)
@@ -191,6 +199,20 @@ namespace NanoverImd
 
             if (GUILayout.Button("Cancel"))
                 discovery = false;
+
+            if (knownWebSockets.Count > 0)
+            {
+                GUILayout.Box("Found WebSockets");
+
+                foreach (var entry in knownWebSockets)
+                {
+                    if (GUILayout.Button($"{entry.code}: {entry.info.name} ({entry.info.ws})"))
+                    {
+                        discovery = false;
+                        application.Connect(entry);
+                    }
+                }
+            }
 
             if (knownServiceHubs.Count > 0)
             {

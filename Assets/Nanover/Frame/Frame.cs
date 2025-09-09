@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using Nanover.Core;
@@ -115,7 +116,7 @@ namespace Nanover.Frame
         /// </summary>
         public int ParticleCount
         {
-            get => Data.GetValueOrDefault<int>(FrameData.ParticleCountValueKey);
+            get => Data.GetIntOrZero(FrameData.ParticleCountValueKey);
             set => Data[FrameData.ParticleCountValueKey] = value;
         }
         
@@ -133,7 +134,7 @@ namespace Nanover.Frame
         /// </summary>
         public int ResidueCount
         {
-            get => Data.GetValueOrDefault<int>(FrameData.ResidueCountValueKey);
+            get => Data.GetIntOrZero(FrameData.ResidueCountValueKey);
             set => Data[FrameData.ResidueCountValueKey] = value;
         }
         
@@ -142,7 +143,7 @@ namespace Nanover.Frame
         /// </summary>
         public int EntityCount
         {
-            get => Data.GetValueOrDefault<int>(FrameData.ChainCountValueKey);
+            get => Data.GetIntOrZero(FrameData.ChainCountValueKey);
             set => Data[FrameData.ChainCountValueKey] = value;
         }
 

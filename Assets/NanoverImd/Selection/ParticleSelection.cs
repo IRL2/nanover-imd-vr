@@ -97,7 +97,7 @@ namespace NanoverImd.Selection
                     selection = selection ?? new List<int>();
                     selection.Clear();
                     foreach (var id in ids)
-                        selection.Add((int) (double) id);
+                        selection.Add(Convert.ToInt32(id));
                     selection.Sort();
                 }
             }

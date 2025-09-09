@@ -10,7 +10,9 @@ using Nanover.Grpc.Multiplayer;
 using Nanover.Frontend.Controllers;
 using System.Linq;
 using static Nanover.Grpc.Trajectory.TrajectorySession;
+using WebSocketTypes;
 using Cysharp.Threading.Tasks;
+using WebDiscovery;
 
 namespace NanoverImd
 {
@@ -89,10 +91,14 @@ namespace NanoverImd
         /// </summary>
         public void Connect(ServiceHub hub) => simulation.Connect(hub);
 
+        public void Connect(DiscoveryEntry entry) => simulation.Connect(entry);
+
         /// <summary>
         /// Connect to the first set of Nanover services found via ESSD.
         /// </summary>
         public void AutoConnect() => simulation.AutoConnect();
+
+        public void AutoConnectWebSocket() => simulation.AutoConnectWebSocket();
 
         /// <summary>
         /// Disconnect from all Nanover services.

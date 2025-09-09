@@ -45,7 +45,7 @@ namespace NanoverImd
             {
                 object owner;
                 var interaction = simulation.Interactions.GetValue(key);
-                if (interaction.Other.TryGetValue("owner.id", out owner) && owner is string owner_)
+                if ((interaction.Other?.TryGetValue("owner.id", out owner) ?? false) && owner is string owner_)
                 {
                     if (!userIdLastSeen.ContainsKey(owner_))
                     {
@@ -72,7 +72,7 @@ namespace NanoverImd
             {
                 object owner;
                 var interaction = simulation.Interactions.GetValue(key);
-                if (interaction.Other.TryGetValue("owner.id", out owner) && (owner as string) == id)
+                if ((interaction.Other?.TryGetValue("owner.id", out owner) ?? false) && (owner as string) == id)
                 {
                     simulation.Interactions.RemoveValue(key);
                 }
