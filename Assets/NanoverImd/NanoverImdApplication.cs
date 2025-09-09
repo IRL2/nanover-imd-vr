@@ -6,11 +6,13 @@ using NanoverImd.Interaction;
 using Nanover.Core.Math;
 using UnityEngine.XR;
 using System.Collections.Generic;
-using Nanover.Grpc.Multiplayer;
+using Nanover.Network.Multiplayer;
 using Nanover.Frontend.Controllers;
 using System.Linq;
-using static Nanover.Grpc.Trajectory.TrajectorySession;
+using static Nanover.Network.Trajectory.TrajectorySession;
+using WebSocketTypes;
 using Cysharp.Threading.Tasks;
+using WebDiscovery;
 
 namespace NanoverImd
 {
@@ -73,14 +75,6 @@ namespace NanoverImd
             simulation.ConnectionClosed += connectionClosed.Invoke;
         }
 
-        /// <summary>
-        /// Connect to remote Nanover services.
-        /// </summary>
-        public UniTask Connect(string address,
-                               int? trajectoryPort = null,
-                               int? multiplayerPort = null) =>
-            simulation.Connect(address, trajectoryPort, multiplayerPort);
-
         // These methods expose the underlying async methods to Unity for use
         // in the UI so we disable warnings about not awaiting them, and use
         // void return type instead of Task.
@@ -90,15 +84,19 @@ namespace NanoverImd
         /// </summary>
         public void Connect(ServiceHub hub) => simulation.Connect(hub);
 
+        public void Connect(DiscoveryEntry entry) => simulation.Connect(entry);
+
         /// <summary>
         /// Connect to the first set of Nanover services found via ESSD.
         /// </summary>
         public void AutoConnect() => simulation.AutoConnect();
 
+        public void AutoConnectWebSocket() => simulation.AutoConnectWebSocket();
+
         /// <summary>
         /// Disconnect from all Nanover services.
         /// </summary>
-        public void Disconnect() => simulation.CloseAsync();
+        public void Disconnect() => simulation.Close();
 
         /// <summary>
         /// Called from UI to quit the application.

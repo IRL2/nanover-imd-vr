@@ -1,10 +1,11 @@
 using Cysharp.Threading.Tasks;
 using Essd;
+using WebSocketTypes;
 using Nanover.Core.Math;
 using Nanover.Frontend.Manipulation;
-using Nanover.Grpc;
-using Nanover.Grpc.Multiplayer;
-using Nanover.Grpc.Trajectory;
+using Nanover.Network;
+using Nanover.Network.Multiplayer;
+using Nanover.Network.Trajectory;
 using Nanover.Visualisation;
 using NanoverImd.Interaction;
 using Newtonsoft.Json.Linq;
@@ -14,6 +15,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
+using Nerdbank.MessagePack;
+
+using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
+using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
+using UnityEngine.SocialPlatforms;
+using WebDiscovery;
+
+
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -21,7 +32,7 @@ using UnityEditor;
 
 namespace NanoverImd
 {
-    public class NanoverImdSimulation : MonoBehaviour
+    public class NanoverImdSimulation : MonoBehaviour, WebSocketMessageSource
     {
         private const string TrajectoryServiceName = "trajectory";
         private const string MultiplayerServiceName = "multiplayer";
@@ -51,8 +62,7 @@ namespace NanoverImd
 
         public ParticleInteractionCollection Interactions;
 
-        private Dictionary<string, GrpcConnection> channels
-            = new Dictionary<string, GrpcConnection>();
+        private NativeWebSocket.WebSocket websocket;
 
         /// <summary>
         /// The route through which simulation space can be manipulated with
@@ -71,25 +81,91 @@ namespace NanoverImd
         public event Action ConnectionEstablished;
         public event Action ConnectionClosed;
 
-        /// <summary>
-        /// Connect to the host address and attempt to open clients for the
-        /// trajectory and multiplayer services.
-        /// </summary>
-        public async UniTask Connect(string address,
-                                     int? trajectoryPort,
-                                     int? multiplayerPort = null)
+        public event Action<Message> OnMessage;
+
+        public async UniTask ConnectWebSocket(string address)
         {
-            await CloseAsync();
+            if (websocket != null)
+                await websocket.Close();
 
-            if (trajectoryPort.HasValue)
-                Trajectory.OpenClient(GetChannel(address, trajectoryPort.Value));
+            var serializer = new MessagePackSerializer().WithDynamicObjectConverter();
+            websocket = new NativeWebSocket.WebSocket(address);
             
-            if (multiplayerPort.HasValue)
-                await Multiplayer.OpenClient(GetChannel(address, multiplayerPort.Value));
+            UniTask SendWebsocketMessage(Message message)
+            {
+                var bytes = serializer.Serialize(message, Witness.ShapeProvider);
+                return websocket.Send(bytes).AsUniTask();
+            }
+            
+            websocket.OnMessage += (bytes) =>
+            {
+                var message = serializer.Deserialize<Message>(bytes, Witness.ShapeProvider)!;
+                OnMessage?.Invoke(message);
+            };
 
-            gameObject.SetActive(true);
+            Trajectory.OpenClient(websocket, this);
+            Multiplayer.OpenClient(websocket, this, SendWebsocketMessage);
 
-            ConnectionEstablished?.Invoke();
+            websocket.OnOpen += () =>
+            {
+                gameObject.SetActive(true);
+                ConnectionEstablished?.Invoke();
+            };
+
+            websocket.OnClose += (code) => Disconnect();
+
+            OnMessage += (Message message) =>
+            {
+                if (message.CommandUpdates is { } updates)
+                    ReceiveWebSocketCommands(updates);
+            };
+
+            websocket.Connect().AsUniTask().Forget();
+        }
+
+        private Dictionary<int, UniTaskCompletionSource<CommandReturn>> pendingCommands = new Dictionary<int, UniTaskCompletionSource<CommandReturn>>();
+
+        private void ReceiveWebSocketCommands(List<CommandUpdate> updates)
+        {
+            foreach (var update in updates)
+            {
+                if (pendingCommands.Remove(update.Request.Id, out var source))
+                    source.TrySetResult(update.Response.StringifyStructureKeys() as CommandArguments);
+            }
+        }
+
+        private UniTask<CommandReturn> RunWebSocketCommand(string name, CommandArguments args = null)
+        {
+            var source = new UniTaskCompletionSource<CommandReturn>();
+
+            var id = UnityEngine.Random.Range(0, int.MaxValue);
+            pendingCommands[id] = source;
+
+            var message = new Message
+            {
+                CommandUpdates = new List<CommandUpdate>
+                {
+                    new CommandUpdate
+                    {
+                        Request = new CommandRequest
+                        {
+                            Name = name,
+                            Arguments = args,
+                            Id = id,
+                        }
+                    }
+                }
+            };
+
+            SendWebsocketMessage(message);
+            return source.Task;
+
+            UniTask SendWebsocketMessage(Message message)
+            {
+                var serializer = new MessagePackSerializer().WithDynamicObjectConverter();
+                var bytes = serializer.Serialize(message, Witness.ShapeProvider);
+                return websocket.Send(bytes).AsUniTask();
+            }
         }
 
         private void Awake()
@@ -111,13 +187,13 @@ namespace NanoverImd
 
 #if UNITY_EDITOR
             // Unity crashes if we don't disconnect ASAP before leaving playmode (due to YAHH http I think)
-            EditorApplication.playModeStateChanged += (state) => CloseAsync().Forget();
+            EditorApplication.playModeStateChanged += (state) => Close();
 #endif
         }
 
-        private IEnumerator OnApplicationQuit()
+        private void OnApplicationQuit()
         {
-            yield return CloseAsync();
+            Close();
         }
 
         /// <summary>
@@ -126,16 +202,42 @@ namespace NanoverImd
         public async UniTask Connect(ServiceHub hub)
         {
             Debug.Log($"Connecting to {hub.Name} ({hub.Id})");
-
             var services = hub.Properties["services"] as JObject;
-            await Connect(hub.Address,
-                          GetServicePort(TrajectoryServiceName),
-                          GetServicePort(MultiplayerServiceName));
+
+            if (GetServicePort("ws") is int port)
+            {
+                var address = $"ws://{hub.Address}:{port}";
+                await ConnectWebSocket(address);
+            }
+            else
+            {
+                throw new Exception("NO SERVER!");
+            }
 
             int? GetServicePort(string name)
             {
                 return services.ContainsKey(name) ? services[name].ToObject<int>() : null;
             }
+        }
+
+        public async UniTask Connect(DiscoveryEntry entry)
+        {
+            Debug.Log($"Connecting to {entry.info.name} ({entry.info.ws})");
+            await ConnectWebSocket(entry.info.ws);
+        }
+
+        public async UniTask AutoConnectWebSocket()
+        {
+            var request = UnityWebRequest.Get("https://irl-discovery.onrender.com/list");
+            await request.SendWebRequest();
+
+            var json = request.downloadHandler.text;
+            json = "{\"list\":" + json + "}";
+
+            var listing = JsonUtility.FromJson<DiscoveryListing>(json);
+            var address = listing.list[0].info.ws;
+
+            await ConnectWebSocket(address);
         }
 
         /// <summary>
@@ -153,19 +255,16 @@ namespace NanoverImd
         /// <summary>
         /// Close all sessions.
         /// </summary>
-        public async UniTask CloseAsync()
+        public void Close()
         {
+            pendingCommands.Clear();
             ManipulableParticles.ClearAllGrabs();
 
             Trajectory.CloseClient();
-            await Multiplayer.CloseClient();
+            Multiplayer.CloseClient();
 
-            foreach (var channel in channels.Values)
-            {
-                channel.Close();
-            }
-
-            channels.Clear();
+            websocket?.Close().AsUniTask().Forget();
+            websocket = null;
 
             if (this != null && gameObject != null)
                 gameObject.SetActive(false);
@@ -173,22 +272,36 @@ namespace NanoverImd
             ConnectionClosed.Invoke();
         }
 
-        private GrpcConnection GetChannel(string address, int port)
+        private void Update()
         {
-            string key = $"{address}:{port}";
-
-            if (!channels.TryGetValue(key, out var channel))
-            {
-                channel = new GrpcConnection(address, port);
-                channels[key] = channel;
-            }
-
-            return channel;
+#if !UNITY_WEBGL || UNITY_EDITOR
+            websocket?.DispatchMessageQueue();
+#endif
+        }
+        private void OnDestroy()
+        {
+            websocket?.Close().AsUniTask().Forget();
+            Close();
         }
         
         public void Disconnect()
         {
-            CloseAsync().Forget();
+            Close();
+        }
+
+        public UniTask<CommandReturn> RunCommand(string command, CommandArguments arguments = null)
+        {
+            if (!Trajectory.Connected)
+                return UniTask.FromCanceled<CommandReturn>();
+
+            if (websocket != null)
+            {
+                return RunWebSocketCommand(command, arguments);
+            }
+            else
+            {
+                return Trajectory.RunCommand(command, arguments);
+            }
         }
 
         public void PlayTrajectory()

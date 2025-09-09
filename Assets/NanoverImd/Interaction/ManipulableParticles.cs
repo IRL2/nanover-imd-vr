@@ -66,6 +66,7 @@ namespace Nanover.Frontend.Manipulation
             grab.UpdateManipulatorPose(grabberPose);
             grab.ParticleGrabUpdated += () => OnParticleGrabUpdated(grab);
             grab.ManipulationEnded += () => EndParticleGrab(grab);
+            grab.Label = "TEST";
             OnParticleGrabUpdated(grab);
             activeGrabs.Add(grab);
             return grab;

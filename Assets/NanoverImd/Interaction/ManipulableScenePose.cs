@@ -3,7 +3,7 @@ using Nanover.Core.Async;
 using Nanover.Core.Math;
 using Nanover.Frontend.Manipulation;
 using Nanover.Frontend.XR;
-using Nanover.Grpc.Multiplayer;
+using Nanover.Network.Multiplayer;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;

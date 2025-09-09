@@ -127,32 +127,47 @@ namespace NanoverImd.Editor
         /// </summary>
         private static void DrawObject(object value, string key = null)
         {
+            void DrawDictionary<TKey>(IDictionary<TKey, object> dictionary)
+            {
+                if (key != null)
+                    EditorGUILayout.LabelField($"{key}:");
+                else
+                    EditorGUILayout.LabelField("[Dictionary]:");
+                
+                EditorGUI.indentLevel += 2;
+                foreach (var field in dictionary)
+                {
+                    DrawObject(field.Value, field.Key.ToString());
+                }
+                EditorGUI.indentLevel -= 2;
+            }
+
             switch (value)
             {
-                case Dictionary<string, object> dict:
-                    if (key != null)
-                        EditorGUILayout.LabelField($"{key}:");
-                    else
-                        EditorGUILayout.LabelField("[Dictionary]:");
-                    EditorGUI.indentLevel += 2;
-                    foreach (var field in dict)
-                    {
-                        DrawObject(field.Value, field.Key);
-                    }
-
-                    EditorGUI.indentLevel -= 2;
+                case IDictionary<string, object> dict:
+                    DrawDictionary(dict);
                     break;
-                case List<object> list:
+                case IDictionary<object, object> dict2:
+                    DrawDictionary(dict2);
+                    break;
+                case IList<object> list:
                     if (key != null)
                         EditorGUILayout.LabelField($"{key}:");
                     else
                         EditorGUILayout.LabelField("[List]:");
-                    EditorGUI.indentLevel += 2;
-                    foreach (var field in list)
-                    {
-                        DrawObject(field);
-                    }
 
+                    EditorGUI.indentLevel += 2;
+                    if (list.Count > 8)
+                    {
+                        EditorGUILayout.LabelField(string.Join(", ", list), new GUIStyle(EditorStyles.label) { wordWrap = true });
+                    }
+                    else
+                    {
+                        foreach (var field in list)
+                        {
+                            DrawObject(field);
+                        }
+                    }
                     EditorGUI.indentLevel -= 2;
                     break;
                 default:

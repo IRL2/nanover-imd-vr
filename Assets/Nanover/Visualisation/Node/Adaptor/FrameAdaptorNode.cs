@@ -60,7 +60,14 @@ namespace Nanover.Visualisation.Node.Adaptor
             if (FrameSource?.CurrentFrame != null
              && FrameSource.CurrentFrame.Data.TryGetValue(key, out var value))
             {
-                property.TrySetValue(value);
+                try
+                {
+                    property.TrySetValue(value);
+                }
+                catch (Exception e)
+                {
+                    throw new ArgumentException($"Couldn't copy property {key}", e);
+                }
             }
             else
             {

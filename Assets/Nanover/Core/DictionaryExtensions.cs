@@ -58,6 +58,14 @@ namespace Nanover.Core
             return defaultValue;
         }
 
+        public static int GetIntOrZero(this IDictionary<string, object> dictionary, string id)
+        {
+            if (!dictionary.TryGetValue(id, out var value))
+                return 0;
+
+            return Convert.ToInt32(value);
+        }
+
         /// <summary>
         /// Get an array in the dictionary of the given type <typeparamref name="T"/>
         /// returning an empty array if the key is not present and throwing an exception if
