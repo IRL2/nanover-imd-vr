@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nanover.Grpc
+namespace Nanover.Network
 {
     /// <summary>
     /// Utility methods for converting from protobuf data structures to C# objects.

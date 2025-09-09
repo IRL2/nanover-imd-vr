@@ -1,7 +1,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 
-namespace Nanover.Grpc.Multiplayer
+namespace Nanover.Network.Multiplayer
 {
     /// <summary>
     /// Represents a multiplayer resource that is shared across the multiplayer

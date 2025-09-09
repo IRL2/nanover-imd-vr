@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nanover.Grpc.Multiplayer
+namespace Nanover.Network.Multiplayer
 {
     /// <summary>
     /// A collection of multiplayer avatars stored in the shared state.

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Nanover.Grpc.Multiplayer
+namespace Nanover.Network.Multiplayer
 {
     /// <summary>
     /// A collection of keys in the shared state dictionary with a given prefix, which are parsed

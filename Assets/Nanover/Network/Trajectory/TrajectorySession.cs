@@ -2,7 +2,7 @@ using Cysharp.Threading.Tasks;
 using WebSocketTypes;
 using Nanover.Frame;
 using Nanover.Frame.Event;
-using Nanover.Grpc.Frame;
+using Nanover.Network.Frame;
 using NativeWebSocket;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ using UnityEngine;
 using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
 using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
 
-namespace Nanover.Grpc.Trajectory
+namespace Nanover.Network.Trajectory
 {
     /// <summary>
     /// Adapts <see cref="TrajectoryClient" /> into an

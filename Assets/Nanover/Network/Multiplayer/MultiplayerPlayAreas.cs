@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using UnityEngine;
 
-namespace Nanover.Grpc.Multiplayer
+namespace Nanover.Network.Multiplayer
 {
     /// <summary>
     /// Tracks play areas of a multiuser session i.e user-reported corners for

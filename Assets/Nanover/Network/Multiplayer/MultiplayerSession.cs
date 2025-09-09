@@ -7,7 +7,7 @@ using UnityEngine;
 using NativeWebSocket;
 using WebSocketTypes;
 
-namespace Nanover.Grpc.Multiplayer
+namespace Nanover.Network.Multiplayer
 {
     /// <summary>
     /// Manages the state of a single user engaging in multiplayer. Tracks

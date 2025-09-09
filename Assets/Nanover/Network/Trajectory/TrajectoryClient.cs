@@ -1,4 +1,4 @@
-namespace Nanover.Grpc.Trajectory
+namespace Nanover.Network.Trajectory
 {
     /// <summary>
     /// Wraps a <see cref="TrajectoryService.TrajectoryServiceClient" /> and

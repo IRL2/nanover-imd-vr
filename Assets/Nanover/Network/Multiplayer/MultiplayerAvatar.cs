@@ -5,7 +5,7 @@ using Nanover.Core;
 using Nanover.Core.Math;
 using UnityEngine;
 
-namespace Nanover.Grpc.Multiplayer
+namespace Nanover.Network.Multiplayer
 {
     /// <summary>
     /// A representation of a multiplayer avatar, which is shared with other users

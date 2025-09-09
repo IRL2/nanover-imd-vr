@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Nanover.Grpc.Frame
+namespace Nanover.Network.Frame
 {
     /// <summary>
     /// Conversion methods for converting <see cref="FrameData" />, the standard

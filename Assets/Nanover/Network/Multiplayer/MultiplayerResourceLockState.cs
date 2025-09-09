@@ -1,4 +1,4 @@
-namespace Nanover.Grpc.Multiplayer
+namespace Nanover.Network.Multiplayer
 {
     /// <summary>
     /// The state of a lock on a multiplayer resource.
