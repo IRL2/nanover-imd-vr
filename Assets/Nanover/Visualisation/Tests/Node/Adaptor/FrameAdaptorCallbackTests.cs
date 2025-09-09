@@ -2,7 +2,6 @@ using System;
 using Nanover.Core.Science;
 using Nanover.Frame;
 using Nanover.Frame.Event;
-using Nanover.Protocol.Trajectory;
 using Nanover.Visualisation.Node.Adaptor;
 using NSubstitute;
 using NUnit.Framework;

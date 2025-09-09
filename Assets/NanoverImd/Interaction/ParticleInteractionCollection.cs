@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Nanover.Core.Serialization;
-using Nanover.Grpc.Multiplayer;
+using Nanover.Network.Multiplayer;
 
 namespace NanoverImd.Interaction
 {
