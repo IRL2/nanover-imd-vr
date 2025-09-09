@@ -3,9 +3,9 @@ using Essd;
 using WebSocketTypes;
 using Nanover.Core.Math;
 using Nanover.Frontend.Manipulation;
-using Nanover.Grpc;
-using Nanover.Grpc.Multiplayer;
-using Nanover.Grpc.Trajectory;
+using Nanover.Network;
+using Nanover.Network.Multiplayer;
+using Nanover.Network.Trajectory;
 using Nanover.Visualisation;
 using NanoverImd.Interaction;
 using Newtonsoft.Json.Linq;
@@ -62,9 +62,6 @@ namespace NanoverImd
 
         public ParticleInteractionCollection Interactions;
 
-        private Dictionary<string, GrpcConnection> channels
-            = new Dictionary<string, GrpcConnection>();
-
         private NativeWebSocket.WebSocket websocket;
 
         /// <summary>
@@ -84,27 +81,6 @@ namespace NanoverImd
         public event Action ConnectionEstablished;
 
         public event Action<Message> OnMessage;
-
-        /// <summary>
-        /// Connect to the host address and attempt to open clients for the
-        /// trajectory and multiplayer services.
-        /// </summary>
-        public async UniTask Connect(string address,
-                                     int? trajectoryPort,
-                                     int? multiplayerPort = null)
-        {
-            await CloseAsync();
-
-            if (trajectoryPort.HasValue)
-                Trajectory.OpenClient(GetChannel(address, trajectoryPort.Value));
-
-            if (multiplayerPort.HasValue)
-                await Multiplayer.OpenClient(GetChannel(address, multiplayerPort.Value));
-
-            gameObject.SetActive(true);
-
-            ConnectionEstablished?.Invoke();
-        }
 
         public async UniTask ConnectWebSocket(string address)
         {
@@ -210,13 +186,13 @@ namespace NanoverImd
 
 #if UNITY_EDITOR
             // Unity crashes if we don't disconnect ASAP before leaving playmode (due to YAHH http I think)
-            EditorApplication.playModeStateChanged += (state) => CloseAsync().Forget();
+            EditorApplication.playModeStateChanged += (state) => Close();
 #endif
         }
 
-        private IEnumerator OnApplicationQuit()
+        private void OnApplicationQuit()
         {
-            yield return CloseAsync();
+            Close();
         }
 
         /// <summary>
@@ -234,9 +210,7 @@ namespace NanoverImd
             }
             else
             {
-                await Connect(hub.Address,
-                              GetServicePort(TrajectoryServiceName),
-                              GetServicePort(MultiplayerServiceName));
+                throw new Exception("NO SERVER!");
             }
 
             int? GetServicePort(string name)
@@ -280,39 +254,19 @@ namespace NanoverImd
         /// <summary>
         /// Close all sessions.
         /// </summary>
-        public async UniTask CloseAsync()
+        public void Close()
         {
             pendingCommands.Clear();
             ManipulableParticles.ClearAllGrabs();
 
             Trajectory.CloseClient();
-            await Multiplayer.CloseClient();
-            
-            if (websocket != null)
-                await websocket.Close();
+            Multiplayer.CloseClient();
 
-            foreach (var channel in channels.Values)
-            {
-                channel.Close();
-            }
-
-            channels.Clear();
+            websocket?.Close().AsUniTask().Forget();
+            websocket = null;
 
             if (this != null && gameObject != null)
                 gameObject.SetActive(false);
-        }
-
-        private GrpcConnection GetChannel(string address, int port)
-        {
-            string key = $"{address}:{port}";
-
-            if (!channels.TryGetValue(key, out var channel))
-            {
-                channel = new GrpcConnection(address, port);
-                channels[key] = channel;
-            }
-
-            return channel;
         }
 
         private void Update()
@@ -321,17 +275,15 @@ namespace NanoverImd
             websocket?.DispatchMessageQueue();
 #endif
         }
-        private async void OnDestroy()
+        private void OnDestroy()
         {
-            if (websocket != null)
-                await websocket.Close();
-
-            await CloseAsync();
+            websocket?.Close().AsUniTask().Forget();
+            Close();
         }
         
         public void Disconnect()
         {
-            CloseAsync().Forget();
+            Close();
         }
 
         public UniTask<CommandReturn> RunCommand(string command, CommandArguments arguments = null)

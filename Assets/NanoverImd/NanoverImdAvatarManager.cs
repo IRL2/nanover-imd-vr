@@ -4,7 +4,7 @@ using System.Linq;
 using Nanover.Core.Math;
 using Nanover.Frontend.Utility;
 using Nanover.Frontend.XR;
-using Nanover.Grpc.Multiplayer;
+using Nanover.Network.Multiplayer;
 using UnityEngine;
 using UnityEngine.XR;
 

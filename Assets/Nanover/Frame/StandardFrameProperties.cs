@@ -1,7 +1,6 @@
 using System;
 using Nanover.Core.Math;
 using Nanover.Core.Science;
-using Nanover.Protocol.Trajectory;
 using UnityEngine;
 
 namespace Nanover.Frame
