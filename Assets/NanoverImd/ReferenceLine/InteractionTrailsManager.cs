@@ -33,7 +33,6 @@ public class InteractionTrailsManager : MonoBehaviour
 
     [SerializeField] private Nanover.Frontend.Input.IButton yButton;
 
-    private float currentColorHue = 0.5f;
 
     // Add this field to store all created line indices
     private List<int> createdLineIndices = new();
@@ -56,7 +55,7 @@ public class InteractionTrailsManager : MonoBehaviour
         yButton = InputDeviceCharacteristics.Left.WrapUsageAsButton(CommonUsages.secondaryButton);
         yButton.Pressed += () =>
         {
-            lineManager.UndoLine(LineManager.SOLID_LINE);
+            lineManager.RemoveAllLines(LineManager.SOLID_LINE);
             UpdateInfo();
         };
     }
@@ -122,9 +121,6 @@ public class InteractionTrailsManager : MonoBehaviour
                 // Save the new line index
                 createdLineIndices.Add(currentLineIndex);
 
-                currentColorHue = (currentColorHue + 0.1f) % 1.0f;
-                lineManager.SetLineColor(currentLineIndex,
-                                         Color.HSVToRGB(currentColorHue, 0.85f, 0.85f));
             }
 
             lastFrameIndex = frameIndex;

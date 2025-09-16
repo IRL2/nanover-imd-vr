@@ -161,7 +161,7 @@ namespace NanoverImd.PathFollower
             }
 
             targetSphere.localPosition = positionInPath;
-            errorSphere.localScale = Vector3.one * ErrorThreshold * 2;
+            errorSphere.localScale = Vector3.one * ErrorThreshold * 3;
             Interaction.Position = pathSpace.PositionFromPathToSimulation(positionInPath);
             simulation.Interactions.UpdateValue(Id, Interaction);
 

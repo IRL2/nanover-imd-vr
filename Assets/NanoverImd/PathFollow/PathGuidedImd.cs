@@ -102,7 +102,7 @@ namespace NanoverImd.PathFollower
 
         public void StartFollower(LineRenderer path, int atomId)
         {
-            Debug.Log($"Start following atom {atomId} on path name {path.name}");
+            Debug.Log($"PathGuidedImd: Start following atom {atomId} on path name {path.name}");
             pathFollower.testLine = path;
             pathFollower.AtomId = atomId;
             pathFollower.enabled = true;

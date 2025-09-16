@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class ReferenceLineAnimator : MonoBehaviour
+public class TextureOffsetAnimator : MonoBehaviour
 {
     [SerializeField]
     private Material material;

@@ -52,7 +52,7 @@ namespace NanoverImd.Interaction
 
             secondaryButton.Pressed += () =>
             {
-                lineManager.UndoLine(LineManager.DASH_LINE);
+                lineManager.RemoveAllLines(LineManager.DASH_LINE);
             };
 
             StartCoroutine(RefreshLines());

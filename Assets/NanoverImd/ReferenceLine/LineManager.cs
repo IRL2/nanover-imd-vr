@@ -16,8 +16,17 @@ public class LineManager : MonoBehaviour
     private readonly HashSet<int> dirtyLines = new HashSet<int>();
 
     // types of lines
+    public enum LineType
+    {
+        TRAIL = 0,
+        REFERENCE = 1
+    }
+
     public const int SOLID_LINE = 0;
     public const int DASH_LINE = 1;
+
+    private float currentColorHue = 0.5f;
+
 
     // Struct to store line type, renderer, and points
 
@@ -42,6 +51,13 @@ public class LineManager : MonoBehaviour
         var lineRenderer = lineObj.GetComponent<LineRenderer>();
         lines.Add(new LineData(type, lineRenderer));
         lineRenderer.name = "line." + (lines.Count -1) + "." + (type == DASH_LINE ? "reference" : "trail");
+
+        if (type == SOLID_LINE)
+        {
+            currentColorHue = (currentColorHue + 0.1f) % 1.0f;
+            SetLineColor(lines.Count - 1, Color.HSVToRGB(currentColorHue, 0.85f, 0.85f));
+        }
+
         return lines.Count - 1;
     }
 
@@ -70,7 +86,6 @@ public class LineManager : MonoBehaviour
         var lineData = lines[index];
         var coords = Nanover.Core.Serialization.Serialization.ToDataStructure(lineData.Points);
         string key = "lines." + index + (lines[index].Type == DASH_LINE ? ".reference" : ".trail");
-        Debug.Log($"Sending line {index} with key {key}");
         simulation.Multiplayer.SetSharedState(key, coords);
     }
 
@@ -140,6 +155,37 @@ public class LineManager : MonoBehaviour
             RemoveLine(i);
         }
         lines.Clear();
+
+        Dictionary<string, object> stateDictionary = simulation.Multiplayer.SharedStateDictionary;
+        stateDictionary = stateDictionary.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        var stateLines = stateDictionary.Where(kvp => kvp.Key.StartsWith("lines.")).ToList();
+        foreach (var kvp in stateLines)
+        {
+            simulation.Multiplayer.RemoveSharedStateKey(kvp.Key);
+        }
+    }
+
+    public void RemoveAllLines(int type)
+    {
+        for (int i = lines.Count - 1; i >= 0; i--)
+        {
+            if (lines[i].Type == type)
+            {
+                RemoveLine(i);
+            }
+        }
+
+        Dictionary<string, object> stateDictionary = simulation.Multiplayer.SharedStateDictionary;
+        stateDictionary = stateDictionary.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        var stateLines = stateDictionary.Where(kvp => kvp.Key.StartsWith("lines.")).ToList();
+        foreach (var kvp in stateLines)
+        {
+            if ((type == DASH_LINE && kvp.Key.EndsWith(".reference")) || (type == SOLID_LINE && kvp.Key.EndsWith(".trail")))
+            {
+                simulation.Multiplayer.RemoveSharedStateKey(kvp.Key);
+            }
+        }
+
     }
 
     public float GetLineLength(int index)
