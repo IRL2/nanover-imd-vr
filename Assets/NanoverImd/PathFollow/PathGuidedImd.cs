@@ -1,3 +1,4 @@
+using System;
 using Nanover.Frontend.XR;
 using Nanover.Visualisation;
 using NanoverImd.Interaction;
@@ -59,12 +60,12 @@ namespace NanoverImd.PathFollower
 
             int? GetSingleInteractedAtom()
             {
-                if (frameSource?.CurrentFrame?.Data is { } data
-                    && data.TryGetValue("forces.user.index", out var interactedAtomsObj)
-                    && interactedAtomsObj is uint[] interactedAtoms
+                if (frameSource?.CurrentFrame?.Data is { } data)
+                    if (data.TryGetValue("forces.user.index", out var interactedAtomsObj)
+                    && interactedAtomsObj is object[] interactedAtoms
                     && interactedAtoms.Length == 1)
                 {
-                    return (int)interactedAtoms[0];
+                    return Convert.ToInt32(interactedAtoms[0]);
                 }
 
                 return null;
@@ -101,6 +102,7 @@ namespace NanoverImd.PathFollower
 
         public void StartFollower(LineRenderer path, int atomId)
         {
+            Debug.Log($"Start following atom {atomId} on path name {path.name}");
             pathFollower.testLine = path;
             pathFollower.AtomId = atomId;
             pathFollower.enabled = true;

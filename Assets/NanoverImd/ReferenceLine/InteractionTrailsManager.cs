@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Nanover.Frontend.XR;
 using Nanover.Visualisation;
@@ -84,9 +85,8 @@ public class InteractionTrailsManager : MonoBehaviour
         if (frameSource.CurrentFrame == null) return;
         var data = frameSource.CurrentFrame.Data;
 
+        int? atomIndex = GetSelectedAtomIndex();
 
-        int? atomIndex = GetSelectedAtomIndex(data);
-        //if (atomIndex == null) return;
         lastAtomIndex = atomIndex;
 
         //Vector3? newPosition = GetPositionFromAtom(atomIndex.Value);
@@ -94,7 +94,7 @@ public class InteractionTrailsManager : MonoBehaviour
         Vector3? newPosition = GetInteractionPositionFromAtoms(simulation);
 
 
-        if (newPosition != null) lastPosition = newPosition;
+        if (newPosition != null) lastPosition = newPosition; // uselesssss
 
 
         float? currentWork = GetCurrentWork(data);
@@ -154,15 +154,17 @@ public class InteractionTrailsManager : MonoBehaviour
         //simulationInformationDisplay.RefreshDisplay();
     }
 
-    private int? GetSelectedAtomIndex(IDictionary<string, object> data)
+
+    int? GetSelectedAtomIndex()
     {
-        if (data.TryGetValue("forces.user.index", out var capturedSelectedAtoms))
-        {
-            if (capturedSelectedAtoms is uint[] selectedAtoms && selectedAtoms.Length == 1)
+        if (frameSource?.CurrentFrame?.Data is { } data)
+            if (data.TryGetValue("forces.user.index", out var interactedAtomsObj)
+            && interactedAtomsObj is object[] interactedAtoms
+            && interactedAtoms.Length == 1)
             {
-                return (int)selectedAtoms[0];
+                return Convert.ToInt32(interactedAtoms[0]);
             }
-        }
+
         return null;
     }
 
@@ -175,19 +177,19 @@ public class InteractionTrailsManager : MonoBehaviour
 
         if (data.TryGetValue("forces.user.index", out var capturedSelectedAtoms))
         {
-            if (capturedSelectedAtoms is uint[] selectedAtoms) { 
+            if (capturedSelectedAtoms is object[] selectedAtoms) { 
                 return computeParticleCentroid(selectedAtoms);
             }
         }
         return Vector3.zero;
     }
 
-    private Vector3 computeParticleCentroid(uint[] particleIds)
+    private Vector3 computeParticleCentroid(object[] particleIds)
     {
         var centroid = Vector3.zero;
 
         for (int i = 0; i < particleIds.Length; ++i)
-            centroid += simulation.FrameSynchronizer.CurrentFrame.ParticlePositions[particleIds[i]];  // todo: parametrize this or relocate this as inline function
+            centroid += simulation.FrameSynchronizer.CurrentFrame.ParticlePositions[Convert.ToInt32(particleIds[i])];  // todo: parametrize this or relocate this as inline function
 
         return centroid / particleIds.Length;
     }
