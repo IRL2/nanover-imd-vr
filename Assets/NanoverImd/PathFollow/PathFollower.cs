@@ -120,6 +120,7 @@ namespace NanoverImd.PathFollower
             debugLine.enabled = false;
 
             targetSphere.gameObject.SetActive(false);
+            Reset();
         }
 
         private void Update()
