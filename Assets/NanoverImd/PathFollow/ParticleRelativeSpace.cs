@@ -15,7 +15,7 @@ namespace NanoverImd.PathFollower
         private Transform referenceSphereTemplate;
 #pragma warning restore 0649
 
-        public List<int> particleIds = new List<int>(); 
+        public List<uint> particleIds = new List<uint>(); 
         
         private List<Transform> referenceSpheres = new List<Transform>();
 
@@ -90,11 +90,11 @@ namespace NanoverImd.PathFollower
 
             if (simulation.Multiplayer.GetSharedState(particlesKey) is IList<object> ids)
             {
-                particleIds = ids.Select(id => (int)(double)id).ToList();
+                particleIds = ids.Select(id => Convert.ToUInt32(id)).ToList();
             }
             else
             {
-                particleIds = new List<int>();
+                particleIds = new List<uint>();
             }
         }
 
