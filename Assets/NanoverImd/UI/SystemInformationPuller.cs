@@ -11,6 +11,8 @@ public class SystemInformationPuller : MonoBehaviour
 
     [SerializeField] private PathFollower follower;
 
+    [SerializeField] private LineManager lineManager;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -38,6 +40,10 @@ public class SystemInformationPuller : MonoBehaviour
             {
                 display.UpdateData(DataKeys.simulationTime, ((float)(double)simTime).ToString("F2") + "ps");
             }
+
+            lineManager.GetAmountOfLines(out int numRefLines, out int numTrailLines);
+            display.UpdateData(DataKeys.numRefLines, numRefLines.ToString());
+            display.UpdateData(DataKeys.numTrailLines, numTrailLines.ToString());
         }
 
         display.UpdateData(DataKeys.advance, $"{follower.LengthFollowed.ToString("F2")}nm");

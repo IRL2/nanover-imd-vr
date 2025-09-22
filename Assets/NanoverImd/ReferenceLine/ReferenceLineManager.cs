@@ -14,28 +14,28 @@ namespace NanoverImd.Interaction
         [SerializeField] private Transform pointerMesh; // 
         [SerializeField] private Transform RHSSimulationSpaceTransform;
         [SerializeField] private Transform propsManagerTransform;
-        //[SerializeField] private TextMeshPro lineInfoLabel;
         [SerializeField] private SimulationInformationDisplay simulationInformationDisplay;
         [SerializeField] private float singlePointThreshold = 0.05f;
         [SerializeField] private float snapshotFrequency = 0.01f;
         [SerializeField] private Transform userPointer; // The visual pointer 
 
-        private List<int> createdLineIndices = new();
+        // Replace list of indices with list of timestamps
+        private List<long> createdLineTimestamps = new();
 
-        private int currentLineIndex = -1;
+        // Change from int to long for timestamp
+        private long lastLineTimestamp = -1;
         private float lineLength = 0.0f;
         private float lineSmoothnessA = 0.0f;
         private double lineSmoothnessB = 0.0f;
         private float drawingElapsedTime = 0.0f;
         private Renderer pointerRenderer;
-        //private bool modeActive = false;
         private Nanover.Frontend.Input.IButton primaryButton, secondaryButton, menuButton, xButton, yButton;
         private bool primaryButtonPrevPressed, secondaryButtonPrevPressed, menuButtonPrevPressed, xButtonPrevPressed, yButtonPrevPressed;
 
         public void OnDisconnect()
         {
-            currentLineIndex = -1;
-            createdLineIndices.Clear();
+            lastLineTimestamp = -1;
+            createdLineTimestamps.Clear();
         }
 
         void OnEnable()
@@ -46,7 +46,6 @@ namespace NanoverImd.Interaction
             xButton = InputDeviceCharacteristics.Left.WrapUsageAsButton(CommonUsages.primaryButton);
             yButton = InputDeviceCharacteristics.Left.WrapUsageAsButton(CommonUsages.secondaryButton);
 
-            //lineInfoLabel.text = "";
             pointerRenderer = pointerMesh.gameObject.GetComponentInChildren<Renderer>();
             pointerRenderer.enabled = false;
 
@@ -70,7 +69,9 @@ namespace NanoverImd.Interaction
 
         void updateUIInfo(LineRenderer l)
         {
-            lineLength = lineManager.GetLineLength(currentLineIndex);
+            // Note: GetLineLength still uses int index. This will need to be updated in LineManager
+            // For now, we'll find the line renderer directly
+            lineLength = CalculateLineLength(l);
             lineSmoothnessA = LineManager.CalculateAngularSmoothness(l) / Mathf.PI;
             lineSmoothnessB = LineManager.CalculateSmoothness(l);
 
@@ -83,34 +84,68 @@ namespace NanoverImd.Interaction
             simulationInformationDisplay.RefreshDisplay();
         }
 
+        // Helper method to calculate line length directly from LineRenderer
+        private float CalculateLineLength(LineRenderer lineRenderer)
+        {
+            if (lineRenderer == null || lineRenderer.positionCount < 2)
+                return 0f;
+
+            float length = 0f;
+            for (int i = 0; i < lineRenderer.positionCount - 1; i++)
+            {
+                length += Vector3.Distance(lineRenderer.GetPosition(i), lineRenderer.GetPosition(i + 1));
+            }
+            return length;
+        }
+
+        // Helper method to get LineRenderer by timestamp
+        private LineRenderer GetLineRendererByTimestamp(long timestamp)
+        {
+            if (timestamp < 0) return null;
+
+            // get the line renderer directly from LineManager
+            return lineManager.GetLineRenderer(timestamp);
+        }
+
+
+        private LineRenderer GetLastLineRenderer()
+        {
+            //if (createdLineTimestamps.Count == 0)
+            //{
+                // use the last ref line from the linemanager
+                return lineManager.GetLastLineRenderer(LineManager.DASH_LINE);
+            //}
+            //long lastTimestamp = createdLineTimestamps[createdLineTimestamps.Count - 1];
+            //return GetLineRendererByTimestamp(lastTimestamp);
+        }
+
+
+
         void Update()
         {
             pointerMesh.position = userPointer.position;
             pointerMesh.rotation = Quaternion.LookRotation(userPointer.transform.forward, userPointer.transform.up);
 
-            //lineInfoLabel.text = "\npointer at " + pointerMesh.localPosition.ToString() + " \n";
             simulationInformationDisplay.UpdateData(DataKeys.rightPosition, pointerMesh.localPosition.ToString("F2"));
 
-            if (currentLineIndex >= 0)
+            if (Time.frameCount % 2 == 0)
             {
-                var line = lineManager.GetLineRenderer(currentLineIndex);
+                var line = GetLastLineRenderer();
                 if (line != null && line.positionCount > 0)
                 {
-                    lineLength = lineManager.GetLineLength(currentLineIndex);
-                    lineSmoothnessA = LineManager.CalculateAngularSmoothness(line) / Mathf.PI;
-                    lineSmoothnessB = LineManager.CalculateSmoothness(line);
                     updateUIInfo(line);
                 }
             }
 
-            // Draw
+            // Draw line, point by point
             if (primaryButton.IsPressed)
             {
+                // first time pressing the button
                 if (!primaryButtonPrevPressed)
                 {
                     UnityEngine.Debug.Log("Creating a new reference line");
-                    currentLineIndex = lineManager.CreateNewLine(LineManager.DASH_LINE);
-                    createdLineIndices.Add(currentLineIndex);
+                    lastLineTimestamp = lineManager.CreateNewLine(LineManager.DASH_LINE);
+                    createdLineTimestamps.Add(lastLineTimestamp);
                     drawingElapsedTime = snapshotFrequency;
                     pointerRenderer.material.color = new UnityEngine.Color(1f, 1f, 1f, 0.5f);
 
@@ -134,12 +169,16 @@ namespace NanoverImd.Interaction
             }
 
             // when finishing drawing
-            else if (primaryButtonPrevPressed && currentLineIndex >= 0)
+            else if (primaryButtonPrevPressed && lastLineTimestamp >= 0)
             {
-                var line = lineManager.GetLineRenderer(currentLineIndex);
-                if (line != null) line.Simplify(0.01f);
+                var line = GetLineRendererByTimestamp(lastLineTimestamp);
+                // Note: Simplify method may need to be updated in LineManager to use timestamp
+                if (line != null)
+                {
+                    // For now we'll use the line renderer's built-in method
+                    line.Simplify(0.01f);
+                }
                 pointerRenderer.material.color = new UnityEngine.Color(1f, 1f, 1f, 0.1f);
-                //line.widthMultiplier = 0.9f;
             }
 
             // move the reference prop
@@ -160,11 +199,11 @@ namespace NanoverImd.Interaction
 
         private void AddReferencePoint()
         {
-            if (currentLineIndex < 0) return;
+            if (lastLineTimestamp < 0) return;
 
             Vector3 pos = pointerMesh.localPosition;
 
-            var line = lineManager.GetLineRenderer(currentLineIndex);
+            var line = GetLineRendererByTimestamp(lastLineTimestamp);
 
             if (line != null && line.positionCount >= 2)
             {
@@ -172,17 +211,14 @@ namespace NanoverImd.Interaction
                     return;
             }
 
-            lineManager.AddPointToLine(currentLineIndex, pos);
-
-            //if (rightHandDevice.isValid)
-            //    rightHandDevice.SendHapticImpulse(0u, 0.05f, 0.005f);
+            lineManager.AddPointToLine(lastLineTimestamp, pos);
         }
 
         private void DragLastPointOnLine()
         {
-            if (currentLineIndex < 0) return;
+            if (lastLineTimestamp < 0) return;
             Vector3 pos = pointerMesh.localPosition;
-            lineManager.DragLastPoint(currentLineIndex, pos);
+            lineManager.DragLastPoint(lastLineTimestamp, pos);
         }
     }
 }

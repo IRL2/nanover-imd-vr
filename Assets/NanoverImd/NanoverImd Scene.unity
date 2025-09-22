@@ -346,7 +346,7 @@ LineRenderer:
   m_Positions: []
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.012000000
+    widthMultiplier: 0.012
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -364,8 +364,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.9433962, g: 0.27144888, b: 0.51782966, a: 0.78431374}
-      key1: {r: 0.9433962, g: 0.27144888, b: 0.51782966, a: 0.78431374}
+      key0: {r: 1, g: 0.39607742, b: 0, a: 0.78431374}
+      key1: {r: 1, g: 0.39607742, b: 0, a: 0.78431374}
       key2: {r: 0.8392157, g: 0.4862745, b: 0.617513, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -395,8 +395,8 @@ LineRenderer:
     numCornerVertices: 0
     numCapVertices: 0
     alignment: 0
-    textureMode: 0
-    textureScale: {x: 0.7, y: 1}
+    textureMode: 1
+    textureScale: {x: 1, y: 1}
     shadowBias: 0
     generateLightingData: 0
   m_MaskInteraction: 0
@@ -19875,6 +19875,7 @@ MonoBehaviour:
   frame: {fileID: 431384314}
   display: {fileID: 6323259627634837814}
   follower: {fileID: 13188939}
+  lineManager: {fileID: 1368554805}
 --- !u!225 &6323259627634837816
 CanvasGroup:
   m_ObjectHideFlags: 0

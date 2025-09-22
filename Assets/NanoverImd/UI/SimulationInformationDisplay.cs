@@ -34,7 +34,9 @@ public class SimulationInformationDisplay : MonoBehaviour
         advance,
         speed,
         forceScale,
-        colinearity
+        colinearity,
+        numRefLines,
+        numTrailLines
     }
 
     void LateUpdate()
@@ -97,13 +99,16 @@ public class SimulationInformationDisplay : MonoBehaviour
         string end = data.TryGetValue(DataKeys.refEnd, out var ed) ? ed : "N/A";
         string triplet = data.TryGetValue(DataKeys.refTriplet, out var trp) ? trp : "N/A";
         string jagger = data.TryGetValue(DataKeys.refJagger, out var jg) ? jg : "N/A";
+        string numRefs   = data.TryGetValue(DataKeys.numRefLines, out var nr) ? nr : "N/A";
+        string numTrails = data.TryGetValue(DataKeys.numTrailLines, out var nt) ? nt : "N/A";
 
         referencelineField.text = headerStyleIn + "REFERENCE LINE" + headerStyleOut
             + "\n- " + "length: " + length
             + "\n- " + "points: " + points
             + "\n- " + "from " + origin + " to " + end
-            + "\n- " + "angular triplets: " + triplet
+            //+ "\n- " + "angular triplets: " + triplet
             + "\n- " + "path jagger index: " + jagger
+            + "\n" + "(# refs: " + numRefs + " # trails:" + numTrails + ")"
             ;
     }
 

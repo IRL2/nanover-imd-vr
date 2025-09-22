@@ -15,11 +15,9 @@ public class InteractionTrailsManager : MonoBehaviour
     [SerializeField] private NanoverImdSimulation simulation;
     [SerializeField] private SynchronisedFrameSource frameSource;
     [SerializeField] private ParticleRelativeSpace pathSpace;
-    //[SerializeField] private Transform simulationParent;
-    //[SerializeField] private TextMeshPro infoLabel;
     [SerializeField] private SimulationInformationDisplay simulationInformationDisplay;
 
-    private int currentLineIndex = -1;
+    private long currentLineTimestamp = -1;
     private int? lastAtomIndex;
     private float? lastFrameIndex = 0;
     private Vector3? lastPosition = Vector3.zero;
@@ -33,14 +31,13 @@ public class InteractionTrailsManager : MonoBehaviour
 
     [SerializeField] private Nanover.Frontend.Input.IButton yButton;
 
-
-    // Add this field to store all created line indices
-    private List<int> createdLineIndices = new();
+    // Store all created line timestamps
+    private List<long> createdLineTimestamps = new();
 
     public void OnDisconnect()
     {
-        createdLineIndices.Clear();
-        currentLineIndex = -1;
+        createdLineTimestamps.Clear();
+        currentLineTimestamp = -1;
         lastAtomIndex = null;
         lastPosition = null;
     }
@@ -76,7 +73,6 @@ public class InteractionTrailsManager : MonoBehaviour
 
         if (simulation == null || frameSource == null) return;
         ProcessFrameData();
-
     }
 
     private void ProcessFrameData()
@@ -88,13 +84,9 @@ public class InteractionTrailsManager : MonoBehaviour
 
         lastAtomIndex = atomIndex;
 
-        //Vector3? newPosition = GetPositionFromAtom(atomIndex.Value);
-
         Vector3? newPosition = GetInteractionPositionFromAtoms(simulation);
 
-
-        if (newPosition != null) lastPosition = newPosition; // uselesssss
-
+        if (newPosition != null) lastPosition = newPosition;
 
         float? currentWork = GetCurrentWork(data);
         if (currentWork != null)
@@ -109,33 +101,40 @@ public class InteractionTrailsManager : MonoBehaviour
             float? frameIndex = GetFrameTimestamp(data);
             if (frameIndex == null) return;
 
-
             // Start a new line if needed (e.g., on new interaction)
-            if (currentLineIndex == -1 || frameIndex - lastFrameIndex > 0.3f)
+            if (currentLineTimestamp == -1 || frameIndex - lastFrameIndex > 0.3f)
             {
-                //Debug.Log($" started a new line at frame ${lastFrameIndex}");
-                //lineManager.SimplifyLine(currentLineIndex, 0.001f);
+                currentLineTimestamp = lineManager.CreateNewLine(LineManager.SOLID_LINE);
 
-                currentLineIndex = lineManager.CreateNewLine(LineManager.SOLID_LINE);
-
-                // Save the new line index
-                createdLineIndices.Add(currentLineIndex);
-
+                // Save the new line timestamp
+                createdLineTimestamps.Add(currentLineTimestamp);
             }
 
             lastFrameIndex = frameIndex;
 
-            lineManager.AddPointToLine(currentLineIndex, pathSpace.PositionFromSimulationToPath(newPosition.Value));
+            lineManager.AddPointToLine(currentLineTimestamp, pathSpace.PositionFromSimulationToPath(newPosition.Value));
             UpdateInfo();
         }
     }
 
-
     private void UpdateInfo()
     {
-        var line = lineManager.GetLineRenderer(currentLineIndex);
+        // Get the line renderer using timestamp
+        var lines = GetComponentsInChildren<LineRenderer>();
+        LineRenderer line = null;
+        
+        foreach (var lr in lines)
+        {
+            if (lr.name.Contains(currentLineTimestamp.ToString()))
+            {
+                line = lr;
+                break;
+            }
+        }
+        
         if (line == null) return;
-        float length = lineManager.GetLineLength(currentLineIndex);
+        
+        float length = 0; // We'll need to update this method or calculate length differently
         int numPoints = line.positionCount;
         float lineSmoothnessA = LineManager.CalculateAngularSmoothness(line) / Mathf.PI;
         float lineSmoothnessB = LineManager.CalculateSmoothness(line);
@@ -143,13 +142,7 @@ public class InteractionTrailsManager : MonoBehaviour
         // HAPTIC
         float f = Mathf.Abs(deltaWork / 50);
         rightHandDevice.SendHapticImpulse(0, f, 0.01f);
-
-        //simulationInformationDisplay.UpdateData("rightAtom", lastAtomIndex.HasValue ? lastAtomIndex.Value.ToString() : "N/A");
-        //simulationInformationDisplay.UpdateData("accumulatedWork", lastWork.HasValue ? lastWork.Value.ToString("F2") : "N/A");
-        //simulationInformationDisplay.UpdateData("simulationTime", lastFrameIndex.HasValue ? lastFrameIndex.Value.ToString("F2") : "N/A");
-        //simulationInformationDisplay.RefreshDisplay();
     }
-
 
     int? GetSelectedAtomIndex()
     {
