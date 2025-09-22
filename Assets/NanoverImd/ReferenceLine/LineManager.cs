@@ -72,7 +72,7 @@ public class LineManager : MonoBehaviour
 
     public void AddPointToLine(long timestamp, Vector3 point)
     {
-        Debug.Log($"LineManager::AddPointToLine::Adding point to line with timestamp {timestamp}: {point}");
+        //Debug.Log($"LineManager::AddPointToLine::Adding point to line with timestamp {timestamp}: {point}");
         if (!lines.ContainsKey(timestamp)) return;
 
         //var lineData = lines[timestamp];
@@ -300,7 +300,7 @@ public class LineManager : MonoBehaviour
 
         if (lines[timestamp].Renderer.positionCount < 10) return;
 
-        Debug.Log($"LineManager::SimplifyLine::Simplifying line with timestamp {timestamp} using tolerance {tolerance}, from {lines[timestamp].Renderer.positionCount}, to {lines[timestamp].Points.Count}");
+        //Debug.Log($"LineManager::SimplifyLine::Simplifying line with timestamp {timestamp} using tolerance {tolerance}, from {lines[timestamp].Renderer.positionCount}, to {lines[timestamp].Points.Count}");
 
         lines[timestamp].Renderer.Simplify((float)tolerance);
 
