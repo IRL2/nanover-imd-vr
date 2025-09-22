@@ -70,18 +70,25 @@ public class LineManager : MonoBehaviour
         return timestamp;
     }
 
-    // Update all methods to use timestamp instead of index
     public void AddPointToLine(long timestamp, Vector3 point)
     {
-        Debug.Log($"Adding point to line with timestamp {timestamp}: {point}");
+        Debug.Log($"LineManager::AddPointToLine::Adding point to line with timestamp {timestamp}: {point}");
         if (!lines.ContainsKey(timestamp)) return;
-        var lineData = lines[timestamp];
-        lineData.Points.Add(point);
-        dirtyLines.Add(timestamp);
 
-        lineData.Renderer.positionCount = lineData.Points.Count;
-        for (var i = 0; i < lineData.Points.Count; i++)
-            lineData.Renderer.SetPosition(i, lineData.Points[i]);
+        //var lineData = lines[timestamp];
+
+        // add the point to the data structure
+        lines[timestamp].Points.Add(point);
+
+        lines[timestamp].Renderer.positionCount = lines[timestamp].Points.Count;
+        for (var i = 0; i < lines[timestamp].Points.Count; i++)
+            lines[timestamp].Renderer.SetPosition(i, lines[timestamp].Points[i]);
+
+        // simplify the line & update the points
+        SimplifyLine(timestamp, 0.005f);
+
+        // mark this line as dirty for sending updates later
+        dirtyLines.Add(timestamp);
     }
 
     public void SendDirtyLines()
@@ -283,16 +290,24 @@ public class LineManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Given a line index, simplifies the line using the Douglas-Peucker algorithm.
+    /// Given a line index, simplifies the line using the LineRenderer-included Douglas-Peucker's algorithm.
     /// </summary>
     /// <param name="index"></param>
     /// <param name="tolerance"></param>
     public void SimplifyLine(long timestamp, float? tolerance = 0.001f)
     {
-        if (timestamp < 0 || timestamp >= lines.Count) return;
+        if (!lines.ContainsKey(timestamp)) return;
+
+        if (lines[timestamp].Renderer.positionCount < 10) return;
+
+        Debug.Log($"LineManager::SimplifyLine::Simplifying line with timestamp {timestamp} using tolerance {tolerance}, from {lines[timestamp].Renderer.positionCount}, to {lines[timestamp].Points.Count}");
+
         lines[timestamp].Renderer.Simplify((float)tolerance);
 
-        lines[timestamp].Renderer.GetPositions(lines[timestamp].Points.ToArray());
+        // update the points list to match the simplified line
+        lines[timestamp].Points.Clear();
+        for (var i = 0; i < lines[timestamp].Renderer.positionCount; i++)
+            lines[timestamp].Points.Add(lines[timestamp].Renderer.GetPosition(i));
     }
 
 

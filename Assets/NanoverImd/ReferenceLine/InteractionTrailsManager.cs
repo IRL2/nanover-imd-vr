@@ -113,6 +113,7 @@ public class InteractionTrailsManager : MonoBehaviour
             lastFrameIndex = frameIndex;
 
             lineManager.AddPointToLine(currentLineTimestamp, pathSpace.PositionFromSimulationToPath(newPosition.Value));
+
             UpdateInfo();
         }
     }

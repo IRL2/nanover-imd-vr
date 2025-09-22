@@ -172,7 +172,7 @@ namespace NanoverImd.Interaction
             else if (primaryButtonPrevPressed && lastLineTimestamp >= 0)
             {
                 var line = GetLineRendererByTimestamp(lastLineTimestamp);
-                // Note: Simplify method may need to be updated in LineManager to use timestamp
+                // Note: Simplify method may need to be updated in LineManager?
                 if (line != null)
                 {
                     // For now we'll use the line renderer's built-in method
