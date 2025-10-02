@@ -29,11 +29,9 @@ namespace WebDiscovery
 
     public static class WebsocketDiscovery
     {
-        public static readonly string Endpoint = "https://irl-discovery.onrender.com/list";
-
-        public static async UniTask<List<DiscoveryEntry>> DiscoverWebsocketServers()
+        public static async UniTask<List<DiscoveryEntry>> DiscoverWebsocketServers(string endpoint)
         {
-            var request = UnityWebRequest.Get(Endpoint);
+            var request = UnityWebRequest.Get(endpoint);
             await request.SendWebRequest();
 
             var json = request.downloadHandler.text;
