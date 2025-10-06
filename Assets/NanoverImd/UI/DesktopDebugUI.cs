@@ -54,7 +54,7 @@ namespace NanoverImd
 
                 if (discovery)
                 {
-                    WebsocketDiscovery.DiscoverWebsocketServers().ContinueWith(result => knownWebSockets = result);
+                    //WebsocketDiscovery.DiscoverWebsocketServers("").ContinueWith(result => knownWebSockets = result);
 
                     var client = new Client();
                     knownServiceHubs = client
@@ -177,7 +177,7 @@ namespace NanoverImd
 
             if (GUILayout.Button("Search"))
             {
-                WebsocketDiscovery.DiscoverWebsocketServers().ContinueWith(result => knownWebSockets = result);
+                //WebsocketDiscovery.DiscoverWebsocketServers("").ContinueWith(result => knownWebSockets = result);
 
                 var client = new Client();
                 knownServiceHubs = client
