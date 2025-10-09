@@ -63,7 +63,7 @@ namespace NanoverImd.PathFollower
             {
                 if (frameSource?.CurrentFrame?.Data is { } data)
                     if (data.TryGetValue(FrameData.ForcesUserIndex, out var interactedAtomsObj)
-                    && interactedAtomsObj is object[] interactedAtoms
+                    && interactedAtomsObj is uint[] interactedAtoms
                     && interactedAtoms.Length == 1)
                 {
                     return Convert.ToInt32(interactedAtoms[0]);
