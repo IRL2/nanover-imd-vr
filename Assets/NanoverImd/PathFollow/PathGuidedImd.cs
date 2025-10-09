@@ -1,4 +1,5 @@
 using System;
+using Nanover.Frame;
 using Nanover.Frontend.XR;
 using Nanover.Visualisation;
 using NanoverImd.Interaction;
@@ -61,7 +62,7 @@ namespace NanoverImd.PathFollower
             int? GetSingleInteractedAtom()
             {
                 if (frameSource?.CurrentFrame?.Data is { } data)
-                    if (data.TryGetValue("forces.user.index", out var interactedAtomsObj)
+                    if (data.TryGetValue(FrameData.ForcesUserIndex, out var interactedAtomsObj)
                     && interactedAtomsObj is object[] interactedAtoms
                     && interactedAtoms.Length == 1)
                 {

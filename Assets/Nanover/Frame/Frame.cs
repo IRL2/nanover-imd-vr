@@ -29,6 +29,9 @@ namespace Nanover.Frame
 
         public const string KineticEnergyValueKey = "energy.kinetic";
         public const string PotentialEnergyValueKey = "energy.potential";
+
+        public const string ForcesUserSparse = "forces.user.sparse";
+        public const string ForcesUserIndex = "forces.user.index";
     }
 
     /// <summary>

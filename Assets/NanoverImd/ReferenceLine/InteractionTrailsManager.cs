@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Nanover.Frame;
 using Nanover.Frontend.XR;
 using Nanover.Visualisation;
 using NanoverImd;
@@ -148,7 +149,7 @@ public class InteractionTrailsManager : MonoBehaviour
     int? GetSelectedAtomIndex()
     {
         if (frameSource?.CurrentFrame?.Data is { } data)
-            if (data.TryGetValue("forces.user.index", out var interactedAtomsObj)
+            if (data.TryGetValue(FrameData.ForcesUserIndex, out var interactedAtomsObj)
             && interactedAtomsObj is object[] interactedAtoms
             && interactedAtoms.Length == 1)
             {
@@ -165,7 +166,7 @@ public class InteractionTrailsManager : MonoBehaviour
 
         IDictionary<string, object> data = frame.Data;
 
-        if (data.TryGetValue("forces.user.index", out var capturedSelectedAtoms))
+        if (data.TryGetValue(FrameData.ForcesUserIndex, out var capturedSelectedAtoms))
         {
             if (capturedSelectedAtoms is object[] selectedAtoms) { 
                 return computeParticleCentroid(selectedAtoms);

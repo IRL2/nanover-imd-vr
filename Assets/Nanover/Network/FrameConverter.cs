@@ -56,6 +56,9 @@ namespace Nanover.Network.Frame
 
                 [FrameData.BondArrayKey] = (value) => Converters.BytesToBondPairArray((byte[])value),
                 [StandardFrameProperties.BoxTransformation.Key] = (value) => Converters.BytesToLinearTransformation((byte[])value),
+
+                [FrameData.ForcesUserSparse] = (value) => Converters.BytesToVector3Array((byte[])value),
+                [FrameData.ForcesUserIndex] = (value) => Converters.BytesToUInt32((byte[])value),
             };
     }
 
