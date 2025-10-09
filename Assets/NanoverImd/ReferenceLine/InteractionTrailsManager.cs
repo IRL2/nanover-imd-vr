@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Nanover.Core;
 using Nanover.Frame;
 using Nanover.Frontend.XR;
 using Nanover.Visualisation;
@@ -159,28 +160,22 @@ public class InteractionTrailsManager : MonoBehaviour
         return null;
     }
 
-    private Vector3 GetInteractionPositionFromAtoms(NanoverImdSimulation sim)
+    private Vector3? GetInteractionPositionFromAtoms(NanoverImdSimulation sim)
     {
-        var interactions = sim.Interactions;
-        var frame = sim.FrameSynchronizer.CurrentFrame;
+        var framedata = sim.FrameSynchronizer.CurrentFrame.Data;
 
-        IDictionary<string, object> data = frame.Data;
+        if (framedata.GetValueOrDefault<uint[]>(FrameData.ForcesUserIndex) is { } selection && selection.Length > 0)
+            return computeParticleCentroid(selection);
 
-        if (data.TryGetValue(FrameData.ForcesUserIndex, out var capturedSelectedAtoms))
-        {
-            if (capturedSelectedAtoms is object[] selectedAtoms) { 
-                return computeParticleCentroid(selectedAtoms);
-            }
-        }
-        return Vector3.zero;
+        return null;
     }
 
-    private Vector3 computeParticleCentroid(object[] particleIds)
+    private Vector3 computeParticleCentroid(uint[] particleIds)
     {
         var centroid = Vector3.zero;
 
         for (int i = 0; i < particleIds.Length; ++i)
-            centroid += simulation.FrameSynchronizer.CurrentFrame.ParticlePositions[Convert.ToInt32(particleIds[i])];  // todo: parametrize this or relocate this as inline function
+            centroid += simulation.FrameSynchronizer.CurrentFrame.ParticlePositions[particleIds[i]];  // todo: parametrize this or relocate this as inline function
 
         return centroid / particleIds.Length;
     }
