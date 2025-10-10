@@ -10,15 +10,12 @@ namespace NanoverImd.UI.Scene
         [SerializeField]
         private NanoverImdApplication application;
         [SerializeField]
-        private TMP_Text hostInputField;
-        [SerializeField]
-        private TMP_Text portInput;
-    
+        private TMP_Text addressInputField;
+
         private void Start()
         {
             Assert.IsNotNull(application);
-            Assert.IsNotNull(hostInputField);
-            Assert.IsNotNull(portInput);
+            Assert.IsNotNull(addressInputField);
         }
 
         /// <summary>
@@ -27,11 +24,7 @@ namespace NanoverImd.UI.Scene
         /// </summary>
         public void ConnectToServer()
         {
-            var port = portInput.text.Length > 0
-                     ? (int?) int.Parse(portInput.text)
-                     : null;
-
-            application.Simulation.ConnectWebSocket($"{hostInputField.text}:{port}").Forget();
+            application.Simulation.ConnectWebSocket(addressInputField.text).Forget();
         }
     }
 }
