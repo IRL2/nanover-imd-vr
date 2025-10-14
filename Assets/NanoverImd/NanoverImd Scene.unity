@@ -770,7 +770,7 @@ MonoBehaviour:
   visualisationScene: {fileID: 496324176}
   simulation: {fileID: 431384315}
   controller: {fileID: 1083629888}
-  InteractionRange: 0
+  InteractionRange: 0.4
   InteractWithHydrogens: 1
   interactionTarget: 0
 --- !u!4 &54429686
