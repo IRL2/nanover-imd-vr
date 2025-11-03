@@ -115,8 +115,8 @@ namespace NanoverImd
 
             OnMessage += (Message message) =>
             {
-                if (message.CommandUpdates is { } updates)
-                    ReceiveWebSocketCommands(updates);
+                if (message.CommandUpdate is { } update)
+                    ReceiveWebSocketCommand(update);
             };
 
             websocket.Connect().AsUniTask().Forget();
@@ -124,13 +124,10 @@ namespace NanoverImd
 
         private Dictionary<int, UniTaskCompletionSource<CommandReturn>> pendingCommands = new Dictionary<int, UniTaskCompletionSource<CommandReturn>>();
 
-        private void ReceiveWebSocketCommands(List<CommandUpdate> updates)
+        private void ReceiveWebSocketCommand(CommandUpdate update)
         {
-            foreach (var update in updates)
-            {
-                if (pendingCommands.Remove(update.Request.Id, out var source))
-                    source.TrySetResult(update.Response.StringifyStructureKeys() as CommandArguments);
-            }
+            if (pendingCommands.Remove(update.Request.Id, out var source))
+                source.TrySetResult(update.Response.StringifyStructureKeys() as CommandArguments);
         }
 
         private UniTask<CommandReturn> RunWebSocketCommand(string name, CommandArguments args = null)
@@ -142,17 +139,14 @@ namespace NanoverImd
 
             var message = new Message
             {
-                CommandUpdates = new List<CommandUpdate>
+                CommandUpdate = new CommandUpdate
                 {
-                    new CommandUpdate
+                    Request = new CommandRequest
                     {
-                        Request = new CommandRequest
-                        {
-                            Name = name,
-                            Arguments = args,
-                            Id = id,
-                        }
-                    }
+                        Name = name,
+                        Arguments = args,
+                        Id = id,
+                    },
                 }
             };
 
