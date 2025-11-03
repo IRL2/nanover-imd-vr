@@ -49,7 +49,7 @@ namespace WebSocketTypes
         public StateUpdate? StateUpdate;
 
         [PropertyShape(Name = "command")]
-        public List<CommandUpdate>? CommandUpdates;
+        public CommandUpdate? CommandUpdate;
     }
 
     public interface WebSocketMessageSource
