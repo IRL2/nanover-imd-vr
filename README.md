@@ -26,8 +26,8 @@ See [the list of contributors](CONTRIBUTORS.md) for the individual authors of th
 * Open the "Anaconda Powershell Prompt" to enter the commands in the following instructions
 * Create a conda environment (here we call the environment "nanover"): `conda create -n nanover "python>3.11"`
 * Activate the conda environment: `conda activate nanover`
-* Install the NanoVer IMD package: `conda install -c irl nanover-imd`
-* Run the command `NanoverImd`
+* Install the NanoVer IMD package: `conda install irl::nanover-imd-vr`
+* Run the command `nanover-imd-vr`
 
 # Installation for Development
 
