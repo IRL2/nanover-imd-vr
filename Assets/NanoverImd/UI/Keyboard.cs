@@ -31,8 +31,8 @@ namespace NanoverImd.UI
         {
             "1234567890",
             "QWERTYUIOP",
-            "ASDFGHJKL",
-            "ZXCVBNM."
+            "ASDFGHJKL:",
+            "ZXCVBNM./"
         };
 
         private void Start()
