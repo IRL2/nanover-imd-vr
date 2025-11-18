@@ -199,12 +199,6 @@ namespace Nanover.Network.Multiplayer
 
             closing = true;
 
-            // Remove our personal avatar/playarea/origin
-            SimulationPose.ReleaseLock();
-            Avatars.CloseClient();
-            PlayAreas.RemoveValue(AccessToken ?? "");
-            PlayOrigins.RemoveValue(AccessToken ?? "");
-            RemoveSharedStateKey(UpdateIndexKey);
             FlushValuesAsync().Forget();
 
             websocket = null;

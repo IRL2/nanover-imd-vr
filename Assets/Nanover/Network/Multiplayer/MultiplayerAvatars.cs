@@ -65,10 +65,5 @@ namespace Nanover.Network.Multiplayer
         {
             UpdateValue(LocalAvatarId, LocalAvatar);
         }
-
-        internal void CloseClient()
-        {
-            RemoveValue(LocalAvatarId);
-        }
     }
 }
