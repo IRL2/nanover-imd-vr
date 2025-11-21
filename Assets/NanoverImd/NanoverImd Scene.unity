@@ -5411,7 +5411,6 @@ GameObject:
   m_Component:
   - component: {fileID: 544060993}
   - component: {fileID: 544060994}
-  - component: {fileID: 544060995}
   m_Layer: 0
   m_Name: Application
   m_TagString: Untagged
@@ -5475,7 +5474,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  connectionClosed:
+  connectionLost:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 313862644}
