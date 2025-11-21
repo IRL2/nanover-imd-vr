@@ -26,14 +26,14 @@ public class SystemInformationPuller : MonoBehaviour
     void LateUpdate()
     {
         // maybe this is called not too often
-        if (Time.frameCount % 2 == 0)
+        if (Time.frameCount % 4 == 0)
         {
             if (frame.CurrentFrame == null) return;
             var data = frame.CurrentFrame.Data;
 
             if (data.TryGetValue("forces.user.work_done", out var work))
             {
-                display.UpdateData(DataKeys.accumulatedWork, ((float)(double)work).ToString("F2") + "mA");
+                display.UpdateData(DataKeys.accumulatedWork, ((float)(double)work).ToString("F2") + "kJ·mol\u207B");
             }
 
             if (data.TryGetValue("system.simulation.time", out var simTime))
@@ -44,10 +44,11 @@ public class SystemInformationPuller : MonoBehaviour
             lineManager.GetAmountOfLines(out int numRefLines, out int numTrailLines);
             display.UpdateData(DataKeys.numRefLines, numRefLines.ToString());
             display.UpdateData(DataKeys.numTrailLines, numTrailLines.ToString());
+
+            display.UpdateData(DataKeys.advance, $"{follower.LengthFollowed.ToString("F2")}nm");
+            display.UpdateData(DataKeys.speed, $"{follower.Speed}nm/ps");
+            display.UpdateData(DataKeys.forceScale, $"{follower.Scale}x");
         }
 
-        display.UpdateData(DataKeys.advance, $"{follower.LengthFollowed.ToString("F2")}nm");
-        display.UpdateData(DataKeys.speed, $"{follower.Speed}nm/ps");
-        display.UpdateData(DataKeys.forceScale, $"{follower.Scale}x");
     }
 }
