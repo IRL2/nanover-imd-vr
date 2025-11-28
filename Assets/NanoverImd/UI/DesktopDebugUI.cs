@@ -1,10 +1,7 @@
 using Essd;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using NanoverImd;
 using UnityEngine;
-using WebSocketTypes;
 using Cysharp.Threading.Tasks;
 using WebDiscovery;
 
@@ -26,8 +23,7 @@ namespace NanoverImd
         private GameObject xrSimulatorContainer;
 
         private bool directConnect;
-        private string directConnectAddress = "localhost";
-        private string generalPort = "38801";
+        private string directConnectAddress = "ws://localhost:38801";
 
         private bool discovery;
         private ICollection<ServiceHub> knownServiceHubs = new List<ServiceHub>();
@@ -155,13 +151,11 @@ namespace NanoverImd
 
             GUILayout.Label("Address");
             directConnectAddress = GUILayout.TextField(directConnectAddress);
-            GUILayout.Label("Port");
-            generalPort = GUILayout.TextField(generalPort);
 
             if (GUILayout.Button("Connect WebSocket"))
             {
                 directConnect = false;
-                application.Simulation.ConnectWebSocket($"ws://{directConnectAddress}:{ParseInt(generalPort)}").Forget();
+                application.Simulation.ConnectWebSocket(directConnectAddress).Forget();
             }
 
             if (GUILayout.Button("Cancel"))
