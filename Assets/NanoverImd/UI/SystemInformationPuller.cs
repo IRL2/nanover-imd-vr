@@ -33,7 +33,7 @@ public class SystemInformationPuller : MonoBehaviour
 
             if (data.TryGetValue("forces.user.work_done", out var work))
             {
-                display.UpdateData(DataKeys.accumulatedWork, ((float)(double)work).ToString("F2") + "kJ·mol\u207B");
+                display.UpdateData(DataKeys.accumulatedWork, ((float)(double)work).ToString("F2") + "kJ·mol^(-1)");
             }
 
             if (data.TryGetValue("system.simulation.time", out var simTime))
