@@ -29,7 +29,7 @@ namespace NanoverImd.UI
 
         private string[] rows = new string[]
         {
-            "1234567890",
+            "1234567890-",
             "QWERTYUIOP",
             "ASDFGHJKL:",
             "ZXCVBNM./"

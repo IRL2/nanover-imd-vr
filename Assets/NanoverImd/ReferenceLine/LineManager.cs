@@ -39,15 +39,31 @@ public class LineManager : MonoBehaviour
         public int Type;
         public LineRenderer Renderer;
         public List<Vector3> Points;
+        public long Timestamp;
 
-        public LineData(int type, LineRenderer renderer)
+        public LineData(int type, LineRenderer renderer, long timestamp)
         {
             Type = type;
             Renderer = renderer;
             Points = new List<Vector3>();
+            Timestamp = timestamp;
         }
     }
 
+    private void Awake()
+    {
+        simulation.Multiplayer.SharedStateDictionaryKeyUpdated += (key, value) =>
+        {
+            if (key.StartsWith("lines."))
+            {
+                var line = FindLineDataByKey(key);
+                var pointsList = Nanover.Core.Serialization.Serialization.FromDataStructure<List<Vector3>>(value);
+                UpdateLineData(line.Timestamp, pointsList);
+            }
+        };
+
+        LineData FindLineDataByKey(string key) => lines.Values.FirstOrDefault(data => data.Renderer.name == key);
+    }
 
     // Create a new line and use a timestamp as its key
     public long CreateNewLine(int type)
@@ -55,8 +71,8 @@ public class LineManager : MonoBehaviour
         var timestamp = System.DateTime.UtcNow.Ticks;
         var lineObj = Instantiate(type == DASH_LINE ? dashLinePrefab : solidLinePrefab, gameObject.transform);
         var lineRenderer = lineObj.GetComponent<LineRenderer>();
-        lines[timestamp] = new LineData(type, lineRenderer);
-        lineRenderer.name = $"line.{timestamp}.{(type == DASH_LINE ? "reference" : "trail")}";
+        lines[timestamp] = new LineData(type, lineRenderer, timestamp);
+        lineRenderer.name = $"lines.{timestamp}.{(type == DASH_LINE ? "reference" : "trail")}";
         Debug.Log($"Creating line with timestamp {timestamp}");
 
         if (type == SOLID_LINE)
@@ -410,8 +426,8 @@ public class LineManager : MonoBehaviour
                 var lineRenderer = lineObj.GetComponent<LineRenderer>();
                 
                 // Set up line data with the timestamp from shared state
-                lines[timestamp] = new LineData(type, lineRenderer);
-                lineRenderer.name = $"line.{timestamp}.{(type == DASH_LINE ? "reference" : "trail")}";
+                lines[timestamp] = new LineData(type, lineRenderer, timestamp);
+                lineRenderer.name = $"lines.{timestamp}.{(type == DASH_LINE ? "reference" : "trail")}";
 
                 // Apply line color for SOLID_LINE types
                 if (type == SOLID_LINE)
@@ -456,7 +472,7 @@ public class LineManager : MonoBehaviour
         // update the points list and renderer
         if (!lines.ContainsKey(timestamp))
         {
-            Debug.LogWarning($"Attempted to update non-existent line with timestamp {timestamp}");
+            Debug.LogError($"Attempted to update non-existent line with timestamp {timestamp}");
             return;
         }
         
