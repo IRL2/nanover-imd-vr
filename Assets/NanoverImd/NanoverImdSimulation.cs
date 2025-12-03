@@ -3,14 +3,12 @@ using Essd;
 using WebSocketTypes;
 using Nanover.Core.Math;
 using Nanover.Frontend.Manipulation;
-using Nanover.Network;
 using Nanover.Network.Multiplayer;
 using Nanover.Network.Trajectory;
 using Nanover.Visualisation;
 using NanoverImd.Interaction;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,8 +18,9 @@ using Nerdbank.MessagePack;
 
 using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
 using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
-using UnityEngine.SocialPlatforms;
 using WebDiscovery;
+using NativeWebSocket;
+
 
 
 
@@ -34,9 +33,6 @@ namespace NanoverImd
 {
     public class NanoverImdSimulation : MonoBehaviour, WebSocketMessageSource
     {
-        private const string TrajectoryServiceName = "trajectory";
-        private const string MultiplayerServiceName = "multiplayer";
-
         private const string CommandRadiallyOrient = "multiuser/radially-orient-origins";
 
         /// <summary>
@@ -62,7 +58,9 @@ namespace NanoverImd
 
         public ParticleInteractionCollection Interactions;
 
-        private NativeWebSocket.WebSocket websocket;
+        public bool Connected => websocket?.State == WebSocketState.Open;
+
+        private WebSocket websocket;
 
         /// <summary>
         /// The route through which simulation space can be manipulated with
@@ -83,19 +81,29 @@ namespace NanoverImd
 
         public event Action<Message> OnMessage;
 
-        public async UniTask ConnectWebSocket(string address)
-        {
-            if (websocket != null)
-                await websocket.Close();
+        private MessagePackSerializer serializer;
 
-            var serializer = new MessagePackSerializer().WithDynamicObjectConverter();
-            websocket = new NativeWebSocket.WebSocket(address);
-            
-            UniTask SendWebsocketMessage(Message message)
+        private UniTask SendWebsocketMessage(Message message)
+        {
+            if (!Connected)
             {
-                var bytes = serializer.Serialize(message, Witness.ShapeProvider);
-                return websocket.Send(bytes).AsUniTask();
+                return UniTask.FromCanceled();
             }
+
+            var bytes = serializer.Serialize(message, Witness.ShapeProvider);
+            return websocket.Send(bytes).AsUniTask();
+        }
+
+        private void OnClose(WebSocketCloseCode code)
+        {
+            Close();
+        }
+
+        public void ConnectWebSocket(string address)
+        {
+            Close();
+
+            websocket = new WebSocket(address);
             
             websocket.OnMessage += (bytes) =>
             {
@@ -103,8 +111,8 @@ namespace NanoverImd
                 OnMessage?.Invoke(message);
             };
 
-            Trajectory.OpenClient(websocket, this);
-            Multiplayer.OpenClient(websocket, this, SendWebsocketMessage);
+            Trajectory.OpenClient(this);
+            Multiplayer.OpenClient(this, SendWebsocketMessage);
 
             websocket.OnOpen += () =>
             {
@@ -112,7 +120,7 @@ namespace NanoverImd
                 ConnectionEstablished?.Invoke();
             };
 
-            websocket.OnClose += (code) => Disconnect();
+            websocket.OnClose += OnClose;
 
             OnMessage += (Message message) =>
             {
@@ -153,17 +161,12 @@ namespace NanoverImd
 
             SendWebsocketMessage(message);
             return source.Task;
-
-            UniTask SendWebsocketMessage(Message message)
-            {
-                var serializer = new MessagePackSerializer().WithDynamicObjectConverter();
-                var bytes = serializer.Serialize(message, Witness.ShapeProvider);
-                return websocket.Send(bytes).AsUniTask();
-            }
         }
 
         private void Awake()
         {
+            serializer = new MessagePackSerializer().WithDynamicObjectConverter();
+
             Interactions = new ParticleInteractionCollection(Multiplayer);
             
             ManipulableSimulationSpace = new ManipulableScenePose(simulationSpaceTransform,
@@ -181,7 +184,11 @@ namespace NanoverImd
 
 #if UNITY_EDITOR
             // Unity crashes if we don't disconnect ASAP before leaving playmode (due to YAHH http I think)
-            EditorApplication.playModeStateChanged += (state) => Close();
+            EditorApplication.playModeStateChanged += (state) =>
+            {
+                if (state == PlayModeStateChange.ExitingPlayMode)
+                    Close();
+            };
 #endif
         }
 
@@ -193,7 +200,7 @@ namespace NanoverImd
         /// <summary>
         /// Connect to services as advertised by an ESSD service hub.
         /// </summary>
-        public async UniTask Connect(ServiceHub hub)
+        public void Connect(ServiceHub hub)
         {
             Debug.Log($"Connecting to {hub.Name} ({hub.Id})");
             var services = hub.Properties["services"] as JObject;
@@ -201,7 +208,7 @@ namespace NanoverImd
             if (GetServicePort("ws") is int port)
             {
                 var address = $"ws://{hub.Address}:{port}";
-                await ConnectWebSocket(address);
+                ConnectWebSocket(address);
             }
             else
             {
@@ -214,10 +221,10 @@ namespace NanoverImd
             }
         }
 
-        public async UniTask Connect(DiscoveryEntry entry)
+        public void Connect(DiscoveryEntry entry)
         {
             Debug.Log($"Connecting to {entry.info.name} ({entry.info.ws})");
-            await ConnectWebSocket(entry.info.ws);
+            ConnectWebSocket(entry.info.ws);
         }
 
         public async UniTask AutoConnectWebSocket()
@@ -231,7 +238,7 @@ namespace NanoverImd
             var listing = JsonUtility.FromJson<DiscoveryListing>(json);
             var address = listing.list[0].info.ws;
 
-            await ConnectWebSocket(address);
+            ConnectWebSocket(address);
         }
 
         /// <summary>
@@ -243,27 +250,34 @@ namespace NanoverImd
             var client = new Client();
             var services = await Task.Run(() => client.SearchForServices(millisecondsTimeout));
             if (services.Count > 0)
-                await Connect(services.First());
+                Connect(services.First());
         }
 
         /// <summary>
         /// Close all sessions.
         /// </summary>
         public void Close()
-        {
+        { 
+            if (this.websocket == null)
+                return;
+
+            var websocket = this.websocket;
+            this.websocket = null;
+
+            websocket.OnClose -= OnClose;
+
+            Debug.LogError($"TRY CLOSING {websocket}");
+            websocket?.Close().AsUniTask().Forget();
+
+            gameObject.SetActive(false);
+
+            OnMessage = null;
+
             pendingCommands.Clear();
             ManipulableParticles.ClearAllGrabs();
 
             Trajectory.CloseClient();
             Multiplayer.CloseClient();
-
-            websocket?.Close().AsUniTask().Forget();
-            websocket = null;
-
-            if (this != null && gameObject != null)
-                gameObject.SetActive(false);
-
-            ConnectionClosed.Invoke();
         }
 
         private void Update()
@@ -274,7 +288,6 @@ namespace NanoverImd
         }
         private void OnDestroy()
         {
-            websocket?.Close().AsUniTask().Forget();
             Close();
         }
         
@@ -285,17 +298,10 @@ namespace NanoverImd
 
         public UniTask<CommandReturn> RunCommand(string command, CommandArguments arguments = null)
         {
-            if (!Trajectory.Connected)
+            if (!Connected)
                 return UniTask.FromCanceled<CommandReturn>();
 
-            if (websocket != null)
-            {
-                return RunWebSocketCommand(command, arguments);
-            }
-            else
-            {
-                return Trajectory.RunCommand(command, arguments);
-            }
+            return RunWebSocketCommand(command, arguments);
         }
 
         public void PlayTrajectory()
@@ -341,7 +347,7 @@ namespace NanoverImd
         /// </summary>
         public void RunRadialOrientation()
         {
-            Trajectory.RunCommand(
+            RunCommand(
                 CommandRadiallyOrient, 
                 new Dictionary<string, object> { ["radius"] = .01 }
             );
