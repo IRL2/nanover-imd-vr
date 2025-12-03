@@ -54,6 +54,8 @@ namespace WebSocketTypes
 
     public interface WebSocketMessageSource
     {
+        bool Connected { get; }
+
         UniTask<CommandReturn> RunCommand(string name, CommandArguments args = null);
 
         event Action<Message> OnMessage;

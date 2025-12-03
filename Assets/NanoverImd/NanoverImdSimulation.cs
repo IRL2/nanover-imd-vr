@@ -3,14 +3,12 @@ using Essd;
 using WebSocketTypes;
 using Nanover.Core.Math;
 using Nanover.Frontend.Manipulation;
-using Nanover.Network;
 using Nanover.Network.Multiplayer;
 using Nanover.Network.Trajectory;
 using Nanover.Visualisation;
 using NanoverImd.Interaction;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,8 +18,9 @@ using Nerdbank.MessagePack;
 
 using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
 using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
-using UnityEngine.SocialPlatforms;
 using WebDiscovery;
+using NativeWebSocket;
+
 
 
 
@@ -59,7 +58,9 @@ namespace NanoverImd
 
         public ParticleInteractionCollection Interactions;
 
-        private NativeWebSocket.WebSocket websocket;
+        public bool Connected => websocket?.State == WebSocketState.Open;
+
+        private WebSocket websocket;
 
         /// <summary>
         /// The route through which simulation space can be manipulated with
@@ -79,18 +80,29 @@ namespace NanoverImd
 
         public event Action<Message> OnMessage;
 
+        private MessagePackSerializer serializer;
+
+        private UniTask SendWebsocketMessage(Message message)
+        {
+            if (!Connected)
+            {
+                return UniTask.FromCanceled();
+            }
+
+            var bytes = serializer.Serialize(message, Witness.ShapeProvider);
+            return websocket.Send(bytes).AsUniTask();
+        }
+
+        private void OnClose(WebSocketCloseCode code)
+        {
+            Close();
+        }
+
         public void ConnectWebSocket(string address)
         {
             Close();
 
-            var serializer = new MessagePackSerializer().WithDynamicObjectConverter();
-            websocket = new NativeWebSocket.WebSocket(address);
-            
-            UniTask SendWebsocketMessage(Message message)
-            {
-                var bytes = serializer.Serialize(message, Witness.ShapeProvider);
-                return websocket.Send(bytes).AsUniTask();
-            }
+            websocket = new WebSocket(address);
             
             websocket.OnMessage += (bytes) =>
             {
@@ -98,8 +110,8 @@ namespace NanoverImd
                 OnMessage?.Invoke(message);
             };
 
-            Trajectory.OpenClient(websocket, this);
-            Multiplayer.OpenClient(websocket, this, SendWebsocketMessage);
+            Trajectory.OpenClient(this);
+            Multiplayer.OpenClient(this, SendWebsocketMessage);
 
             websocket.OnOpen += () =>
             {
@@ -107,7 +119,7 @@ namespace NanoverImd
                 ConnectionEstablished?.Invoke();
             };
 
-            websocket.OnClose += (code) => Disconnect();
+            websocket.OnClose += OnClose;
 
             OnMessage += (Message message) =>
             {
@@ -148,17 +160,12 @@ namespace NanoverImd
 
             SendWebsocketMessage(message);
             return source.Task;
-
-            UniTask SendWebsocketMessage(Message message)
-            {
-                var serializer = new MessagePackSerializer().WithDynamicObjectConverter();
-                var bytes = serializer.Serialize(message, Witness.ShapeProvider);
-                return websocket.Send(bytes).AsUniTask();
-            }
         }
 
         private void Awake()
         {
+            serializer = new MessagePackSerializer().WithDynamicObjectConverter();
+
             Interactions = new ParticleInteractionCollection(Multiplayer);
             
             ManipulableSimulationSpace = new ManipulableScenePose(simulationSpaceTransform,
@@ -176,7 +183,11 @@ namespace NanoverImd
 
 #if UNITY_EDITOR
             // Unity crashes if we don't disconnect ASAP before leaving playmode (due to YAHH http I think)
-            EditorApplication.playModeStateChanged += (state) => Close();
+            EditorApplication.playModeStateChanged += (state) =>
+            {
+                if (state == PlayModeStateChange.ExitingPlayMode)
+                    Close();
+            };
 #endif
         }
 
@@ -245,7 +256,20 @@ namespace NanoverImd
         /// Close all sessions.
         /// </summary>
         public void Close()
-        {
+        { 
+            if (this.websocket == null)
+                return;
+
+            var websocket = this.websocket;
+            this.websocket = null;
+
+            websocket.OnClose -= OnClose;
+
+            Debug.LogError($"TRY CLOSING {websocket}");
+            websocket?.Close().AsUniTask().Forget();
+
+            gameObject.SetActive(false);
+
             OnMessage = null;
 
             pendingCommands.Clear();
@@ -253,12 +277,6 @@ namespace NanoverImd
 
             Trajectory.CloseClient();
             Multiplayer.CloseClient();
-
-            websocket?.Close().AsUniTask().Forget();
-            websocket = null;
-
-            if (this != null && gameObject != null)
-                gameObject.SetActive(false);
         }
 
         private void Update()
@@ -269,7 +287,6 @@ namespace NanoverImd
         }
         private void OnDestroy()
         {
-            websocket?.Close().AsUniTask().Forget();
             Close();
         }
         
@@ -280,17 +297,10 @@ namespace NanoverImd
 
         public UniTask<CommandReturn> RunCommand(string command, CommandArguments arguments = null)
         {
-            if (!Trajectory.Connected)
+            if (!Connected)
                 return UniTask.FromCanceled<CommandReturn>();
 
-            if (websocket != null)
-            {
-                return RunWebSocketCommand(command, arguments);
-            }
-            else
-            {
-                return Trajectory.RunCommand(command, arguments);
-            }
+            return RunWebSocketCommand(command, arguments);
         }
 
         public void PlayTrajectory()
@@ -336,7 +346,7 @@ namespace NanoverImd
         /// </summary>
         public void RunRadialOrientation()
         {
-            Trajectory.RunCommand(
+            RunCommand(
                 CommandRadiallyOrient, 
                 new Dictionary<string, object> { ["radius"] = .01 }
             );
