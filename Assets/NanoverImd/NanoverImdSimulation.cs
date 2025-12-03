@@ -34,9 +34,6 @@ namespace NanoverImd
 {
     public class NanoverImdSimulation : MonoBehaviour, WebSocketMessageSource
     {
-        private const string TrajectoryServiceName = "trajectory";
-        private const string MultiplayerServiceName = "multiplayer";
-
         private const string CommandRadiallyOrient = "multiuser/radially-orient-origins";
 
         /// <summary>
@@ -82,10 +79,9 @@ namespace NanoverImd
 
         public event Action<Message> OnMessage;
 
-        public async UniTask ConnectWebSocket(string address)
+        public void ConnectWebSocket(string address)
         {
-            if (websocket != null)
-                await websocket.Close();
+            Close();
 
             var serializer = new MessagePackSerializer().WithDynamicObjectConverter();
             websocket = new NativeWebSocket.WebSocket(address);
@@ -192,7 +188,7 @@ namespace NanoverImd
         /// <summary>
         /// Connect to services as advertised by an ESSD service hub.
         /// </summary>
-        public async UniTask Connect(ServiceHub hub)
+        public void Connect(ServiceHub hub)
         {
             Debug.Log($"Connecting to {hub.Name} ({hub.Id})");
             var services = hub.Properties["services"] as JObject;
@@ -200,7 +196,7 @@ namespace NanoverImd
             if (GetServicePort("ws") is int port)
             {
                 var address = $"ws://{hub.Address}:{port}";
-                await ConnectWebSocket(address);
+                ConnectWebSocket(address);
             }
             else
             {
@@ -213,10 +209,10 @@ namespace NanoverImd
             }
         }
 
-        public async UniTask Connect(DiscoveryEntry entry)
+        public void Connect(DiscoveryEntry entry)
         {
             Debug.Log($"Connecting to {entry.info.name} ({entry.info.ws})");
-            await ConnectWebSocket(entry.info.ws);
+            ConnectWebSocket(entry.info.ws);
         }
 
         public async UniTask AutoConnectWebSocket()
@@ -230,7 +226,7 @@ namespace NanoverImd
             var listing = JsonUtility.FromJson<DiscoveryListing>(json);
             var address = listing.list[0].info.ws;
 
-            await ConnectWebSocket(address);
+            ConnectWebSocket(address);
         }
 
         /// <summary>
@@ -242,7 +238,7 @@ namespace NanoverImd
             var client = new Client();
             var services = await Task.Run(() => client.SearchForServices(millisecondsTimeout));
             if (services.Count > 0)
-                await Connect(services.First());
+                Connect(services.First());
         }
 
         /// <summary>
@@ -250,6 +246,8 @@ namespace NanoverImd
         /// </summary>
         public void Close()
         {
+            OnMessage = null;
+
             pendingCommands.Clear();
             ManipulableParticles.ClearAllGrabs();
 
