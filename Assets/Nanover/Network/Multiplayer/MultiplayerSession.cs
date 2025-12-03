@@ -4,7 +4,6 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using Nanover.Core.Math;
 using UnityEngine;
-using NativeWebSocket;
 using WebSocketTypes;
 
 namespace Nanover.Network.Multiplayer
@@ -49,9 +48,7 @@ namespace Nanover.Network.Multiplayer
         /// <summary>
         /// Is there an open client on this session?
         /// </summary>
-        public bool IsOpen => websocket != null && !closing;
-
-        private bool closing = false;
+        public bool IsOpen => websocketClient?.Connected ?? false;
 
         /// <summary>
         /// How many milliseconds to put between sending our requested value
@@ -103,14 +100,14 @@ namespace Nanover.Network.Multiplayer
         private string UpdateIndexKey => $"update.index.{AccessToken}";
 
         private Dictionary<int, float> updateSendTimes = new Dictionary<int, float>();
-        private WebSocket websocket;
+        private WebSocketMessageSource websocketClient;
         private Func<Message, UniTask> SendMessage;
 
-        public void OpenClient(WebSocket websocket, WebSocketMessageSource source, Func<Message, UniTask> SendMessage)
+        public void OpenClient(WebSocketMessageSource source, Func<Message, UniTask> SendMessage)
         {
             this.SendMessage = SendMessage;
 
-            this.websocket = websocket;
+            websocketClient = source;
             source.OnMessage += (message) =>
             {
                 if (message.StateUpdate is { } update)
@@ -194,19 +191,12 @@ namespace Nanover.Network.Multiplayer
 
             LastIndexRTT = -1;
 
-            if (!IsOpen)
-                return;
-
-            closing = true;
-
             FlushValuesAsync().Forget();
 
-            websocket = null;
-            closing = false;
+            websocketClient = null;
+            AccessToken = null;
 
             updateSendTimes.Clear();
-
-            AccessToken = null;
         }
 
         /// <summary>
@@ -310,20 +300,17 @@ namespace Nanover.Network.Multiplayer
 
             var update = UniTask.FromResult(true);
 
-            if (websocket != null)
+            var change = new StateUpdate();
+            foreach (var (key, value) in pendingValues)
+                change.Updates[key] = value;
+            change.Removals.UnionWith(pendingRemovals);
+
+            var message = new Message
             {
-                var change = new StateUpdate();
-                foreach (var (key, value) in pendingValues)
-                    change.Updates[key] = value;
-                change.Removals.UnionWith(pendingRemovals);
+                StateUpdate = change,
+            };
 
-                var message = new Message
-                {
-                    StateUpdate = change,
-                };
-
-                update = SendMessage(message).ContinueWith(() => true);
-            }
+            update = SendMessage(message).ContinueWith(() => true);
 
             pendingValues.Clear();
             pendingRemovals.Clear();

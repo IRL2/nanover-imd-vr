@@ -155,7 +155,7 @@ namespace NanoverImd
             if (GUILayout.Button("Connect WebSocket"))
             {
                 directConnect = false;
-                application.Simulation.ConnectWebSocket(directConnectAddress).Forget();
+                application.Simulation.ConnectWebSocket(directConnectAddress);
             }
 
             if (GUILayout.Button("Cancel"))

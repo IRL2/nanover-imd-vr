@@ -80,7 +80,6 @@ namespace Nanover.Network.Trajectory
         private List<float> messageReceiveTimes = new List<float>();
         public List<float> MessageReceiveTimes => messageReceiveTimes;
 
-        private WebSocket websocket;
         private WebSocketMessageSource websocketClient;
 
         public TrajectorySession()
@@ -88,9 +87,8 @@ namespace Nanover.Network.Trajectory
             trajectorySnapshot.FrameChanged += (sender, args) => FrameChanged?.Invoke(sender, args);
         }
 
-        public void OpenClient(WebSocket websocket, WebSocketMessageSource client)
+        public void OpenClient(WebSocketMessageSource client)
         {
-            this.websocket = websocket;
             websocketClient = client;
 
             client.OnMessage += (Message message) =>
@@ -123,7 +121,6 @@ namespace Nanover.Network.Trajectory
         /// </summary>
         public void CloseClient()
         {
-            websocket = null;
             websocketClient = null;
             trajectorySnapshot.Clear();
         }
@@ -198,7 +195,5 @@ namespace Nanover.Network.Trajectory
             public string Name { get; set; }
             public CommandArguments Arguments { get; set; }
         }
-
-        public bool Connected => websocket?.State == WebSocketState.Open;
     }
 }
