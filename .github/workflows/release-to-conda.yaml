@@ -63,6 +63,8 @@ jobs:
         # This is necessary for the conda action. It replaces `conda init` as
         # the shell does not load ,profile or .bashrc.
         shell: bash -el {0}
+    env:
+      ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
     steps:
       - uses: conda-incubator/setup-miniconda@v3
         with:
@@ -83,10 +85,6 @@ jobs:
       - name: Install Anaconda
         # We temporarilly ignore failure here. See #31.
         run: conda install -y anaconda-client || echo "Fail?"
-      - name: Connect to Anaconda cloud
-        # The login token may be used by a failed build already. If we are asked
-        # if we want it back, we say yes. Hence the echo Y.
-        run: echo Y | anaconda login --username irl_bot_2 --password ${{ secrets.ANACONDA_PASSWORD }}
       - name: Upload packages
         # Anaconda will complain if the given version of a package is already
         # there. Until we have some versioning, we force the upload.
