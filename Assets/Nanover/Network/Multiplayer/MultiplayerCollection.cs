@@ -75,6 +75,7 @@ namespace Nanover.Network.Multiplayer
             Multiplayer = session;
             Multiplayer.SharedStateDictionaryKeyUpdated += OnKeyUpdated;
             Multiplayer.SharedStateDictionaryKeyRemoved += OnKeyRemoved;
+            Multiplayer.SharedStateDictionaryCleared += OnCleared;
         }
         
         /// <summary>
@@ -193,6 +194,13 @@ namespace Nanover.Network.Multiplayer
             }
         }
         
+        private void OnCleared()
+        {
+            multiplayerState.Clear();
+            localChanges.Clear();
+            localRemovals.Clear();
+        }
+
         private void CreateOrUpdateItemFromServer(string key, TItem value)
         {
             if (!multiplayerState.ContainsKey(key))
