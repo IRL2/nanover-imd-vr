@@ -71,6 +71,8 @@ namespace Nanover.Network.Multiplayer
 
         public event Action<string> SharedStateDictionaryKeyRemoved;
 
+        public event Action SharedStateDictionaryCleared;
+
         public event Action MultiplayerJoined;
 
         /// <summary>
@@ -271,6 +273,8 @@ namespace Nanover.Network.Multiplayer
                     Debug.LogException(e);
                 }
             }
+
+            SharedStateDictionaryCleared?.Invoke();
         }
         
         public void Heartbeat()
