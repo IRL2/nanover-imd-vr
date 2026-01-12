@@ -48,7 +48,7 @@ namespace Nanover.Network.Multiplayer
         /// <summary>
         /// Is there an open client on this session?
         /// </summary>
-        public bool IsOpen => websocketClient?.Connected ?? false;
+        public bool IsOpen => websocketClient?.Connected ?? false || openedFake;
 
         /// <summary>
         /// How many milliseconds to put between sending our requested value
@@ -105,6 +105,8 @@ namespace Nanover.Network.Multiplayer
         private WebSocketMessageSource websocketClient;
         private Func<Message, UniTask> SendMessage;
 
+        private bool openedFake;
+
         public void ReceiveStateUpdate(StateUpdate update)
         {
             messageReceiveTimes.Add(Time.realtimeSinceStartup);
@@ -137,6 +139,12 @@ namespace Nanover.Network.Multiplayer
                 SharedStateDictionary[key] = sanitised;
                 SharedStateDictionaryKeyUpdated?.Invoke(key, sanitised);
             }
+        }
+
+        public void OpenClientFake()
+        {
+            openedFake = true;
+            MultiplayerJoined?.Invoke(); 
         }
 
         public void OpenClient(WebSocketMessageSource source, Func<Message, UniTask> SendMessage)
@@ -185,6 +193,8 @@ namespace Nanover.Network.Multiplayer
         /// </summary>
         public void CloseClient()
         {
+            openedFake = false;
+
             ClearSharedState();
 
             lastReceivedIndex = -1;

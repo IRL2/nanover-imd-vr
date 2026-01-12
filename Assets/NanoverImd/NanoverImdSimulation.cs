@@ -109,6 +109,7 @@ namespace NanoverImd
 
             gameObject.SetActive(true);
             ConnectionEstablished?.Invoke();
+            Multiplayer.OpenClientFake();
 
             Test().AsUniTask().Forget();
 
@@ -122,6 +123,8 @@ namespace NanoverImd
                     if (message.FrameUpdate is { } frameUpdate)
                         Trajectory.ReceiveFrameUpdate(frameUpdate);
                 }
+
+                Close();
             }
         }
 
