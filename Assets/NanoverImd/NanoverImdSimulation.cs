@@ -20,6 +20,8 @@ using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
 using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
 using WebDiscovery;
 using NativeWebSocket;
+using Nanover.Core;
+
 
 
 
@@ -96,6 +98,30 @@ namespace NanoverImd
         private void OnClose(WebSocketCloseCode code)
         {
             Close();
+        }
+
+        public void ConnectRecordingReader(NanoverRecordingReader reader)
+        {
+            Close();
+
+            gameObject.SetActive(true);
+
+            Test().AsUniTask().Forget();
+
+            async Task Test()
+            {
+                foreach (var entry in reader)
+                {
+                    if (!entry.Metadata.TryGetValue("types", out IList<object> types)
+                    || !types.Contains("frame")
+                    || reader.GetMessage(entry).FrameUpdate is not { } update)
+                        continue;
+
+                    Trajectory.ReceiveFrameUpdate(update);
+
+                    await Task.Delay(1000/30);
+                }
+            }
         }
 
         public void ConnectWebSocket(string address)
