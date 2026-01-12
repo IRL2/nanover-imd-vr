@@ -62,8 +62,11 @@ namespace NanoverImd
 
         public bool Connected => websocket?.State == WebSocketState.Open;
 
-        private WebSocket websocket;
+        public bool Running => Connected || reader != null;
 
+        private WebSocket websocket;
+        private NanoverRecordingReader reader;
+        
         /// <summary>
         /// The route through which simulation space can be manipulated with
         /// gestures to perform translation, rotation, and scaling.
@@ -105,21 +108,19 @@ namespace NanoverImd
             Close();
 
             gameObject.SetActive(true);
+            ConnectionEstablished?.Invoke();
 
             Test().AsUniTask().Forget();
 
             async Task Test()
             {
-                foreach (var entry in reader)
+                await foreach (var message in reader.PlaybackOnce())
                 {
-                    if (!entry.Metadata.TryGetValue("types", out IList<object> types)
-                    || !types.Contains("frame")
-                    || reader.GetMessage(entry).FrameUpdate is not { } update)
-                        continue;
-
-                    Trajectory.ReceiveFrameUpdate(update);
-
-                    await Task.Delay(1000/30);
+                    if (message.StateUpdate is { } stateUpdate)
+                        Multiplayer.ReceiveStateUpdate(stateUpdate);
+                        
+                    if (message.FrameUpdate is { } frameUpdate)
+                        Trajectory.ReceiveFrameUpdate(frameUpdate);
                 }
             }
         }

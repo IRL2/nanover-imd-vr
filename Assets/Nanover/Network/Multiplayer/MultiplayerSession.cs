@@ -105,6 +105,40 @@ namespace Nanover.Network.Multiplayer
         private WebSocketMessageSource websocketClient;
         private Func<Message, UniTask> SendMessage;
 
+        public void ReceiveStateUpdate(StateUpdate update)
+        {
+            messageReceiveTimes.Add(Time.realtimeSinceStartup);
+
+            if (update.Updates.ContainsKey(UpdateIndexKey))
+            {
+                lastReceivedIndex = Convert.ToInt32(update.Updates[UpdateIndexKey]);
+                lastReceivedIndexTime = Time.realtimeSinceStartup;
+
+                foreach (var index in new HashSet<int>(updateSendTimes.Keys))
+                {
+                    if (index == lastReceivedIndex)
+                        LastIndexRTT = lastReceivedIndexTime - updateSendTimes[index];
+
+                    if (index <= lastReceivedIndex)
+                        updateSendTimes.Remove(index);
+                }
+            }
+
+            foreach (var key in update.Removals)
+            {
+                SharedStateDictionary.Remove(key);
+                SharedStateDictionaryKeyRemoved?.Invoke(key);
+            }
+
+            foreach (var (key, value) in update.Updates)
+            {
+                var sanitised = value.StringifyStructureKeys();
+
+                SharedStateDictionary[key] = sanitised;
+                SharedStateDictionaryKeyUpdated?.Invoke(key, sanitised);
+            }
+        }
+
         public void OpenClient(WebSocketMessageSource source, Func<Message, UniTask> SendMessage)
         {
             this.SendMessage = SendMessage;
@@ -113,42 +147,8 @@ namespace Nanover.Network.Multiplayer
             source.OnMessage += (message) =>
             {
                 if (message.StateUpdate is { } update)
-                    ReceiveState(update);
+                    ReceiveStateUpdate(update);
             };
-
-            void ReceiveState(StateUpdate update)
-            {
-                messageReceiveTimes.Add(Time.realtimeSinceStartup);
-
-                if (update.Updates.ContainsKey(UpdateIndexKey))
-                {
-                    lastReceivedIndex = Convert.ToInt32(update.Updates[UpdateIndexKey]);
-                    lastReceivedIndexTime = Time.realtimeSinceStartup;
-
-                    foreach (var index in new HashSet<int>(updateSendTimes.Keys))
-                    {
-                        if (index == lastReceivedIndex)
-                            LastIndexRTT = lastReceivedIndexTime - updateSendTimes[index];
-
-                        if (index <= lastReceivedIndex)
-                            updateSendTimes.Remove(index);
-                    }
-                }
-
-                foreach (var key in update.Removals)
-                {
-                    SharedStateDictionary.Remove(key);
-                    SharedStateDictionaryKeyRemoved?.Invoke(key);
-                }
-
-                foreach (var (key, value) in update.Updates)
-                {
-                    var sanitised = value.StringifyStructureKeys();
-
-                    SharedStateDictionary[key] = sanitised;
-                    SharedStateDictionaryKeyUpdated?.Invoke(key, sanitised);
-                }
-            }
 
             AccessToken = Guid.NewGuid().ToString();
 
