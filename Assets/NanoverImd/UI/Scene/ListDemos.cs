@@ -1,26 +1,17 @@
-﻿using Nanover.Frontend.UI;
-using Nerdbank.MessagePack;
-using System;
+﻿using Cysharp.Threading.Tasks;
+using Nanover.Frontend.UI;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using UnityEngine;
 using UnityEngine.Networking;
-using WebSocketTypes;
 
 namespace NanoverImd.UI.Scene
 {
     public class ListDemos : MonoBehaviour
     {
-        [Serializable]
-        private class DemoListing
-        {
-            public string Name;
-            public string URL;
-        }
-
         [SerializeField]
-        private List<DemoListing> demos;
+        private List<NanoverRecordings.DemoListing> demos;
 
         [SerializeField]
         private NanoverImdApplication application;
@@ -36,9 +27,17 @@ namespace NanoverImd.UI.Scene
             Refresh();
         }
 
+        [ContextMenu("Refresh Demo Listing")]
         public void Refresh()
         {
-            RefreshDemos();
+            NanoverRecordings
+                .FetchDemosListing()
+                .AsUniTask()
+                .ContinueWith((listing) =>
+            {
+                demos = listing;
+                RefreshDemos();
+            });
         }
 
         [ContextMenu("Load First Demo")]
