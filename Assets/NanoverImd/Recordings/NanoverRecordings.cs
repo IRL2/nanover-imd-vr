@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -51,6 +52,24 @@ namespace NanoverImd
                 .Where(entry => entry.name.EndsWith(suffix))
                 .Select(entry => new DemoListing { Name = entry.name.Replace(suffix, ""), URL = entry.download_url })
                 .ToList();
+        }
+
+        public static async Task<NanoverRecordingReader> LoadDemo(string url)
+        {
+            var dest = Path.Combine(Application.persistentDataPath, "demo.nanover.zip");
+            var index = Path.Combine(Application.persistentDataPath, "index.msgpack");
+            var messages = Path.Combine(Application.persistentDataPath, "messages.msgpack");
+
+            var request = UnityWebRequest.Get(url);
+            var handler = new DownloadHandlerFile(dest);
+            handler.removeFileOnAbort = true;
+            request.downloadHandler = handler;
+
+            await request.SendWebRequest();
+
+            ZipFile.ExtractToDirectory(dest, Application.persistentDataPath, overwriteFiles: true);
+
+            return new NanoverRecordingReader(index, messages);
         }
 
         public static async IAsyncEnumerable<Message> PlaybackOnce(this NanoverRecordingReader reader)
