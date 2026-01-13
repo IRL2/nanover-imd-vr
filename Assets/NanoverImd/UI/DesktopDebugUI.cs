@@ -80,16 +80,16 @@ namespace NanoverImd
 
                 GUILayout.Box("Simulation");
                 if (GUILayout.Button("Play"))
-                    simulation.Trajectory.Play();
+                    simulation.PlayTrajectory();
 
                 if (GUILayout.Button("Pause"))
-                    simulation.Trajectory.Pause();
+                    simulation.PauseTrajectory();
 
                 if (GUILayout.Button("Step"))
-                    simulation.Trajectory.Step();
+                    simulation.StepForwardTrajectory();
                 
                 if (GUILayout.Button("Reset"))
-                    simulation.Trajectory.Reset();
+                    simulation.ResetTrajectory();
                 
                 if (GUILayout.Button("Reset Box"))
                     simulation.ResetBox();

@@ -61,9 +61,6 @@ namespace NanoverImd.UI.Scene
 
             operation.completed += (_) =>
             {
-                Debug.LogError(request.downloadedBytes);
-                Debug.LogError(dest);
-
                 ZipFile.ExtractToDirectory(dest, Application.persistentDataPath, overwriteFiles: true);
 
                 var reader = new NanoverRecordingReader(index, messages);

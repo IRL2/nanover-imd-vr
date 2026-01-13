@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Analytics;
 using UnityEngine.Networking;
 using WebSocketTypes;
 
@@ -71,6 +72,106 @@ namespace NanoverImd
                     continue;
 
                 yield return reader.GetMessage(entry);
+            }
+        }
+    }
+
+    public class NanoverRecordingPlayback
+    {
+        const float SecondsToMicroseconds = 1000f * 1000f;
+
+        public NanoverRecordingReader Reader { get; }
+        public bool IsPaused { get; private set; }
+        public float PlaybackTime { get; private set; }
+        public event Action<Message> MessagePlayedBack;
+
+        public NanoverRecordingPlayback(NanoverRecordingReader reader)
+        {
+            Reader = reader;
+        }
+
+        public void Play() => IsPaused = false;
+        public void Pause() => IsPaused = true;
+        public void AdvanceBySeconds(float seconds) => SeekToTimestamp(PlaybackTime + seconds);
+
+        public void Reset()
+        {
+            PlaybackTime = 0;
+            StepOneFrame();
+            StepOneFrame();
+        }
+
+        public void SeekToTimestamp(float seconds)
+        {
+            var prev = PlaybackTime * SecondsToMicroseconds;
+            var next = seconds * SecondsToMicroseconds;
+
+            foreach (var entry in Reader)
+            {
+                var timestamp = entry.Timestamp ?? 0;
+                PlaybackTime = timestamp / SecondsToMicroseconds;
+
+                if (timestamp < prev && prev < next)
+                    continue;
+
+                if (timestamp > next)
+                    break;
+
+                if (!entry.Metadata.TryGetValue("types", out IList<object> types)
+                || (!types.Contains("frame") && !types.Contains("state")))
+                    continue;
+
+                var message = Reader.GetMessage(entry);
+                MessagePlayedBack?.Invoke(message);
+            }
+
+            PlaybackTime = next / SecondsToMicroseconds;
+        }
+
+        public void StepOneFrame()
+        {
+            var prev = PlaybackTime * SecondsToMicroseconds;
+            PlaybackTime = 0;
+
+            foreach (var entry in Reader)
+            {
+                var timestamp = entry.Timestamp ?? 0;
+
+                // ignore messages before current timestamp
+                if (timestamp <= prev)
+                    continue;
+
+                // ignore messages without frame or state
+                if (!entry.Metadata.TryGetValue("types", out IList<object> types)
+                || (!types.Contains("frame") && !types.Contains("state")))
+                    continue;
+
+                var message = Reader.GetMessage(entry);
+
+                PlaybackTime = timestamp / SecondsToMicroseconds;
+                MessagePlayedBack?.Invoke(message);
+
+                // stop after first message with frame
+                if (types.Contains("frame"))
+                    return;
+            }
+
+            foreach (var entry in Reader)
+            {
+                // ignore messages without frame or state
+                if (!entry.Metadata.TryGetValue("types", out IList<object> types)
+                || (!types.Contains("frame") && !types.Contains("state")))
+                    continue;
+
+                var timestamp = entry.Timestamp ?? 0;
+                var message = Reader.GetMessage(entry);
+
+                PlaybackTime = timestamp / SecondsToMicroseconds;
+                MessagePlayedBack?.Invoke(message);
+
+                // stop after first message with frame
+                if (types.Contains("frame"))
+                    return;
             }
         }
     }

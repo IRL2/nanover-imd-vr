@@ -130,30 +130,6 @@ namespace Nanover.Network.Trajectory
         {
             CloseClient();
         }
-        
-        /// <inheritdoc cref="CommandPlay"/>
-        public void Play()
-        {
-            RunCommand(CommandPlay);
-        }
-        
-        /// <inheritdoc cref="CommandPause"/>
-        public void Pause()
-        {
-            RunCommand(CommandPause);
-        }
-        
-        /// <inheritdoc cref="CommandReset"/>
-        public void Reset()
-        {
-            RunCommand(CommandReset);
-        }
-        
-        /// <inheritdoc cref="CommandStep"/>
-        public void Step()
-        {
-            RunCommand(CommandStep);
-        }
 
         /// <inheritdoc cref="CommandStepBackward"/>
         public void StepBackward()

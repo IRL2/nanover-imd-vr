@@ -92,6 +92,9 @@ namespace NanoverImd.Interaction
 
         private IActiveManipulation AttemptGrabSpace(UnitScaleTransformation grabberPose)
         {
+            if (simulation.InLocalPlayback)
+                return null;
+
             // there is presently only one grabbable space
             return simulation.ManipulableSimulationSpace.StartGrabManipulation(grabberPose);
         }
