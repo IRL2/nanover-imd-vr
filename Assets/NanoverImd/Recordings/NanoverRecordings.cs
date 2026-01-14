@@ -98,99 +98,88 @@ namespace NanoverImd
     public class NanoverRecordingPlayback
     {
         const float SecondsToMicroseconds = 1000f * 1000f;
+        const float MicrosecondsToSeconds = 1 / SecondsToMicroseconds;
 
         public NanoverRecordingReader Reader { get; }
         public bool IsPaused { get; private set; }
         public float PlaybackTime { get; private set; }
-        public event Action<Message> MessagePlayedBack;
+        public event Action PlaybackReset;
+        public event Action<Message> PlaybackMessage;
+
+        public float FirstTime { get; }
+        public float LastTime { get; }
+        public float Duration => LastTime - FirstTime;
+
+        private int prevEntryIndex = -1;
 
         public NanoverRecordingPlayback(NanoverRecordingReader reader)
         {
             Reader = reader;
+
+            FirstTime = (reader[0].Timestamp ?? 0) * MicrosecondsToSeconds;
+            LastTime = (reader[^1].Timestamp ?? 0) * MicrosecondsToSeconds;
         }
 
         public void Play() => IsPaused = false;
         public void Pause() => IsPaused = true;
-        public void AdvanceBySeconds(float seconds) => SeekToTimestamp(PlaybackTime + seconds);
+        public void AdvanceBySeconds(float seconds) => SeekToSeconds(PlaybackTime + seconds);
 
         public void Reset()
         {
-            PlaybackTime = 0;
-            StepOneFrame();
+            prevEntryIndex = -1;
             StepOneFrame();
         }
 
-        public void SeekToTimestamp(float seconds)
+        public void SeekToSeconds(float seconds)
         {
-            var prev = PlaybackTime * SecondsToMicroseconds;
-            var next = seconds * SecondsToMicroseconds;
+            var prev = PlaybackTime;
+            var next = seconds % Duration;
 
-            foreach (var entry in Reader)
+            if (next < PlaybackTime)
             {
-                var timestamp = entry.Timestamp ?? 0;
-                PlaybackTime = timestamp / SecondsToMicroseconds;
+                Reset();
+                SeekToSeconds(seconds);
+            }
+            else
+            {
+                for (int i = prevEntryIndex + 1; i < Reader.Count; i++)
+                {
+                    var time = Reader[i].Timestamp * MicrosecondsToSeconds;
+                    if (time < next)
+                        StepOneEntry();
+                }
 
-                if (timestamp < prev && prev < next)
-                    continue;
+                PlaybackTime = next;
+            }
+        }
 
-                if (timestamp > next)
-                    break;
+        public RecordingIndexEntry StepOneEntry()
+        {
+            var index = (prevEntryIndex + 1) % Reader.Count;
+            var entry = Reader[index];
 
-                if (!entry.Metadata.TryGetValue("types", out IList<object> types)
-                || (!types.Contains("frame") && !types.Contains("state")))
-                    continue;
+            PlaybackTime = (entry.Timestamp ?? 0) * MicrosecondsToSeconds;
 
+            if (index == 0)
+                PlaybackReset?.Invoke();
+
+            if (entry.ContainsFrame || entry.ContainsState)
+            {
                 var message = Reader.GetMessage(entry);
-                MessagePlayedBack?.Invoke(message);
+                PlaybackMessage?.Invoke(message);
             }
 
-            PlaybackTime = next / SecondsToMicroseconds;
+            prevEntryIndex = index;
+
+            return entry;
         }
 
         public void StepOneFrame()
         {
-            var prev = PlaybackTime * SecondsToMicroseconds;
-            PlaybackTime = 0;
-
-            foreach (var entry in Reader)
+            for (int i = 0; i < Reader.Count; ++i)
             {
-                var timestamp = entry.Timestamp ?? 0;
-
-                // ignore messages before current timestamp
-                if (timestamp <= prev)
-                    continue;
-
-                // ignore messages without frame or state
-                if (!entry.Metadata.TryGetValue("types", out IList<object> types)
-                || (!types.Contains("frame") && !types.Contains("state")))
-                    continue;
-
-                var message = Reader.GetMessage(entry);
-
-                PlaybackTime = timestamp / SecondsToMicroseconds;
-                MessagePlayedBack?.Invoke(message);
-
-                // stop after first message with frame
-                if (types.Contains("frame"))
-                    return;
-            }
-
-            foreach (var entry in Reader)
-            {
-                // ignore messages without frame or state
-                if (!entry.Metadata.TryGetValue("types", out IList<object> types)
-                || (!types.Contains("frame") && !types.Contains("state")))
-                    continue;
-
-                var timestamp = entry.Timestamp ?? 0;
-                var message = Reader.GetMessage(entry);
-
-                PlaybackTime = timestamp / SecondsToMicroseconds;
-                MessagePlayedBack?.Invoke(message);
-
-                // stop after first message with frame
-                if (types.Contains("frame"))
-                    return;
+                if (StepOneEntry().ContainsFrame)
+                    break;
             }
         }
     }

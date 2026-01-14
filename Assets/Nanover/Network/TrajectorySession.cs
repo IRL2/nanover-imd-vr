@@ -116,6 +116,11 @@ namespace Nanover.Network.Trajectory
             };
         }
 
+        public void Clear()
+        {
+            trajectorySnapshot.Clear();
+        }
+
         /// <summary>
         /// Close the current trajectory client.
         /// </summary>

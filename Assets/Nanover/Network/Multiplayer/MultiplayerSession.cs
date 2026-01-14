@@ -187,6 +187,10 @@ namespace Nanover.Network.Multiplayer
             }
         }
 
+        public void Clear()
+        {
+            ClearSharedState();
+        }
 
         /// <summary>
         /// Close the current Multiplayer client and dispose all streams.

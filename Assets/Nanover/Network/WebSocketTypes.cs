@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
 using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
+using Nanover.Core;
 
 namespace WebSocketTypes
 { 
@@ -20,6 +21,9 @@ namespace WebSocketTypes
         public Dictionary<string, object> Metadata;
 
         public uint? Timestamp => Metadata.TryGetValue("timestamp", out var value) ? Convert.ToUInt32(value) : null;
+
+        public bool ContainsFrame => Metadata.TryGetValue("types", out IList<object> types) && types.Contains("frame");
+        public bool ContainsState => Metadata.TryGetValue("types", out IList<object> types) && types.Contains("state");
 
         public override string ToString() => $"RecordingIndexEntry(Offset={Offset}, Length={Length}, Timestamp={Timestamp})";
     }

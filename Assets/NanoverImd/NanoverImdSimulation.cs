@@ -20,12 +20,6 @@ using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
 using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
 using WebDiscovery;
 using NativeWebSocket;
-using Nanover.Core;
-
-
-
-
-
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -114,13 +108,19 @@ namespace NanoverImd
             Multiplayer.OpenClientFake();
 
             playback = new NanoverRecordingPlayback(reader);
-            playback.MessagePlayedBack += (message) =>
+            playback.PlaybackMessage += (message) =>
             {
                 if (message.StateUpdate is { } stateUpdate)
                     Multiplayer.ReceiveStateUpdate(stateUpdate);
 
                 if (message.FrameUpdate is { } frameUpdate)
                     Trajectory.ReceiveFrameUpdate(frameUpdate);
+            };
+
+            playback.PlaybackReset += () =>
+            {
+                Trajectory.Clear();
+                Multiplayer.Clear();
             };
         }
 
