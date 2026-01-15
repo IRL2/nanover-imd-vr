@@ -325,7 +325,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8671533409841152082}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.05000019}
+  m_LocalPosition: {x: 0, y: 0, z: 0.05000019}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -996,6 +996,14 @@ PrefabInstance:
       value: Gaussian
       objectReference: {fileID: 0}
     - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
+      propertyPath: m_fontSize
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
       propertyPath: m_textAlignment
       value: 65535
       objectReference: {fileID: 0}
@@ -1188,6 +1196,14 @@ PrefabInstance:
     - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
       propertyPath: m_text
       value: Residue
+      objectReference: {fileID: 0}
+    - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
+      propertyPath: m_fontSize
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
       propertyPath: m_textAlignment
@@ -1792,6 +1808,14 @@ PrefabInstance:
       value: Spring
       objectReference: {fileID: 0}
     - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
+      propertyPath: m_fontSize
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
       propertyPath: m_textAlignment
       value: 65535
       objectReference: {fileID: 0}
@@ -2012,6 +2036,14 @@ PrefabInstance:
     - target: {fileID: 9033767315276528848, guid: efd51a6df70cfbf41b05e95c765d536d, type: 3}
       propertyPath: m_text
       value: Single
+      objectReference: {fileID: 0}
+    - target: {fileID: 9033767315276528848, guid: efd51a6df70cfbf41b05e95c765d536d, type: 3}
+      propertyPath: m_fontSize
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 9033767315276528848, guid: efd51a6df70cfbf41b05e95c765d536d, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 9033767315276528848, guid: efd51a6df70cfbf41b05e95c765d536d, type: 3}
       propertyPath: m_textAlignment
@@ -2609,6 +2641,14 @@ PrefabInstance:
     - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
       propertyPath: m_text
       value: Constant
+      objectReference: {fileID: 0}
+    - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
+      propertyPath: m_fontSize
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 8865474348618771260, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
       propertyPath: m_textAlignment
