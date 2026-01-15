@@ -16,7 +16,7 @@ MonoBehaviour:
   m_DisableNoThemeWarning: 0
   m_TargetTexture: {fileID: 0}
   m_RenderMode: 1
-  m_ColliderUpdateMode: 0
+  m_ColliderUpdateMode: 1
   m_ColliderIsTrigger: 1
   m_ScaleMode: 1
   m_ReferenceSpritePixelsPerUnit: 100
