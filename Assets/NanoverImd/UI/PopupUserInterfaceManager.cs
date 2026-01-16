@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Cysharp.Threading.Tasks;
 using Nanover.Frontend.Controllers;
 using Nanover.Frontend.Input;
@@ -30,7 +31,6 @@ namespace NanoverImd.UI
         [SerializeField]
         private InputDeviceCharacteristics characteristics;
 
-        [SerializeField]
         private bool uiVisible;
 
         [SerializeField]
@@ -72,9 +72,6 @@ namespace NanoverImd.UI
             }
         }
 
-        [SerializeField]
-        private Vector3 offset;
-
         private void ShowMenu()
         {
             if (!controllers.WouldBecomeCurrentMode(mode))
@@ -100,6 +97,7 @@ namespace NanoverImd.UI
 
         private void ToggleMenu()
         {
+            uiVisible = SceneUI.transform.gameObject.activeInHierarchy;
             uiVisible = !uiVisible;
 
             if (uiVisible)
