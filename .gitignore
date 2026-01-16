@@ -12,9 +12,6 @@
 /[Bb]uilds/
 /[Ll]ogs/
 
-# Unity NuGet packages
-/[Aa]ssets/[Pp]ackages
-
 # Never ignore Asset meta data
 !/[Aa]ssets/**/*.meta
 
