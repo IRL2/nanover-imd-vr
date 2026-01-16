@@ -687,10 +687,6 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7640394630935375313, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 509937587878744520}
-    - target: {fileID: 7640394630935375313, guid: 6cbbc06ceb9a9794299a1e06a17c86b2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2
       objectReference: {fileID: 0}
@@ -766,7 +762,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6884530326833527367, guid: 32ace6ad35e5f564a94594ebaa4fd3b8, type: 3}
       propertyPath: m_Name
-      value: Discover Servers
+      value: List Demos
       objectReference: {fileID: 0}
     - target: {fileID: 7301280809472655302, guid: 32ace6ad35e5f564a94594ebaa4fd3b8, type: 3}
       propertyPath: m_Pivot.x
@@ -867,7 +863,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 6884530326833527367, guid: 32ace6ad35e5f564a94594ebaa4fd3b8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 509937587878744520}
+      addedObject: {fileID: 1102587878241722950}
   m_SourcePrefab: {fileID: 100100000, guid: 32ace6ad35e5f564a94594ebaa4fd3b8, type: 3}
 --- !u!224 &5958212405137622310 stripped
 RectTransform:
@@ -879,7 +875,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 6884530326833527367, guid: 32ace6ad35e5f564a94594ebaa4fd3b8, type: 3}
   m_PrefabInstance: {fileID: 4034256231533361888}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &509937587878744520
+--- !u!114 &1102587878241722950
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -888,43 +884,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 7527288971922194599}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5d50d7398e3c453c91e843400237168d, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f8262d5a6fc6664c99bf1be9c84d1df, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  localServerIcon: {fileID: 21300000, guid: 71afd49077d51ea4282bc33b929cd183, type: 3}
-  remoteServerIcon: {fileID: 21300000, guid: 86f11938c84af754d9cb4a36da4cc72b, type: 3}
+  m_EditorClassIdentifier: NanoverImd::NanoverImd.UI.Scene.ListDemos
+  demos:
+  - Name: Nanotube
+    URL: https://github.com/IRL2/nanover-server-py/raw/refs/heads/main/python-libraries/nanover-server/tests/test_core/recording/nanotube-example-recording.nanover.zip
   application: {fileID: 0}
   menu: {fileID: 6483562770327280518}
-  startSearch:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 6657981276219506721}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-  endSearch:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 6657981276219506721}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+  demoIcon: {fileID: 21300000, guid: 73171e3084c3c1c44b167f21f33416a4, type: 3}
 --- !u!1001 &4765387652551355440
 PrefabInstance:
   m_ObjectHideFlags: 0

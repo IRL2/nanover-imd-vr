@@ -14,7 +14,7 @@ namespace NanoverImd.Editor
         [MenuItem("Nanover/Commands/Play")]
         public static void PlayServer()
         {
-            Object.FindFirstObjectByType<NanoverImdApplication>().Simulation.Trajectory?.Play();
+            Object.FindFirstObjectByType<NanoverImdApplication>().Simulation.PlayTrajectory();
         }
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace NanoverImd.Editor
         [MenuItem("Nanover/Commands/Pause")]
         public static void PauseServer()
         {
-            Object.FindFirstObjectByType<NanoverImdApplication>().Simulation.Trajectory?.Pause();
+            Object.FindFirstObjectByType<NanoverImdApplication>().Simulation.PauseTrajectory();
         }
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace NanoverImd.Editor
         [MenuItem("Nanover/Commands/Reset")]
         public static void ResetServer()
         {
-            Object.FindFirstObjectByType<NanoverImdApplication>().Simulation.Trajectory?.Reset();
+            Object.FindFirstObjectByType<NanoverImdApplication>().Simulation.ResetTrajectory();
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace NanoverImd.Editor
         [MenuItem("Nanover/Commands/Step")]
         public static void StepServer()
         {
-            Object.FindFirstObjectByType<NanoverImdApplication>().Simulation.Trajectory?.Step();
+            Object.FindFirstObjectByType<NanoverImdApplication>().Simulation.StepForwardTrajectory();
         }
     }
 }

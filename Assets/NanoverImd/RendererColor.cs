@@ -2,7 +2,6 @@
 
 namespace NanoverImd
 {
-    [SerializeField]
     [RequireComponent(typeof(Renderer))]
     public class RendererColor : MonoBehaviour
     {

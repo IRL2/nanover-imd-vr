@@ -20,8 +20,7 @@ namespace Nanover.Frontend.UI
             children.Add(button);
             button.Text = name;
             button.Image = icon;
-            if (subtext != null)
-                button.Subtext = subtext;
+            button.Subtext = subtext ?? "";
             button.OnClick += callback;
         }
 

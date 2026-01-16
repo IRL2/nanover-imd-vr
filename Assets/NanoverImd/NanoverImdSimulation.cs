@@ -21,10 +21,6 @@ using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
 using WebDiscovery;
 using NativeWebSocket;
 
-
-
-
-
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -60,8 +56,13 @@ namespace NanoverImd
 
         public bool Connected => websocket?.State == WebSocketState.Open;
 
-        private WebSocket websocket;
+        public bool Running => Connected || playback != null;
 
+        public bool InLocalPlayback => playback != null;
+
+        private WebSocket websocket;
+        private NanoverRecordingPlayback playback;
+        
         /// <summary>
         /// The route through which simulation space can be manipulated with
         /// gestures to perform translation, rotation, and scaling.
@@ -96,6 +97,31 @@ namespace NanoverImd
         private void OnClose(WebSocketCloseCode code)
         {
             Close();
+        }
+
+        public void ConnectRecordingReader(NanoverRecordingReader reader)
+        {
+            Close();
+
+            gameObject.SetActive(true);
+            ConnectionEstablished?.Invoke();
+            Multiplayer.OpenClientFake();
+
+            playback = new NanoverRecordingPlayback(reader);
+            playback.PlaybackMessage += (message) =>
+            {
+                if (message.StateUpdate is { } stateUpdate)
+                    Multiplayer.ReceiveStateUpdate(stateUpdate);
+
+                if (message.FrameUpdate is { } frameUpdate)
+                    Trajectory.ReceiveFrameUpdate(frameUpdate);
+            };
+
+            playback.PlaybackReset += () =>
+            {
+                Trajectory.Clear();
+                Multiplayer.Clear();
+            };
         }
 
         public void ConnectWebSocket(string address)
@@ -257,15 +283,16 @@ namespace NanoverImd
         /// </summary>
         public void Close()
         { 
-            if (this.websocket == null)
+            if (this.websocket == null && playback == null)
                 return;
+
+            playback = null;
 
             var websocket = this.websocket;
             this.websocket = null;
 
             websocket.OnClose -= OnClose;
 
-            Debug.LogError($"TRY CLOSING {websocket}");
             websocket?.Close().AsUniTask().Forget();
 
             gameObject.SetActive(false);
@@ -284,6 +311,11 @@ namespace NanoverImd
 #if !UNITY_WEBGL || UNITY_EDITOR
             websocket?.DispatchMessageQueue();
 #endif
+
+            if (playback != null && !playback.IsPaused)
+            {
+                playback.AdvanceBySeconds(Time.deltaTime);
+            }
         }
         private void OnDestroy()
         {
@@ -305,22 +337,34 @@ namespace NanoverImd
 
         public void PlayTrajectory()
         {
-            Trajectory.Play();
+            if (InLocalPlayback)
+                playback.Play();
+            else
+                RunCommand(TrajectorySession.CommandPlay);
         }
 
         public void PauseTrajectory()
         {
-            Trajectory.Pause();
+            if (InLocalPlayback)
+                playback.Pause();
+            else
+                RunCommand(TrajectorySession.CommandPause);
         }
 
         public void ResetTrajectory()
         {
-            Trajectory.Reset();
+            if (InLocalPlayback)
+                playback.Reset();
+            else
+                RunCommand(TrajectorySession.CommandReset);
         }
 
         public void StepForwardTrajectory()
         {
-            Trajectory.Step();
+            if (InLocalPlayback)
+                playback.StepOneFrame();
+            else
+                RunCommand(TrajectorySession.CommandStep);
         }
 
 

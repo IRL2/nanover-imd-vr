@@ -29,6 +29,7 @@ namespace NanoverImd
         private ICollection<ServiceHub> knownServiceHubs = new List<ServiceHub>();
         private ICollection<DiscoveryEntry> knownWebSockets = new List<DiscoveryEntry>();
         private IList<string> knownSimulations = new List<string>();
+        private IList<NanoverRecordings.DemoListing> knownDemos = new List<NanoverRecordings.DemoListing>();
 
         public float interactionForceMultiplier = 1000;
 
@@ -36,6 +37,27 @@ namespace NanoverImd
         {
             GUILayout.BeginArea(new Rect(16, 16, 192, 1024));
             GUILayout.Box("Nanover iMD");
+
+            GUILayout.Box("Demos");
+
+            if (GUILayout.Button("Refresh"))
+            {
+                NanoverRecordings
+                .FetchDemosListing()
+                .AsUniTask()
+                .ContinueWith((listing) =>
+                {
+                    knownDemos = listing;
+                });
+            }
+
+            foreach (var entry in knownDemos)
+            {
+                if (GUILayout.Button(entry.Name))
+                {
+                    NanoverRecordings.LoadDemo(entry.URL).AsUniTask().ContinueWith(simulation.ConnectRecordingReader);
+                }
+            }
 
             GUILayout.Box("Connect");
 
@@ -80,16 +102,16 @@ namespace NanoverImd
 
                 GUILayout.Box("Simulation");
                 if (GUILayout.Button("Play"))
-                    simulation.Trajectory.Play();
+                    simulation.PlayTrajectory();
 
                 if (GUILayout.Button("Pause"))
-                    simulation.Trajectory.Pause();
+                    simulation.PauseTrajectory();
 
                 if (GUILayout.Button("Step"))
-                    simulation.Trajectory.Step();
+                    simulation.StepForwardTrajectory();
                 
                 if (GUILayout.Button("Reset"))
-                    simulation.Trajectory.Reset();
+                    simulation.ResetTrajectory();
                 
                 if (GUILayout.Button("Reset Box"))
                     simulation.ResetBox();

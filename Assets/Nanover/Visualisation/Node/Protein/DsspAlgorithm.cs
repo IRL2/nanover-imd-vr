@@ -75,7 +75,7 @@ namespace Nanover.Visualisation.Node.Protein
                 residue.OxygenIndex = i;
             }
 
-            SecondaryStructureResidueData? GetResidueData(int residueIndex)
+            SecondaryStructureResidueData GetResidueData(int residueIndex)
             {
                 if (!residueIndexToOrdinal.TryGetValue(residueIndex, out int ordinal))
                     return null;

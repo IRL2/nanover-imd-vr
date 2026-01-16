@@ -23,7 +23,8 @@
         "Newtonsoft.Json.dll",
         "System.Runtime.CompilerServices.Unsafe.dll",
         "Nerdbank.MessagePack.dll",
-        "PolyType.dll"
+        "PolyType.dll",
+        "Ionic.Zip.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

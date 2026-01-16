@@ -14,9 +14,9 @@ namespace NanoverImd
         private NanoverImdSimulation simulation;
 #pragma warning restore 0649
 
-        public void SendPlayCommand() => simulation.Trajectory.Play();
-        public void SendPauseCommand() => simulation.Trajectory.Pause();
-        public void SendStepCommand() => simulation.Trajectory.Step();
-        public void SendResetCommand() => simulation.Trajectory.Reset();
+        public void SendPlayCommand() => simulation.PlayTrajectory();
+        public void SendPauseCommand() => simulation.PauseTrajectory();
+        public void SendStepCommand() => simulation.StepForwardTrajectory();
+        public void SendResetCommand() => simulation.ResetTrajectory();
     }
 }
