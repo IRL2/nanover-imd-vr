@@ -43,10 +43,10 @@ namespace WebSocketTypes
         public int Id;
 
         [PropertyShape(Name = "name")]
-        public string? Name;
+        public string Name;
 
         [PropertyShape(Name = "arguments")]
-        public CommandArguments? Arguments;
+        public CommandArguments Arguments;
     }
 
     public partial class CommandUpdate
@@ -61,13 +61,13 @@ namespace WebSocketTypes
     public partial class Message
     {
         [PropertyShape(Name = "frame")]
-        public Dictionary<string, object>? FrameUpdate;
+        public Dictionary<string, object> FrameUpdate;
 
         [PropertyShape(Name = "state")]
-        public StateUpdate? StateUpdate;
+        public StateUpdate StateUpdate;
 
         [PropertyShape(Name = "command")]
-        public CommandUpdate? CommandUpdate;
+        public CommandUpdate CommandUpdate;
 
         public override string ToString() => $"Message(FrameUpdate={FrameUpdate}, StateUpdate={StateUpdate}, CommandUpdate={CommandUpdate})";
     }

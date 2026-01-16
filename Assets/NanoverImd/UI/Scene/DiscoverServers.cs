@@ -61,8 +61,6 @@ namespace NanoverImd.UI.Scene
 
         public async UniTask SearchAsync()
         {
-            //WebsocketDiscovery.DiscoverWebsocketServers().ContinueWith(OnDiscoveredWebsocketServers).Forget();
-
             currentSearchTask = client.StartSearch().AsUniTask();
             startSearch?.Invoke();
             await UniTask.WhenAny(UniTask.Delay(500), currentSearchTask.Value);
@@ -70,12 +68,6 @@ namespace NanoverImd.UI.Scene
             currentSearchTask = null;
             endSearch?.Invoke();
             RefreshHubs();
-
-            void OnDiscoveredWebsocketServers(List<DiscoveryEntry> entries)
-            {
-                websockets = entries;
-                RefreshHubs();
-            }
         }
 
         public void Refresh()

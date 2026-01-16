@@ -251,7 +251,7 @@ namespace Nanover.Network.Multiplayer
         /// </summary>
         public async UniTask<bool> LockResource(string id)
         {
-            return true;
+            return await UniTask.FromResult(true);
         }
 
         /// <summary>
@@ -259,7 +259,7 @@ namespace Nanover.Network.Multiplayer
         /// </summary>
         public async UniTask<bool> ReleaseResource(string id)
         {
-            return true;
+            return await UniTask.FromResult(true);
         }
 
         /// <inheritdoc cref="IDisposable.Dispose" />
