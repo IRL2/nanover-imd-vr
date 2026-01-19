@@ -4134,7 +4134,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &431384313
 Transform:
   m_ObjectHideFlags: 0
@@ -15973,6 +15973,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1001764374945446091, guid: 5ce1f7023435bfe4994f657b9d8d9612, type: 3}
+      propertyPath: simulation
+      value: 
+      objectReference: {fileID: 431384312}
+    - target: {fileID: 1001764374945446091, guid: 5ce1f7023435bfe4994f657b9d8d9612, type: 3}
       propertyPath: characteristics
       value: 256
       objectReference: {fileID: 0}
@@ -17104,6 +17108,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 6600268805218363695, guid: 5ce1f7023435bfe4994f657b9d8d9612, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6629243190290112471, guid: 5ce1f7023435bfe4994f657b9d8d9612, type: 3}
       propertyPath: m_Layer
       value: 5
@@ -17343,6 +17351,14 @@ PrefabInstance:
     - target: {fileID: 7867285928577189556, guid: 5ce1f7023435bfe4994f657b9d8d9612, type: 3}
       propertyPath: gizmo
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7867285928577189556, guid: 5ce1f7023435bfe4994f657b9d8d9612, type: 3}
+      propertyPath: anchor
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7867285928577189556, guid: 5ce1f7023435bfe4994f657b9d8d9612, type: 3}
+      propertyPath: priority
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7867285928577189556, guid: 5ce1f7023435bfe4994f657b9d8d9612, type: 3}
       propertyPath: bothHands
@@ -17768,8 +17784,7 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 8013080544951726107, guid: 5ce1f7023435bfe4994f657b9d8d9612, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 4225145721468034148, guid: 5ce1f7023435bfe4994f657b9d8d9612, type: 3}
     - {fileID: 3312031047770793135, guid: 5ce1f7023435bfe4994f657b9d8d9612, type: 3}
@@ -21697,6 +21712,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4969003233117326809, guid: f3eac0c1301591843a2e2180567c3f3b, type: 3}
+      propertyPath: bothHands
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4969003233117326809, guid: f3eac0c1301591843a2e2180567c3f3b, type: 3}
       propertyPath: controllers
       value: 
       objectReference: {fileID: 2074532958}
@@ -21866,7 +21885,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9011756456478895427, guid: f3eac0c1301591843a2e2180567c3f3b, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9100474798267351610, guid: f3eac0c1301591843a2e2180567c3f3b, type: 3}
       propertyPath: m_AnchoredPosition.y
