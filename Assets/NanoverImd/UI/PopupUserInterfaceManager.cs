@@ -28,9 +28,6 @@ namespace NanoverImd.UI
         [SerializeField]
         private UiInputMode mode;
 
-        [SerializeField]
-        private InputDeviceCharacteristics characteristics;
-
         private bool uiVisible;
 
         [SerializeField]
@@ -51,7 +48,8 @@ namespace NanoverImd.UI
             {
                 while (true)
                 {
-                    try
+                    if (simulation.transform.gameObject.activeInHierarchy)  // prevent displaying sim menu when no simulation menu is running
+                        try
                     {
                         var pressed = characteristics.GetFirstDevice().GetButtonPressed(CommonUsages.menuButton) == true;
 
@@ -81,7 +79,7 @@ namespace NanoverImd.UI
 
             SceneUI.transform.position = Camera.main.transform.position +
                                          Vector3.down * 0.2f +
-                                         Camera.main.transform.forward * 0.7f;
+                                         Camera.main.transform.forward * 0.8f;
 
             SceneUI.transform.rotation =
                 Quaternion.LookRotation(SceneUI.transform.position - Camera.main.transform.position,

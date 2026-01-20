@@ -24,12 +24,12 @@ namespace NanoverImd.UI
         private GameObject sceneUI;
 
         [SerializeField]
-        private GameObject simulation;
+        public GameObject simulation;
 
         private Stack<GameObject> sceneStack = new Stack<GameObject>();
 
         [SerializeField]
-        private InputDeviceCharacteristics characteristics;
+        public InputDeviceCharacteristics characteristics;
 
 
         private bool uiVisible;
@@ -52,17 +52,18 @@ namespace NanoverImd.UI
             {
                 while (true)
                 {
-                    try
+
+                    if (simulation.transform.gameObject.activeInHierarchy) // prevents menu button from working when simulation is not running
+                        try
                     {
                         var pressed = characteristics.GetFirstDevice().GetButtonPressed(CommonUsages.menuButton) == true;
 
                         if (pressed && !menuButtonPrevPressed)
                         {
                             uiVisible = SceneUI.transform.gameObject.activeInHierarchy;
-                            // todo: hide full-screen ui when menubutton pressed
-                            // todo: show initialscene when no simulation is running
-                            //if (uiVisible)
-                            //    LeaveScene(SceneUI);
+                                // hides any open full-screen ui (like options or change-sim menu)
+                                if (uiVisible)
+                                CloseScene();
                         }
 
                         menuButtonPrevPressed = pressed;
