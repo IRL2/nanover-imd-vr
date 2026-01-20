@@ -28,19 +28,19 @@ namespace NanoverImd.UI
         [SerializeField]
         private UiInputMode mode;
 
-        private bool uiVisible;
+        private bool popupUiVisible;
 
         [SerializeField]
         private Nanover.Frontend.Input.IButton menuButton;
 
-        private bool menuButtonPrevPressed;
+        private bool pMenuButtonPrevPressed; 
 
         private void Start()
         {
             Assert.IsNotNull(menuPrefab, "Missing menu prefab");
 
-            uiVisible = false;
-            menuButtonPrevPressed = false;
+            popupUiVisible = false;
+            pMenuButtonPrevPressed = false;
 
             UpdatePressedInBackground().Forget();
 
@@ -53,12 +53,12 @@ namespace NanoverImd.UI
                     {
                         var pressed = characteristics.GetFirstDevice().GetButtonPressed(CommonUsages.menuButton) == true;
 
-                        if (pressed && !menuButtonPrevPressed)
+                        if (pressed && !pMenuButtonPrevPressed)
                         {
                             ToggleMenu();
                         }
 
-                        menuButtonPrevPressed = pressed;
+                        pMenuButtonPrevPressed = pressed;
                     }
                     catch (System.Exception e)
                     {
@@ -95,10 +95,10 @@ namespace NanoverImd.UI
 
         private void ToggleMenu()
         {
-            uiVisible = SceneUI.transform.gameObject.activeInHierarchy;
-            uiVisible = !uiVisible;
+            popupUiVisible = SceneUI.transform.gameObject.activeInHierarchy;
+            popupUiVisible = !popupUiVisible;
 
-            if (uiVisible)
+            if (popupUiVisible)
                 ShowMenu();
             else
                 CloseMenu();
