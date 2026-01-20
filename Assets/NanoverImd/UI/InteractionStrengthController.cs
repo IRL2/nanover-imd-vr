@@ -23,6 +23,9 @@ public class InteractionStrengthController : MonoBehaviour
 
     private void Update()
     {
+        if (simulation.InLocalPlayback)
+            return;
+
         var joystick = InputDeviceCharacteristics.Right.GetFirstDevice().GetJoystickValue(CommonUsages.primary2DAxis) ?? Vector2.zero;
 
         var increase = joystick.x > .5f;

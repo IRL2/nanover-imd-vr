@@ -3,14 +3,32 @@ using PolyType;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using UnityEngine.Networking;
 using CommandArguments = System.Collections.Generic.Dictionary<string, object>;
 using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
+using Nanover.Core;
 
 namespace WebSocketTypes
 { 
-    public class StateUpdate
+    public class RecordingIndexEntry
+    {
+        [PropertyShape(Name = "offset")]
+        public uint Offset;
+
+        [PropertyShape(Name = "length")]
+        public uint Length;
+
+        [PropertyShape(Name = "metadata")]
+        public Dictionary<string, object> Metadata;
+
+        public uint? Timestamp => Metadata.TryGetValue("timestamp", out var value) ? Convert.ToUInt32(value) : null;
+
+        public bool ContainsFrame => Metadata.TryGetValue("types", out IList<object> types) && types.Contains("frame");
+        public bool ContainsState => Metadata.TryGetValue("types", out IList<object> types) && types.Contains("state");
+
+        public override string ToString() => $"RecordingIndexEntry(Offset={Offset}, Length={Length}, Timestamp={Timestamp})";
+    }
+
+    public partial class StateUpdate
     {
         [PropertyShape(Name = "updates")]
         public Dictionary<string, object> Updates = new Dictionary<string, object>();
@@ -25,10 +43,10 @@ namespace WebSocketTypes
         public int Id;
 
         [PropertyShape(Name = "name")]
-        public string? Name;
+        public string Name;
 
         [PropertyShape(Name = "arguments")]
-        public CommandArguments? Arguments;
+        public CommandArguments Arguments;
     }
 
     public partial class CommandUpdate
@@ -43,13 +61,15 @@ namespace WebSocketTypes
     public partial class Message
     {
         [PropertyShape(Name = "frame")]
-        public Dictionary<string, object>? FrameUpdate;
+        public Dictionary<string, object> FrameUpdate;
 
         [PropertyShape(Name = "state")]
-        public StateUpdate? StateUpdate;
+        public StateUpdate StateUpdate;
 
         [PropertyShape(Name = "command")]
-        public CommandUpdate? CommandUpdate;
+        public CommandUpdate CommandUpdate;
+
+        public override string ToString() => $"Message(FrameUpdate={FrameUpdate}, StateUpdate={StateUpdate}, CommandUpdate={CommandUpdate})";
     }
 
     public interface WebSocketMessageSource
@@ -67,6 +87,8 @@ namespace WebSocketTypes
     [GenerateShapeFor(typeof(HashSet<string>))]
     [GenerateShapeFor(typeof(List<object>))]
     [GenerateShapeFor(typeof(Message))]
+    [GenerateShapeFor(typeof(RecordingIndexEntry))]
+    [GenerateShapeFor(typeof(List<RecordingIndexEntry>))]
     public partial class Witness { }
 
     public static class ObjectExtensions

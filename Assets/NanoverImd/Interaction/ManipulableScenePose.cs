@@ -53,7 +53,7 @@ namespace NanoverImd.Interaction
             {
                 while (true)
                 {
-                    if (CurrentlyEditingScene && multiplayer.IsOpen)
+                    if (CurrentlyEditingScene)
                     {
                         var worldPose = Transformation.FromTransformRelativeToParent(sceneTransform);
 
@@ -61,7 +61,9 @@ namespace NanoverImd.Interaction
                         worldPose.CopyToTransformRelativeToParent(sceneTransform);
 
                         var calibPose = calibratedSpace.TransformPoseWorldToCalibrated(worldPose);
-                        multiplayer.SimulationPose.UpdateValueWithLock(calibPose);
+                        
+                        if (multiplayer.IsOpen)
+                            multiplayer.SimulationPose.UpdateValueWithLock(calibPose);
                     }
 
                     await UniTask.DelayFrame(1);

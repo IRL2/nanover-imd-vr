@@ -48,7 +48,7 @@ namespace Nanover.Network.Multiplayer
         /// <summary>
         /// Is there an open client on this session?
         /// </summary>
-        public bool IsOpen => websocketClient?.Connected ?? false;
+        public bool IsOpen => websocketClient?.Connected ?? false || openedFake;
 
         /// <summary>
         /// How many milliseconds to put between sending our requested value
@@ -105,6 +105,48 @@ namespace Nanover.Network.Multiplayer
         private WebSocketMessageSource websocketClient;
         private Func<Message, UniTask> SendMessage;
 
+        private bool openedFake;
+
+        public void ReceiveStateUpdate(StateUpdate update)
+        {
+            messageReceiveTimes.Add(Time.realtimeSinceStartup);
+
+            if (update.Updates.ContainsKey(UpdateIndexKey))
+            {
+                lastReceivedIndex = Convert.ToInt32(update.Updates[UpdateIndexKey]);
+                lastReceivedIndexTime = Time.realtimeSinceStartup;
+
+                foreach (var index in new HashSet<int>(updateSendTimes.Keys))
+                {
+                    if (index == lastReceivedIndex)
+                        LastIndexRTT = lastReceivedIndexTime - updateSendTimes[index];
+
+                    if (index <= lastReceivedIndex)
+                        updateSendTimes.Remove(index);
+                }
+            }
+
+            foreach (var key in update.Removals)
+            {
+                SharedStateDictionary.Remove(key);
+                SharedStateDictionaryKeyRemoved?.Invoke(key);
+            }
+
+            foreach (var (key, value) in update.Updates)
+            {
+                var sanitised = value.StringifyStructureKeys();
+
+                SharedStateDictionary[key] = sanitised;
+                SharedStateDictionaryKeyUpdated?.Invoke(key, sanitised);
+            }
+        }
+
+        public void OpenClientFake()
+        {
+            openedFake = true;
+            MultiplayerJoined?.Invoke(); 
+        }
+
         public void OpenClient(WebSocketMessageSource source, Func<Message, UniTask> SendMessage)
         {
             this.SendMessage = SendMessage;
@@ -113,42 +155,8 @@ namespace Nanover.Network.Multiplayer
             source.OnMessage += (message) =>
             {
                 if (message.StateUpdate is { } update)
-                    ReceiveState(update);
+                    ReceiveStateUpdate(update);
             };
-
-            void ReceiveState(StateUpdate update)
-            {
-                messageReceiveTimes.Add(Time.realtimeSinceStartup);
-
-                if (update.Updates.ContainsKey(UpdateIndexKey))
-                {
-                    lastReceivedIndex = Convert.ToInt32(update.Updates[UpdateIndexKey]);
-                    lastReceivedIndexTime = Time.realtimeSinceStartup;
-
-                    foreach (var index in new HashSet<int>(updateSendTimes.Keys))
-                    {
-                        if (index == lastReceivedIndex)
-                            LastIndexRTT = lastReceivedIndexTime - updateSendTimes[index];
-
-                        if (index <= lastReceivedIndex)
-                            updateSendTimes.Remove(index);
-                    }
-                }
-
-                foreach (var key in update.Removals)
-                {
-                    SharedStateDictionary.Remove(key);
-                    SharedStateDictionaryKeyRemoved?.Invoke(key);
-                }
-
-                foreach (var (key, value) in update.Updates)
-                {
-                    var sanitised = value.StringifyStructureKeys();
-
-                    SharedStateDictionary[key] = sanitised;
-                    SharedStateDictionaryKeyUpdated?.Invoke(key, sanitised);
-                }
-            }
 
             AccessToken = Guid.NewGuid().ToString();
 
@@ -179,12 +187,18 @@ namespace Nanover.Network.Multiplayer
             }
         }
 
+        public void Clear()
+        {
+            ClearSharedState();
+        }
 
         /// <summary>
         /// Close the current Multiplayer client and dispose all streams.
         /// </summary>
         public void CloseClient()
         {
+            openedFake = false;
+
             ClearSharedState();
 
             lastReceivedIndex = -1;
@@ -237,7 +251,7 @@ namespace Nanover.Network.Multiplayer
         /// </summary>
         public async UniTask<bool> LockResource(string id)
         {
-            return true;
+            return await UniTask.FromResult(true);
         }
 
         /// <summary>
@@ -245,7 +259,7 @@ namespace Nanover.Network.Multiplayer
         /// </summary>
         public async UniTask<bool> ReleaseResource(string id)
         {
-            return true;
+            return await UniTask.FromResult(true);
         }
 
         /// <inheritdoc cref="IDisposable.Dispose" />

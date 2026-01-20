@@ -15,6 +15,10 @@
 # Unity NuGet packages
 /[Aa]ssets/[Pp]ackages
 
+/[Pp]ackages/*
+!/[Pp]ackages/manifest.json
+!/[Pp]ackages/packages-lock.json
+
 # Never ignore Asset meta data
 !/[Aa]ssets/**/*.meta
 
