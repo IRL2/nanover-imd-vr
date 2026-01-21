@@ -291,9 +291,11 @@ namespace NanoverImd
             var websocket = this.websocket;
             this.websocket = null;
 
-            websocket.OnClose -= OnClose;
-
-            websocket?.Close().AsUniTask().Forget();
+            if (websocket!=null)
+            {
+                websocket.OnClose -= OnClose;
+                websocket.Close().AsUniTask().Forget();
+            }
 
             gameObject.SetActive(false);
 

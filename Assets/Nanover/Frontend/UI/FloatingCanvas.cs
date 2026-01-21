@@ -12,6 +12,9 @@ using UnityEngine.Assertions;
         [SerializeField]
         private float verticalOffset;
 
+        [SerializeField]
+        private float pitchRotation = 0.0f;
+
 #pragma warning disable 0109
         [SerializeField]
         private new Camera camera;
@@ -62,7 +65,7 @@ using UnityEngine.Assertions;
             var idealPosition = cameraPos + cameraForward * distance + verticalOffset * Vector3.up;
 
             var currentFacing = currentPosition - cameraPos;
-            currentFacing.y = 0;
+            currentFacing.y = pitchRotation;
             
             if (force)
             {

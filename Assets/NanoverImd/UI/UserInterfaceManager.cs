@@ -1,7 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
+using Nanover.Frontend.Controllers;
+
 using Nanover.Frontend.UI;
+using Nanover.Frontend.XR;
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace NanoverImd.UI
 {
@@ -18,7 +23,16 @@ namespace NanoverImd.UI
         [SerializeField]
         private GameObject sceneUI;
 
+        [SerializeField]
+        public GameObject simulation;
+
         private Stack<GameObject> sceneStack = new Stack<GameObject>();
+
+        [SerializeField]
+        public InputDeviceCharacteristics characteristics;
+
+        public bool SimulationActive => simulation.activeInHierarchy;
+        public bool SimulationMenuActive => sceneUI.activeInHierarchy;
 
         public GameObject SceneUI => sceneUI;
 
@@ -26,6 +40,15 @@ namespace NanoverImd.UI
         {
             if (initialScene != null)
                 GotoScene(initialScene);
+
+            SetupOutOfSimulationMenu();
+        }
+
+        private void SetupOutOfSimulationMenu()
+        {
+            // hides any open full-screen ui (like options or change-sim menu)
+            var menuButton = characteristics.WrapUsageAsButton(CommonUsages.menuButton, () => SimulationActive && SimulationMenuActive);
+            menuButton.Pressed += CloseScene;
         }
 
         private void LeaveScene(GameObject scene)
