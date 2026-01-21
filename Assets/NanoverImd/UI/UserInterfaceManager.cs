@@ -43,39 +43,16 @@ namespace NanoverImd.UI
                 GotoScene(initialScene);
 
 
-            uiVisible = false;
-            menuButtonPrevPressed = false;
+            uiVisible = SceneUI.transform.gameObject.activeInHierarchy;
 
-            UpdatePressedInBackground().Forget();
-
-            async UniTask UpdatePressedInBackground()
+            var button = characteristics.WrapUsageAsButton(CommonUsages.menuButton, () => simulation.transform.gameObject.activeInHierarchy);
+            button.Pressed += () =>
             {
-                while (true)
-                {
-
-                    if (simulation.transform.gameObject.activeInHierarchy) // prevents menu button from working when simulation is not running
-                        try
-                    {
-                        var pressed = characteristics.GetFirstDevice().GetButtonPressed(CommonUsages.menuButton) == true;
-
-                        if (pressed && !menuButtonPrevPressed)
-                        {
-                            uiVisible = SceneUI.transform.gameObject.activeInHierarchy;
-                                // hides any open full-screen ui (like options or change-sim menu)
-                                if (uiVisible)
-                                CloseScene();
-                        }
-
-                        menuButtonPrevPressed = pressed;
-                    }
-                    catch (System.Exception e)
-                    {
-                        Debug.LogException(e);
-                    }
-
-                    await UniTask.DelayFrame(1);
-                }
-            }
+                uiVisible = SceneUI.transform.gameObject.activeInHierarchy;
+                // hides any open full-screen ui (like options or change-sim menu)
+                if (uiVisible)
+                    CloseScene();
+            };
         }
 
         private void LeaveScene(GameObject scene)

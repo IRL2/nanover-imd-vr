@@ -39,35 +39,13 @@ namespace NanoverImd.UI
         {
             Assert.IsNotNull(menuPrefab, "Missing menu prefab");
 
-            popupUiVisible = false;
-            pMenuButtonPrevPressed = false;
+            popupUiVisible = SceneUI.transform.gameObject.activeInHierarchy;
 
-            UpdatePressedInBackground().Forget();
-
-            async UniTask UpdatePressedInBackground()
+            var button = characteristics.WrapUsageAsButton(CommonUsages.menuButton, () => simulation.transform.gameObject.activeInHierarchy);
+            button.Pressed += () =>
             {
-                while (true)
-                {
-                    if (simulation.transform.gameObject.activeInHierarchy)  // prevent displaying sim menu when no simulation menu is running
-                        try
-                    {
-                        var pressed = characteristics.GetFirstDevice().GetButtonPressed(CommonUsages.menuButton) == true;
-
-                        if (pressed && !pMenuButtonPrevPressed)
-                        {
-                            ToggleMenu();
-                        }
-
-                        pMenuButtonPrevPressed = pressed;
-                    }
-                    catch (System.Exception e)
-                    {
-                        Debug.LogException(e);
-                    }
-
-                    await UniTask.DelayFrame(1);
-                }
-            }
+                ToggleMenu();
+            };
         }
 
         private void ShowMenu()
