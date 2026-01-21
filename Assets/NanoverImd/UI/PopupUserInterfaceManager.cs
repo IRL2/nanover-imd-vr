@@ -28,24 +28,17 @@ namespace NanoverImd.UI
         [SerializeField]
         private UiInputMode mode;
 
-        private bool popupUiVisible;
-
-        [SerializeField]
-        private Nanover.Frontend.Input.IButton menuButton;
-
-        private bool pMenuButtonPrevPressed; 
-
         private void Start()
         {
             Assert.IsNotNull(menuPrefab, "Missing menu prefab");
 
-            popupUiVisible = SceneUI.transform.gameObject.activeInHierarchy;
+            SetupInSimulationMenu();
+        }
 
-            var button = characteristics.WrapUsageAsButton(CommonUsages.menuButton, () => simulation.transform.gameObject.activeInHierarchy);
-            button.Pressed += () =>
-            {
-                ToggleMenu();
-            };
+        private void SetupInSimulationMenu()
+        {
+            var menuButton = characteristics.WrapUsageAsButton(CommonUsages.menuButton, () => SimulationActive);
+            menuButton.Pressed += ToggleMenu;
         }
 
         private void ShowMenu()
@@ -73,10 +66,7 @@ namespace NanoverImd.UI
 
         private void ToggleMenu()
         {
-            popupUiVisible = SceneUI.transform.gameObject.activeInHierarchy;
-            popupUiVisible = !popupUiVisible;
-
-            if (popupUiVisible)
+            if (!SimulationMenuActive)
                 ShowMenu();
             else
                 CloseMenu();

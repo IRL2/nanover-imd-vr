@@ -31,9 +31,8 @@ namespace NanoverImd.UI
         [SerializeField]
         public InputDeviceCharacteristics characteristics;
 
-
-        private bool uiVisible;
-        private bool menuButtonPrevPressed;
+        public bool SimulationActive => simulation.activeInHierarchy;
+        public bool SimulationMenuActive => sceneUI.activeInHierarchy;
 
         public GameObject SceneUI => sceneUI;
 
@@ -42,17 +41,14 @@ namespace NanoverImd.UI
             if (initialScene != null)
                 GotoScene(initialScene);
 
+            SetupOutOfSimulationMenu();
+        }
 
-            uiVisible = SceneUI.transform.gameObject.activeInHierarchy;
-
-            var button = characteristics.WrapUsageAsButton(CommonUsages.menuButton, () => simulation.transform.gameObject.activeInHierarchy);
-            button.Pressed += () =>
-            {
-                uiVisible = SceneUI.transform.gameObject.activeInHierarchy;
-                // hides any open full-screen ui (like options or change-sim menu)
-                if (uiVisible)
-                    CloseScene();
-            };
+        private void SetupOutOfSimulationMenu()
+        {
+            // hides any open full-screen ui (like options or change-sim menu)
+            var menuButton = characteristics.WrapUsageAsButton(CommonUsages.menuButton, () => SimulationActive && SimulationMenuActive);
+            menuButton.Pressed += CloseScene;
         }
 
         private void LeaveScene(GameObject scene)
