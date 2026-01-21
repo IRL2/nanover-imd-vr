@@ -101,7 +101,7 @@ public class LineManager : MonoBehaviour
             lines[timestamp].Renderer.SetPosition(i, lines[timestamp].Points[i]);
 
         // simplify the line & update the points
-        SimplifyLine(timestamp, 0.005f);
+        SimplifyLine(timestamp, 0.002f);
 
         // mark this line as dirty for sending updates later
         dirtyLines.Add(timestamp);

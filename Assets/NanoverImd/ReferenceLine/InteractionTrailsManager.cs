@@ -86,7 +86,7 @@ public class InteractionTrailsManager : MonoBehaviour
 
         lastAtomIndex = atomIndex;
 
-        Vector3? newPosition = GetInteractionPositionFromAtoms(simulation);
+        Vector3? newPosition = GetInteractionPositionFromAtoms();
 
         if (newPosition != null) lastPosition = newPosition;
 
@@ -160,9 +160,9 @@ public class InteractionTrailsManager : MonoBehaviour
         return null;
     }
 
-    private Vector3? GetInteractionPositionFromAtoms(NanoverImdSimulation sim)
+    private Vector3? GetInteractionPositionFromAtoms()
     {
-        var framedata = sim.FrameSynchronizer.CurrentFrame.Data;
+        var framedata = simulation.FrameSynchronizer.CurrentFrame.Data;
 
         if (framedata.GetValueOrDefault<uint[]>(FrameData.ForcesUserIndex) is { } selection && selection.Length > 0)
             return computeParticleCentroid(selection);
