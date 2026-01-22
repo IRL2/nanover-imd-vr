@@ -52,6 +52,9 @@ namespace NanoverImd
         private UnityEvent connectionEstablished;
         [SerializeField]
         private UnityEvent connectionLost;
+        [SerializeField]
+        private UnityEvent afterCalibration;
+
 #pragma warning restore 0649
 
         public NanoverImdSimulation Simulation => simulation;
@@ -294,6 +297,8 @@ namespace NanoverImd
 
                 //CalibratedSpace.CalibrateFromTwoControlPoints(point0, point1);
                 metaCalibrator.Setup(point0, point1);
+
+                afterCalibration.Invoke();
             }
         }
 
