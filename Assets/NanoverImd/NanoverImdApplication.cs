@@ -328,5 +328,13 @@ namespace NanoverImd
 
             CalibratedSpace.CalibrateFromMatrix(deviceToPlayspace * playspaceToShared);
         }
+
+        /// <summary>
+        /// Toggle passthrough on/off.
+        /// </summary>
+        public void TogglePassthrough()
+        {
+            passthrough = passthrough > 0f ? 0f : 1f;
+        }
     }
 }
