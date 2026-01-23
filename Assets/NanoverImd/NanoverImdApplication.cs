@@ -75,6 +75,10 @@ namespace NanoverImd
         private void Awake()
         {
             simulation.ConnectionEstablished += connectionEstablished.Invoke;
+            if (PlayerPrefs.GetFloat("passthrough", 1f) is float savedPassthrough && savedPassthrough >= 0f)
+            {
+                passthrough = savedPassthrough;
+            };
         }
 
         // These methods expose the underlying async methods to Unity for use
@@ -335,6 +339,7 @@ namespace NanoverImd
         public void TogglePassthrough()
         {
             passthrough = passthrough > 0f ? 0f : 1f;
+            PlayerPrefs.SetFloat("passthrough", passthrough);
         }
     }
 }
