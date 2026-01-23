@@ -21,6 +21,7 @@ using CommandReturn = System.Collections.Generic.Dictionary<string, object>;
 using WebDiscovery;
 using NativeWebSocket;
 
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -77,7 +78,8 @@ namespace NanoverImd
 
         public SynchronisedFrameSource FrameSynchronizer { get; private set; }
 
-        public event Action ConnectionEstablished;
+        public event Action SessionOpened;
+        public event Action SessionClosed;
 
         public event Action<Message> OnMessage;
 
@@ -94,7 +96,7 @@ namespace NanoverImd
             return websocket.Send(bytes).AsUniTask();
         }
 
-        private void OnClose(WebSocketCloseCode code)
+        private void OnWebSocketClose(WebSocketCloseCode code)
         {
             Close();
         }
@@ -104,7 +106,7 @@ namespace NanoverImd
             Close();
 
             gameObject.SetActive(true);
-            ConnectionEstablished?.Invoke();
+            SessionOpened?.Invoke();
             Multiplayer.OpenClientFake();
 
             playback = new NanoverRecordingPlayback(reader);
@@ -142,10 +144,10 @@ namespace NanoverImd
             websocket.OnOpen += () =>
             {
                 gameObject.SetActive(true);
-                ConnectionEstablished?.Invoke();
+                SessionOpened?.Invoke();
             };
 
-            websocket.OnClose += OnClose;
+            websocket.OnClose += OnWebSocketClose;
 
             OnMessage += (Message message) =>
             {
@@ -222,6 +224,16 @@ namespace NanoverImd
             Close();
         }
 
+        private void OnDestroy()
+        {
+            Close();
+        }
+
+        public void Disconnect()
+        {
+            Close();
+        }
+
         /// <summary>
         /// Connect to services as advertised by an ESSD service hub.
         /// </summary>
@@ -293,7 +305,7 @@ namespace NanoverImd
 
             if (websocket!=null)
             {
-                websocket.OnClose -= OnClose;
+                websocket.OnClose -= OnWebSocketClose;
                 websocket.Close().AsUniTask().Forget();
             }
 
@@ -306,6 +318,8 @@ namespace NanoverImd
 
             Trajectory.CloseClient();
             Multiplayer.CloseClient();
+
+            SessionClosed?.Invoke();
         }
 
         private void Update()
@@ -318,15 +332,6 @@ namespace NanoverImd
             {
                 playback.AdvanceBySeconds(Time.deltaTime);
             }
-        }
-        private void OnDestroy()
-        {
-            Close();
-        }
-        
-        public void Disconnect()
-        {
-            Close();
         }
 
         public UniTask<CommandReturn> RunCommand(string command, CommandArguments arguments = null)
