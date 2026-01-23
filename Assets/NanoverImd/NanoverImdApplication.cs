@@ -74,6 +74,11 @@ namespace NanoverImd
 
         private void Awake()
         {
+            if (PlayerPrefs.GetFloat("passthrough", 1f) is float savedPassthrough && savedPassthrough >= 0f)
+            {
+                passthrough = savedPassthrough;
+            };
+
             simulation.SessionOpened += connectionEstablished.Invoke;
             simulation.SessionClosed += connectionLost.Invoke;
         }
@@ -315,6 +320,7 @@ namespace NanoverImd
         public void TogglePassthrough()
         {
             passthrough = passthrough > 0f ? 0f : 1f;
+            PlayerPrefs.SetFloat("passthrough", passthrough);
         }
     }
 }
