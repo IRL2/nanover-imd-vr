@@ -74,11 +74,13 @@ namespace NanoverImd
 
         private void Awake()
         {
-            simulation.ConnectionEstablished += connectionEstablished.Invoke;
             if (PlayerPrefs.GetFloat("passthrough", 1f) is float savedPassthrough && savedPassthrough >= 0f)
             {
                 passthrough = savedPassthrough;
             };
+
+            simulation.SessionOpened += connectionEstablished.Invoke;
+            simulation.SessionClosed += connectionLost.Invoke;
         }
 
         // These methods expose the underlying async methods to Unity for use
@@ -109,13 +111,6 @@ namespace NanoverImd
         /// </summary>
         public void Quit() => Application.Quit();
 
-        [ContextMenu("TEST")]
-        private async void Test()
-        {
-            var commands = await GetUserCommands();
-            Debug.LogError(string.Join(", ", commands.Select(c => c.Name)));
-        }
-
         public async UniTask<IEnumerable<CommandDefinition>> GetUserCommands()
         {
             var commands = await simulation.Trajectory.UpdateCommands();
@@ -124,8 +119,6 @@ namespace NanoverImd
 
         private void Update()
         {
-            CheckDisconnect();
-
             if (ManualColocation)
             {
 
@@ -147,18 +140,6 @@ namespace NanoverImd
             var color = camera.backgroundColor;
             color.a = 1f - passthrough;
             camera.backgroundColor = color;
-        }
-
-        private void CheckDisconnect()
-        {
-            const float timeout = 10f;
-
-            if (simulation.Multiplayer.TimeSinceIndex > timeout)
-            {
-                Debug.LogError($"{simulation.Multiplayer.TimeSinceIndex} / {simulation.Multiplayer.AwaitingIndex}");
-                Disconnect();
-                connectionLost.Invoke();
-            }
         }
 
         private void UpdateSuggestedParameters()
