@@ -91,13 +91,7 @@ namespace Nanover.Network.Trajectory
         {
             CurrentFrameIndex = CurrentFrameIndex + 1;
 
-            var clear = false;
-            var prevFrame = clear ? null : CurrentFrame;
-
-            var (frame, changes) = FrameConverter.ConvertFrame(update, prevFrame);
-
-            if (clear)
-                changes = FrameChanges.All;
+            var (frame, changes) = FrameConverter.ConvertFrame(update, CurrentFrame);
 
             if (changes.HasAnythingChanged)
                 messageReceiveTimes.Add(Time.realtimeSinceStartup);

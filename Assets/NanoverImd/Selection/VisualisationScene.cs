@@ -99,11 +99,8 @@ namespace NanoverImd.Selection
                 MultiplayerOnSharedStateDictionaryKeyChanged;
             simulation.Multiplayer.SharedStateDictionaryKeyRemoved +=
                 MultiplayerOnSharedStateDictionaryKeyRemoved;
-            ClearLayers();
-            var baseLayer = AddLayer(BaseLayerName);
-            rootSelection = ParticleSelection.CreateRootSelection();
-            var baseRenderableSelection = baseLayer.AddSelection(rootSelection);
-            baseRenderableSelection.UpdateVisualiser();
+
+            ResetFromSharedState();
         }
 
         private void OnDisable()
@@ -114,6 +111,20 @@ namespace NanoverImd.Selection
                 MultiplayerOnSharedStateDictionaryKeyRemoved;
             
             Destroy(frameAdaptor);
+        }
+
+        private void ResetFromSharedState()
+        {
+            ClearLayers();
+            var baseLayer = AddLayer(BaseLayerName);
+            rootSelection = ParticleSelection.CreateRootSelection();
+            var baseRenderableSelection = baseLayer.AddSelection(rootSelection);
+            baseRenderableSelection.UpdateVisualiser();
+
+            foreach (var pair in simulation.Multiplayer.SharedStateDictionary)
+            {
+                MultiplayerOnSharedStateDictionaryKeyChanged(pair.Key, pair.Value);
+            }
         }
 
         /// <summary>

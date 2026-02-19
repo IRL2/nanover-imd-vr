@@ -77,5 +77,10 @@ namespace Nanover.Frame.Event
         {
             changed.Add(id);
         }
+
+        public override string ToString() => 
+            haveAllChanged ? "FrameChanges.All" : 
+            changed.Count == 0 ? "FrameChanges.None" :
+            $"FrameChanges.WithChanges({string.Join(", ", changed)})";
     }
 }
