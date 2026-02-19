@@ -112,11 +112,11 @@ namespace NanoverImd
             playback = new NanoverRecordingPlayback(reader);
             playback.PlaybackMessage += (message) =>
             {
-                if (message.StateUpdate is { } stateUpdate)
-                    Multiplayer.ReceiveStateUpdate(stateUpdate);
-
                 if (message.FrameUpdate is { } frameUpdate)
                     Trajectory.ReceiveFrameUpdate(frameUpdate);
+
+                if (message.StateUpdate is { } stateUpdate)
+                    Multiplayer.ReceiveStateUpdate(stateUpdate);
             };
 
             playback.PlaybackReset += () =>

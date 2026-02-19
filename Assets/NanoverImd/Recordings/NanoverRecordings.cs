@@ -132,25 +132,22 @@ namespace NanoverImd
 
         public void SeekToSeconds(float seconds)
         {
-            var prev = PlaybackTime;
-            var next = seconds % Duration;
+            var loops = seconds > LastTime;
 
-            if (next < PlaybackTime)
+            if (loops)
             {
+                seconds = FirstTime + seconds % LastTime;
                 Reset();
-                SeekToSeconds(seconds);
             }
-            else
-            {
-                for (int i = prevEntryIndex + 1; i < Reader.Count; i++)
-                {
-                    var time = Reader[i].Timestamp * MicrosecondsToSeconds;
-                    if (time < next)
-                        StepOneEntry();
-                }
 
-                PlaybackTime = next;
+            for (int i = prevEntryIndex + 1; i < Reader.Count; i++)
+            {
+                var time = Reader[i].Timestamp * MicrosecondsToSeconds;
+                if (time < seconds)
+                    StepOneEntry();
             }
+
+            PlaybackTime = seconds;
         }
 
         public RecordingIndexEntry StepOneEntry()
