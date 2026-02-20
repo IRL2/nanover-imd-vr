@@ -124,6 +124,8 @@ namespace NanoverImd
                 Trajectory.Clear();
                 Multiplayer.Clear();
             };
+
+            playback.Reset();
         }
 
         public void ConnectWebSocket(string address)

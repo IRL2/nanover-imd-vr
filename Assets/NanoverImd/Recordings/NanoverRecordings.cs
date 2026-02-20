@@ -118,6 +118,8 @@ namespace NanoverImd
 
             FirstTime = (reader[0].Timestamp ?? 0) * MicrosecondsToSeconds;
             LastTime = (reader[^1].Timestamp ?? 0) * MicrosecondsToSeconds;
+
+            PlaybackTime = FirstTime;
         }
 
         public void Play() => IsPaused = false;
