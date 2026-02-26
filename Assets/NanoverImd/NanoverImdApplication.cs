@@ -86,7 +86,7 @@ namespace NanoverImd
         // These methods expose the underlying async methods to Unity for use
         // in the UI so we disable warnings about not awaiting them, and use
         // void return type instead of Task.
-        #pragma warning disable 4014
+#pragma warning disable 4014
         /// <summary>
         /// Connect to the Nanover services described in a given ServiceHub.
         /// </summary>
@@ -163,7 +163,7 @@ namespace NanoverImd
 
             if (simulation.Multiplayer.GetSharedState(passthroughKey) is double value)
             {
-                passthrough = (float) value;
+                passthrough = (float)value;
             }
 
             if (simulation.Multiplayer.GetSharedState(boxLockedKey) is bool locked)
@@ -275,7 +275,7 @@ namespace NanoverImd
 
                 var point0 = poses[0].Position;
                 var point1 = poses[1].Position;
-                
+
                 // assume that headsets agree on y-axis
                 point0.y = 0;
                 point1.y = 0;
@@ -293,8 +293,8 @@ namespace NanoverImd
         private void CalibrateFromRemote()
         {
             var key = simulation.Multiplayer.AccessToken;
-            var origin = simulation.Multiplayer.PlayOrigins.ContainsKey(key) 
-                       ? simulation.Multiplayer.PlayOrigins.GetValue(key).Transformation 
+            var origin = simulation.Multiplayer.PlayOrigins.ContainsKey(key)
+                       ? simulation.Multiplayer.PlayOrigins.GetValue(key).Transformation
                        : UnitScaleTransformation.identity;
 
             var longest = Mathf.Max(playareaSize.x, playareaSize.z);
@@ -320,6 +320,16 @@ namespace NanoverImd
         public void TogglePassthrough()
         {
             passthrough = passthrough > 0f ? 0f : 1f;
+            PlayerPrefs.SetFloat("passthrough", passthrough);
+        }
+        public void CyclePassthrough()
+        {
+            if (passthrough == 1f)
+                passthrough = 0.5f;
+            else if (passthrough == 0.5f)
+                passthrough = 0f;
+            else
+                passthrough = 1f;
             PlayerPrefs.SetFloat("passthrough", passthrough);
         }
     }
