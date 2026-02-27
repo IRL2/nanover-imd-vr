@@ -326,8 +326,8 @@ namespace NanoverImd
         public void CyclePassthrough()
         {
             if (passthrough == 1f)
-                passthrough = 0.7f;
-            else if (passthrough == 0.7f)
+                passthrough = 0.3f;
+            else if (passthrough == 0.3f)
                 passthrough = 0f;
             else
                 passthrough = 1f;
