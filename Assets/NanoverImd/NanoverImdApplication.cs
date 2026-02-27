@@ -320,16 +320,19 @@ namespace NanoverImd
         public void TogglePassthrough()
         {
             passthrough = passthrough > 0f ? 0f : 1f;
+            simulation.Multiplayer.SetSharedState("suggested.passthrough", passthrough);
             PlayerPrefs.SetFloat("passthrough", passthrough);
         }
         public void CyclePassthrough()
         {
             if (passthrough == 1f)
-                passthrough = 0.5f;
-            else if (passthrough == 0.5f)
+                passthrough = 0.7f;
+            else if (passthrough == 0.7f)
                 passthrough = 0f;
             else
                 passthrough = 1f;
+
+            simulation.Multiplayer.SetSharedState("suggested.passthrough", passthrough);
             PlayerPrefs.SetFloat("passthrough", passthrough);
         }
     }
