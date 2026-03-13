@@ -17811,7 +17811,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2037080, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
       propertyPath: near clip plane
-      value: 0.01
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 2037080, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
       propertyPath: m_BackGroundColor.a
@@ -18549,6 +18549,7 @@ MonoBehaviour:
   Frame: 0
   State: 0
   RTT: 0
+  FPS: 0
 --- !u!1 &2022253373
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -19,6 +20,25 @@ namespace NanoverImd
         public int Frame;
         public int State;
         public int RTT;
+        public int FPS;
+
+        private List<float> dts = new List<float>();
+
+        private void OnEnable()
+        {
+            StartCoroutine(UpdateFPS());
+
+            IEnumerator UpdateFPS()
+            {
+                while (true)
+                {
+                    dts.Add(Time.smoothDeltaTime);
+                    while (dts.Count > 30)
+                        dts.RemoveAt(0);
+                    yield return new WaitForSeconds(1/30f);
+                }
+            }
+        }
 
         private void Update()
         {
@@ -27,6 +47,7 @@ namespace NanoverImd
             Frame = CheckTimes(simulation.Trajectory.MessageReceiveTimes);
             State = CheckTimes(simulation.Multiplayer.MessageReceiveTimes);
             RTT = Mathf.RoundToInt(simulation.Multiplayer.LastIndexRTT * 1000);
+            FPS = Mathf.RoundToInt(dts.Count/dts.Sum());
 
             if (ReportToState)
             {
@@ -37,6 +58,7 @@ namespace NanoverImd
                     { "frame", Frame },
                     { "state", State },
                     { "rtt", RTT },
+                    { "fps", FPS },
                 });
             }
 
